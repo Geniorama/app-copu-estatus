@@ -1,13 +1,12 @@
 export type Company = {
-    name: string;
     id: string;
+    logo: string;
+    name: string;
+    address?: string;
+    phone?: string;
+    whatsAppLink?: string;
+    nit?: string;
+    businessName?: string;
+    superior?: Company;
+    driveLink?: string;
 };
-
-export type EntryExample = Company & {
-    desc: string
-}
-
-export interface UserProps {
-    name: string
-    title: string
-}
