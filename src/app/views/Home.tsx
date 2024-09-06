@@ -32,6 +32,7 @@ export default function Home() {
       <h1 className=" bg-slate-800 text-white py-5 px-10 text-center">
         Companies: {companies.length}
       </h1>
+      <a className="underline" href="/api/auth/logout">Logout API</a>
       <ul>
         {companies.map((company) => (
           <li key={company.id}>{company.name}</li>
