@@ -4,7 +4,7 @@ export type Company = {
     name: string;
     address?: string;
     phone?: string;
-    whatsAppLink?: string;
+    whatsappLink?: string;
     nit?: string;
     businessName?: string;
     superior?: Company;

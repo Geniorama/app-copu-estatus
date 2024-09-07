@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { getContentfulEnvironment } from "@/app/lib/contentfulManagement";
 import type { Company } from "@/app/types";
 
-// Obtener todas las empresas
 export async function GET() {
   try {
     const environment = await getContentfulEnvironment();
@@ -25,7 +24,6 @@ export async function GET() {
   }
 }
 
-// Crear una nueva empresa
 export async function POST(request: NextRequest) {
   try {
     const environment = await getContentfulEnvironment();
@@ -43,7 +41,7 @@ export async function POST(request: NextRequest) {
           'en-US': company.phone
         },
         whatsappLink: {
-          'en-US': company.whatsAppLink || undefined
+          'en-US': company.whatsappLink || undefined
         },
         nit: {
           'en-US': company.nit || undefined
@@ -56,6 +54,8 @@ export async function POST(request: NextRequest) {
         }
       }
     });
+
+    newEntry.publish()
 
     return NextResponse.json(newEntry, { status: 201 });
   } catch (error) {
@@ -85,7 +85,6 @@ export async function PUT(request: NextRequest) {
   }
 }
 
-// Eliminar una empresa
 export async function DELETE(request: NextRequest) {
   try {
     const environment = await getContentfulEnvironment();
