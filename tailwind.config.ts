@@ -9,10 +9,14 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        transparent: 'transparent',
         'cp-primary': '#1DF180',
         'cp-dark': '#212121',
         'cp-light': '#FFFFFF',
         'cp-primary-hover': '#39C462',
+      },
+      fontFamily: {
+        sans: ['Buenos Aires', 'sans-serif'],
       },
     },
   },

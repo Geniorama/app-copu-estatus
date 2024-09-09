@@ -1,3 +1,162 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  /* Fuente Thin */
+  @font-face {
+    font-family: 'Buenos Aires';
+    font-style: normal;
+    font-weight: 100; /* Asume que Thin tiene el peso 100 */
+    font-display: swap;
+    src: url('./fonts/BuenosAires-Thin.eot'); /* IE9 Compat Modes */
+    src: url('./fonts/BuenosAires-Thin.eot?#iefix') format('embedded-opentype'), /* IE6-IE8 */
+         url('./fonts/BuenosAires-Thin.woff2') format('woff2'), /* Super Modern Browsers */
+         url('./fonts/BuenosAires-Thin.woff') format('woff'), /* Pretty Modern Browsers */
+         url('./fonts/BuenosAires-Thin.ttf') format('truetype'); /* Safari, Android, iOS */
+  }
+
+  /* Fuente Italic Thin */
+  @font-face {
+    font-family: 'Buenos Aires';
+    font-style: italic;
+    font-weight: 100; /* Asume que Thin tiene el peso 100 */
+    font-display: swap;
+    src: url('./fonts/BuenosAires-ThinItalic.eot'); /* IE9 Compat Modes */
+    src: url('./fonts/BuenosAires-ThinItalic.eot?#iefix') format('embedded-opentype'), /* IE6-IE8 */
+         url('./fonts/BuenosAires-ThinItalic.woff2') format('woff2'), /* Super Modern Browsers */
+         url('./fonts/BuenosAires-ThinItalic.woff') format('woff'), /* Pretty Modern Browsers */
+         url('./fonts/BuenosAires-ThinItalic.ttf') format('truetype'); /* Safari, Android, iOS */
+  }
+
+  /* Fuente Light */
+  @font-face {
+    font-family: 'Buenos Aires';
+    font-style: normal;
+    font-weight: 300; /* Asume que Light tiene el peso 300 */
+    font-display: swap;
+    src: url('./fonts/BuenosAires-Light.eot'); /* IE9 Compat Modes */
+    src: url('./fonts/BuenosAires-Light.eot?#iefix') format('embedded-opentype'), /* IE6-IE8 */
+         url('./fonts/BuenosAires-Light.woff2') format('woff2'), /* Super Modern Browsers */
+         url('./fonts/BuenosAires-Light.woff') format('woff'), /* Pretty Modern Browsers */
+         url('./fonts/BuenosAires-Light.ttf') format('truetype'); /* Safari, Android, iOS */
+  }
+
+  /* Fuente Italic Light */
+  @font-face {
+    font-family: 'Buenos Aires';
+    font-style: italic;
+    font-weight: 300; /* Asume que Light tiene el peso 300 */
+    font-display: swap;
+    src: url('./fonts/BuenosAires-LightItalic.eot'); /* IE9 Compat Modes */
+    src: url('./fonts/BuenosAires-LightItalic.eot?#iefix') format('embedded-opentype'), /* IE6-IE8 */
+         url('./fonts/BuenosAires-LightItalic.woff2') format('woff2'), /* Super Modern Browsers */
+         url('./fonts/BuenosAires-LightItalic.woff') format('woff'), /* Pretty Modern Browsers */
+         url('./fonts/BuenosAires-LightItalic.ttf') format('truetype'); /* Safari, Android, iOS */
+  }
+
+  /* Fuente Regular */
+  @font-face {
+    font-family: 'Buenos Aires';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url('./fonts/BuenosAires-Regular.eot'); /* IE9 Compat Modes */
+    src: url('./fonts/BuenosAires-Regular.eot?#iefix') format('embedded-opentype'), /* IE6-IE8 */
+         url('./fonts/BuenosAires-Regular.woff2') format('woff2'), /* Super Modern Browsers */
+         url('./fonts/BuenosAires-Regular.woff') format('woff'), /* Pretty Modern Browsers */
+         url('./fonts/BuenosAires-Regular.ttf') format('truetype'); /* Safari, Android, iOS */
+  }
+
+  /* Fuente Italic Regular */
+  @font-face {
+    font-family: 'Buenos Aires';
+    font-style: italic;
+    font-weight: 400;
+    font-display: swap;
+    src: url('./fonts/BuenosAires-RegularItalic.eot'); /* IE9 Compat Modes */
+    src: url('./fonts/BuenosAires-RegularItalic.eot?#iefix') format('embedded-opentype'), /* IE6-IE8 */
+         url('./fonts/BuenosAires-RegularItalic.woff2') format('woff2'), /* Super Modern Browsers */
+         url('./fonts/BuenosAires-RegularItalic.woff') format('woff'), /* Pretty Modern Browsers */
+         url('./fonts/BuenosAires-RegularItalic.ttf') format('truetype'); /* Safari, Android, iOS */
+  }
+
+  /* Fuente SemiBold */
+  @font-face {
+    font-family: 'Buenos Aires';
+    font-style: normal;
+    font-weight: 600; /* Asume que SemiBold tiene el peso 600 */
+    font-display: swap;
+    src: url('./fonts/BuenosAires-SemiBold.eot'); /* IE9 Compat Modes */
+    src: url('./fonts/BuenosAires-SemiBold.eot?#iefix') format('embedded-opentype'), /* IE6-IE8 */
+         url('./fonts/BuenosAires-SemiBold.woff2') format('woff2'), /* Super Modern Browsers */
+         url('./fonts/BuenosAires-SemiBold.woff') format('woff'), /* Pretty Modern Browsers */
+         url('./fonts/BuenosAires-SemiBold.ttf') format('truetype'); /* Safari, Android, iOS */
+  }
+
+  /* Fuente Italic SemiBold */
+  @font-face {
+    font-family: 'Buenos Aires';
+    font-style: italic;
+    font-weight: 600; /* Asume que SemiBold tiene el peso 600 */
+    font-display: swap;
+    src: url('./fonts/BuenosAires-SemiBoldItalic.eot'); /* IE9 Compat Modes */
+    src: url('./fonts/BuenosAires-SemiBoldItalic.eot?#iefix') format('embedded-opentype'), /* IE6-IE8 */
+         url('./fonts/BuenosAires-SemiBoldItalic.woff2') format('woff2'), /* Super Modern Browsers */
+         url('./fonts/BuenosAires-SemiBoldItalic.woff') format('woff'), /* Pretty Modern Browsers */
+         url('./fonts/BuenosAires-SemiBoldItalic.ttf') format('truetype'); /* Safari, Android, iOS */
+  }
+
+  /* Fuente Bold */
+  @font-face {
+    font-family: 'Buenos Aires';
+    font-style: normal;
+    font-weight: 700;
+    font-display: swap;
+    src: url('./fonts/BuenosAires-Bold.eot'); /* IE9 Compat Modes */
+    src: url('./fonts/BuenosAires-Bold.eot?#iefix') format('embedded-opentype'), /* IE6-IE8 */
+         url('./fonts/BuenosAires-Bold.woff2') format('woff2'), /* Super Modern Browsers */
+         url('./fonts/BuenosAires-Bold.woff') format('woff'), /* Pretty Modern Browsers */
+         url('./fonts/BuenosAires-Bold.ttf') format('truetype'); /* Safari, Android, iOS */
+  }
+
+  /* Fuente Italic Bold */
+  @font-face {
+    font-family: 'Buenos Aires';
+    font-style: italic;
+    font-weight: 700;
+    font-display: swap;
+    src: url('./fonts/BuenosAires-BoldItalic.eot'); /* IE9 Compat Modes */
+    src: url('./fonts/BuenosAires-BoldItalic.eot?#iefix') format('embedded-opentype'), /* IE6-IE8 */
+         url('./fonts/BuenosAires-BoldItalic.woff2') format('woff2'), /* Super Modern Browsers */
+         url('./fonts/BuenosAires-BoldItalic.woff') format('woff'), /* Pretty Modern Browsers */
+         url('./fonts/BuenosAires-BoldItalic.ttf') format('truetype'); /* Safari, Android, iOS */
+  }
+
+  /* Fuente Black */
+  @font-face {
+    font-family: 'Buenos Aires';
+    font-style: normal;
+    font-weight: 900;
+    font-display: swap;
+    src: url('./fonts/BuenosAires-Black.eot'); /* IE9 Compat Modes */
+    src: url('./fonts/BuenosAires-Black.eot?#iefix') format('embedded-opentype'), /* IE6-IE8 */
+         url('./fonts/BuenosAires-Black.woff2') format('woff2'), /* Super Modern Browsers */
+         url('./fonts/BuenosAires-Black.woff') format('woff'), /* Pretty Modern Browsers */
+         url('./fonts/BuenosAires-Black.ttf') format('truetype'); /* Safari, Android, iOS */
+  }
+
+  /* Fuente Italic Black */
+  @font-face {
+    font-family: 'Buenos Aires';
+    font-style: italic;
+    font-weight: 900;
+    font-display: swap;
+    src: url('./fonts/BuenosAires-BlackItalic.eot'); /* IE9 Compat Modes */
+    src: url('./fonts/BuenosAires-BlackItalic.eot?#iefix') format('embedded-opentype'), /* IE6-IE8 */
+         url('./fonts/BuenosAires-BlackItalic.woff2') format('woff2'), /* Super Modern Browsers */
+         url('./fonts/BuenosAires-BlackItalic.woff') format('woff'), /* Pretty Modern Browsers */
+         url('./fonts/BuenosAires-BlackItalic.ttf') format('truetype'); /* Safari, Android, iOS */
+  }  
+}
+
