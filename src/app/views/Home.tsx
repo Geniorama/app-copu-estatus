@@ -3,6 +3,7 @@
 import Button from "../utilities/ui/Button";
 import Input from "../utilities/ui/Input";
 import Label from "../utilities/ui/Label";
+import Logo from "../utilities/ui/Logo";
 import Textarea from "../utilities/ui/Textarea";
 
 export default function Home() {
@@ -10,6 +11,7 @@ export default function Home() {
   return (
     <main>
       <h1>WELCOME: You are authenticated</h1>
+      <Logo />
       <Label htmlFor="name">
         Nombre
       </Label>
