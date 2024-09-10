@@ -2,6 +2,7 @@
 
 import Button from "../utilities/ui/Button";
 import Input from "../utilities/ui/Input";
+import Label from "../utilities/ui/Label";
 import Textarea from "../utilities/ui/Textarea";
 
 export default function Home() {
@@ -9,13 +10,21 @@ export default function Home() {
   return (
     <main>
       <h1>WELCOME: You are authenticated</h1>
+      <Label htmlFor="name">
+        Nombre
+      </Label>
       <Input
         type="text"
-        id="text"
-        placeholder="Input Type text"
+        id="name"
+        name="name"
+        placeholder="Nombre"
       />
+      <Label htmlFor="name">
+        Descripción
+      </Label>
       <Textarea
         id="Textarea"
+        name="description"
         placeholder="Descripción"
         rows={7}
       />
