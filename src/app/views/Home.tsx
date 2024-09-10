@@ -2,6 +2,7 @@
 
 import Button from "../utilities/ui/Button";
 import Input from "../utilities/ui/Input";
+import Textarea from "../utilities/ui/Textarea";
 
 export default function Home() {
 
@@ -12,6 +13,11 @@ export default function Home() {
         type="text"
         id="text"
         placeholder="Input Type text"
+      />
+      <Textarea
+        id="Textarea"
+        placeholder="Descripción"
+        rows={7}
       />
       <Button type="button">Prueba</Button>
     </main>
