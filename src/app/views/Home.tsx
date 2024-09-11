@@ -4,6 +4,7 @@ import Button from "../utilities/ui/Button";
 import Input from "../utilities/ui/Input";
 import Label from "../utilities/ui/Label";
 import Logo from "../utilities/ui/Logo";
+import Select from "../utilities/ui/Select";
 import Textarea from "../utilities/ui/Textarea";
 
 export default function Home() {
@@ -30,6 +31,17 @@ export default function Home() {
         placeholder="Descripción"
         rows={7}
       />
+      <Label htmlFor="selectTest">
+        Opciones
+      </Label>
+      <Select
+        name="selectTest"
+        id="select"
+      >
+        <option>United States</option>
+        <option>Canada</option>
+        <option>Mexico</option>
+      </Select>
       <Button type="button">Prueba</Button>
     </main>
   );
