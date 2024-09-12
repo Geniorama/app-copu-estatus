@@ -12,9 +12,9 @@ export default function LayoutDashboard({ children }: LayoutDashboardProps) {
       <div className="w-1/6">
         <Sidebar />
       </div>
-      <div className="w-5/6 bg-cp-light">
+      <div className="w-5/6 bg-cp-light text-cp-dark">
         <NavBar />
-        <main>
+        <main className="p-8">
             {children}
         </main>
       </div>
