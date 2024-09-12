@@ -42,7 +42,7 @@ export default function Home() {
         <option>Canada</option>
         <option>Mexico</option>
       </Select>
-      <Button type="button">Prueba</Button>
+      <Button mode="dark"  type="button">Prueba</Button>
     </main>
   );
 }
