@@ -3,7 +3,7 @@
 import Button from "../utilities/ui/Button";
 import Input from "../utilities/ui/Input";
 import Label from "../utilities/ui/Label";
-// import Logo from "../utilities/ui/Logo";
+import Logo from "../utilities/ui/Logo";
 import Select from "../utilities/ui/Select";
 import Textarea from "../utilities/ui/Textarea";
 import { useDispatch } from "react-redux";
@@ -27,7 +27,7 @@ export default function Home({ user }: HomeProps) {
   return (
     <main>
       <h1>WELCOME: You are authenticated</h1>
-      {/* <Logo /> */}
+      <Logo mode="cp-primary-dark" />
       <Label htmlFor="name">
         Nombre
       </Label>
