@@ -12,8 +12,7 @@ async function HomePage() {
     return <div>No estás autenticado</div>;
   }
 
-  console.log(user)
-  return <Home />
+  return <Home user={user}/>
 }
 
 export default withPageAuthRequired(HomePage)

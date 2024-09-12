@@ -7,7 +7,6 @@ interface LayoutDashboardProps {
 export default function LayoutDashboard({children}:LayoutDashboardProps) {
   return (
     <div>
-        Layout dashboard
         {children}
     </div>
   )
