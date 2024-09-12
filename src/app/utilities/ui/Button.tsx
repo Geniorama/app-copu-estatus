@@ -1,17 +1,19 @@
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  mode?: "light" | "dark" | "green";
+  mode?: "cp-light" | "cp-dark" | "cp-green";
 }
 
 export function Button({ children, mode, ...props }: ButtonProps) {
+  const buttonClassMode =
+    mode === "cp-green"
+      ? "bg-cp-primary text-cp-dark hover:bg-cp-dark"
+      : mode === "cp-dark"
+        ? "bg-cp-dark text-cp-light hover:bg-cp-primary"
+        : mode === "cp-light"
+          ? "bg-cp-light text-cp-dark hover:bg-cp-dark border-solid border border-cp-dark" : '';
+
   return (
     <button
-      className={`flex justify-center rounded-3xl ${
-        mode === "green"
-          ? "bg-cp-primary"
-          : mode === "dark"
-          ? "bg-cp-dark"
-          : "bg-cp-light"
-      } hover:bg-cp-dark px-12 py-2 text-base leading-none font-semibold text-cp-dark hover:text-cp-light shadow-sm transition-all duration-300`}
+      className={`flex justify-center rounded-3xl ${buttonClassMode} px-12 py-2 text-base leading-none font-semibold hover:text-cp-light shadow-sm transition-all duration-300`}
       {...props}
     >
       {children}

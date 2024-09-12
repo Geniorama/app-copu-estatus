@@ -57,7 +57,7 @@ export default function Home({ user }: HomeProps) {
         <option>Canada</option>
         <option>Mexico</option>
       </Select>
-      <Button mode="dark" type="button">Prueba</Button>
+      <Button mode="cp-green" type="button">Prueba</Button>
     </main>
   );
 }
