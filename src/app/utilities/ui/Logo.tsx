@@ -1,13 +1,20 @@
-import Image from 'next/image'
-import logo from '@/app/img/Logo.svg'
+import LogoPrimaryDark from '@/app/img/logo-primary-dark.svg'
+import LogoPrimaryLight from '@/app/img/logo-primary-light.svg'
+import LogoLight from '@/app/img/logo-light.svg'
 
-export default function Logo() {
+interface LogoProps {
+  mode?: 'cp-primary-dark' | 'cp-primary-light' | 'cp-light';
+}
+
+export default function Logo({mode}: LogoProps) {
+  const logo = !mode || mode === 'cp-primary-dark' ?
+    LogoPrimaryDark :
+    mode === 'cp-primary-light' ?
+      LogoPrimaryLight :
+    mode === 'cp-light' ?
+        LogoLight : '';
+
   return (
-    <Image
-      src={logo}
-      alt='COPU Logo'
-      width={150}
-      height={50}
-    />
+    <img className='w-full' src={logo.src} alt="" />
   )
 }

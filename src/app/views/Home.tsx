@@ -1,15 +1,15 @@
 "use client";
 
-import { useDispatch } from "react-redux";
-import { useEffect } from "react";
-import type { Claims } from "@auth0/nextjs-auth0";
-import { setCurrentUser } from "../store/features/userSlice";
 import Button from "../utilities/ui/Button";
 import Input from "../utilities/ui/Input";
 import Label from "../utilities/ui/Label";
 import Logo from "../utilities/ui/Logo";
 import Select from "../utilities/ui/Select";
 import Textarea from "../utilities/ui/Textarea";
+import { useDispatch } from "react-redux";
+import { useEffect } from "react";
+import type { Claims } from "@auth0/nextjs-auth0";
+import { setCurrentUser } from "../store/features/userSlice";
 
 interface HomeProps {
   user?: Claims;
@@ -22,7 +22,7 @@ export default function Home({ user }: HomeProps) {
     if (user) {
       dispatch(setCurrentUser(user));
     }
-  }, [user]);
+  }, [user, dispatch]);
 
   return (
     <main>
@@ -43,9 +43,7 @@ export default function Home({ user }: HomeProps) {
         <option>Canada</option>
         <option>Mexico</option>
       </Select>
-      <Button mode="dark" type="button">
-        Prueba
-      </Button>
+      <Button mode="cp-green" type="button">Prueba</Button>
     </main>
   );
 }

@@ -3,13 +3,16 @@
 import Link from "next/link";
 import { menuDashboard } from "@/app/utilities/data/menus/menuDashboard";
 import { usePathname } from "next/navigation";
+import Logo from "@/app/utilities/ui/Logo";
 
 export default function Sidebar() {
   const pathname = usePathname();
   return (
     <div className="p-8 h-full flex flex-col justify-between">
       <div>
-        <h1 className="text-4xl text-slate-300">LOGO COPU</h1>
+        <div className="px-10">
+            <Logo mode="cp-primary-light" />
+        </div>
         <hr className="border-slate-600 my-5" />
 
         <nav className="mt-10">
