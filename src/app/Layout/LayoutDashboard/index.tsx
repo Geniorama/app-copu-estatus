@@ -1,5 +1,6 @@
 import Sidebar from "../Sidebar/Sidebar";
 import NavBar from "../NavBar/NavBar";
+import Content from "../Content/Content";
 import { ReactNode } from "react";
 
 interface LayoutDashboardProps {
@@ -14,9 +15,9 @@ export default function LayoutDashboard({ children }: LayoutDashboardProps) {
       </div>
       <div className="w-5/6 bg-cp-light text-cp-dark">
         <NavBar />
-        <main className="p-8">
-            {children}
-        </main>
+        <Content>
+          {children}
+        </Content>
       </div>
     </div>
   );

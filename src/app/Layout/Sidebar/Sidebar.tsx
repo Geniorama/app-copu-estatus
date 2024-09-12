@@ -11,7 +11,7 @@ export default function Sidebar() {
     <div className="p-8 h-full flex flex-col justify-between">
       <div>
         <div className="px-10">
-            <Logo mode="cp-primary-light" />
+          <Logo mode="cp-primary-light" />
         </div>
         <hr className="border-slate-600 my-5" />
 
@@ -26,6 +26,11 @@ export default function Sidebar() {
                       pathname === item.path && "text-cp-primary"
                     }`}
                   >
+                    {item.icon && (
+                      <span className="text-sm mr-2">
+                        {item.icon}
+                      </span>
+                    )}
                     {item.name}
                   </Link>
                 </li>
@@ -38,7 +43,12 @@ export default function Sidebar() {
 
       {/* BOTTOM SIDEBAR */}
       <div>
-        <Link className="text-slate-300 hover:text-cp-primary-hover" href={"/api/auth/logout"}>Cerrar sesión</Link>
+        <Link
+          className="text-slate-300 hover:text-cp-primary-hover"
+          href={"/api/auth/logout"}
+        >
+          Cerrar sesión
+        </Link>
       </div>
     </div>
   );
