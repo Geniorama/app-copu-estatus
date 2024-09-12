@@ -3,7 +3,7 @@ interface Props extends React.ButtonHTMLAttributes<HTMLButtonElement> { }
 export function Button({ children, ...props }: Props) {
   return (
     <button
-      className="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+      className="flex justify-center rounded-3xl bg-cp-primary hover:bg-cp-dark px-12 py-2 text-base leading-none font-semibold text-cp-dark hover:text-cp-light shadow-sm transition-all duration-300"
       {...props}
     >
       {children}
