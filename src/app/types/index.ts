@@ -1,4 +1,4 @@
-export type Company = {
+export interface Company {
     id: string;
     logo: string;
     name: string;
@@ -11,7 +11,7 @@ export type Company = {
     driveLink?: string;
 };
 
-export type Service = {
+export interface Service {
     id: string;
     name: string;
     description?: string;
@@ -22,7 +22,7 @@ export type Service = {
     plan: string;
 }
 
-export type Content = {
+export interface Content {
     id: string;
     type: string;
     headline: string;
@@ -31,7 +31,7 @@ export type Content = {
     socialMediaInfo: JSON
 }
 
-export type UserAuth0 = {
+export interface UserAuth0 {
     nickname: string,
     name: string,
     picture: string,
