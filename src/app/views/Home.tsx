@@ -3,7 +3,7 @@
 import Button from "../utilities/ui/Button";
 import Input from "../utilities/ui/Input";
 import Label from "../utilities/ui/Label";
-import Logo from "../utilities/ui/Logo";
+// import Logo from "../utilities/ui/Logo";
 import Select from "../utilities/ui/Select";
 import Textarea from "../utilities/ui/Textarea";
 
@@ -12,7 +12,7 @@ export default function Home() {
   return (
     <main>
       <h1>WELCOME: You are authenticated</h1>
-      <Logo />
+      {/* <Logo /> */}
       <Label htmlFor="name">
         Nombre
       </Label>
@@ -42,7 +42,7 @@ export default function Home() {
         <option>Canada</option>
         <option>Mexico</option>
       </Select>
-      <Button mode="dark"  type="button">Prueba</Button>
+      <Button mode="dark" type="button">Prueba</Button>
     </main>
   );
 }
