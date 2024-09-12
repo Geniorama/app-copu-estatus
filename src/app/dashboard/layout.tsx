@@ -1,13 +1,12 @@
-import React from 'react'
-
-interface LayoutDashboardProps {
+import LayoutDashboard from "../Layout/LayoutDashboard"
+interface LayoutProps {
     children: React.ReactNode
 }
 
-export default function LayoutDashboard({children}:LayoutDashboardProps) {
+export default function Layout({children}:LayoutProps) {
   return (
-    <div>
-        {children}
-    </div>
+    <LayoutDashboard>
+      {children}
+    </LayoutDashboard>
   )
 }
