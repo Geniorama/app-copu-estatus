@@ -32,14 +32,14 @@ export default function Home({ user }: HomeProps) {
       <Profile />
       <Label htmlFor="name">Nombre</Label>
       <Input type="text" id="name" name="name" placeholder="Nombre" />
-      <Label htmlFor="name">Descripción</Label>
+      <Label htmlFor="Textarea">Descripción</Label>
       <Textarea
         id="Textarea"
         name="description"
         placeholder="Descripción"
         rows={7}
       />
-      <Label htmlFor="selectTest">Opciones</Label>
+      <Label htmlFor="select">Opciones</Label>
       <Select name="selectTest" id="select">
         <option>United States</option>
         <option>Canada</option>

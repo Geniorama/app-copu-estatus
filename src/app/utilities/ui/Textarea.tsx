@@ -3,7 +3,7 @@ interface Props extends React.TextareaHTMLAttributes<HTMLTextAreaElement> { }
 export function Textarea(props: Props) {
   return (
     <textarea
-      className="block w-full rounded-md border-0 py-3 px-4 text-cp-dark shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400"
+      className="block bg-transparent w-full rounded-md outline-none border-2 border-slate-300 text-cp-light py-3 px-4 placeholder:text-gray-400 focus-visible:border-cp-primary"
       {...props}
     />
   )
