@@ -4,6 +4,7 @@ import { useSelector } from "react-redux"
 import { useEffect } from "react"
 import { RootState } from "@/app/store"
 import CardAction from "@/app/components/CardAction/CardAction"
+import Input from "@/app/utilities/ui/Input"
 
 export default function DashboardHome() {
   const {currentUser} = useSelector((state:RootState) => state.user)
@@ -36,48 +37,56 @@ export default function DashboardHome() {
       </div>
 
       <div className="mt-8">
-        <h3 className="text-xl font-bold">Mis empresas asignadas</h3>
+        <div className="flex justify-between items-center">
+          <h3 className="text-xl font-bold">Mis empresas asignadas</h3>
+          <div>
+            <Input 
+              placeholder="Buscar..."
+              type="search"
+            />
+          </div>
+        </div>
 
-        <table className="w-full mt-4 text-slate-300 bg-gray-800">
-          <thead className="text-slate-200 bg-gray-900">
+        <table className="w-full mt-4 text-slate-300">
+          <thead className="text-slate-200 bg-gray-950">
             <tr className="">
-              <th className="p-2 py-4 uppercase text-sm text-left">Id</th>
-              <th className="p-2 py-4 uppercase text-sm text-left">Nombre empresa</th>
-              <th className="p-2 py-4 uppercase text-sm text-left">Contacto</th>
-              <th className="p-2 py-4 uppercase text-sm text-left">Servicios activos</th>
-              <th className="p-2 py-4 uppercase text-sm text-left">Última modificación</th>
+              <th className="p-4 uppercase text-sm text-left">Id</th>
+              <th className="p-4 uppercase text-sm text-left">Nombre empresa</th>
+              <th className="p-4 uppercase text-sm text-left">Contacto</th>
+              <th className="p-4 uppercase text-sm text-left">Servicios activos</th>
+              <th className="p-4 uppercase text-sm text-left">Última modificación</th>
             </tr>
           </thead>
           <tbody>
-              <tr className="bg-gray-700">
-                <td className="p-2 py-4 text-sm text-left">1</td>
-                <td className="p-2 py-4 text-sm text-left">Sancho BBDO</td>
-                <td className="p-2 py-4 text-sm text-left">Juan Pérez</td>
-                <td className="p-2 py-4 text-sm text-left">
-                  <a className="underline text-cp-primary" href="">Servicio BBDO 1</a>, {" "}
-                  <a className="underline text-cp-primary" href="">Servicio BBDO 2</a>
+              <tr className="bg-gray-800">
+                <td className="p-4 text-sm text-left">1</td>
+                <td className="p-4 text-sm text-left">Sancho BBDO</td>
+                <td className="p-4 text-sm text-left">Juan Pérez</td>
+                <td className="p-4 text-sm text-left">
+                  <a className="underline text-green-500 hover:text-cp-primary" href="">Servicio BBDO 1</a>, {" "}
+                  <a className="underline text-green-500 hover:text-cp-primary" href="">Servicio BBDO 2</a>
                 </td>
                 <td className="p-2 py-4 text-sm text-left">1</td>
               </tr>
 
-              <tr className="">
-                <td className="p-2 py-4 text-sm text-left">1</td>
-                <td className="p-2 py-4 text-sm text-left">Sancho BBDO</td>
-                <td className="p-2 py-4 text-sm text-left">Juan Pérez</td>
-                <td className="p-2 py-4 text-sm text-left">
-                  <a className="underline text-cp-primary" href="">Servicio BBDO 1</a>, {" "}
-                  <a className="underline text-cp-primary" href="">Servicio BBDO 2</a>
+              <tr className="bg-gray-900">
+                <td className="p-4 text-sm text-left">1</td>
+                <td className="p-4 text-sm text-left">Sancho BBDO</td>
+                <td className="p-4 text-sm text-left">Juan Pérez</td>
+                <td className="p-4 text-sm text-left">
+                  <a className="underline text-green-500 hover:text-cp-primary" href="">Servicio BBDO 1</a>, {" "}
+                  <a className="underline text-green-500 hover:text-cp-primary" href="">Servicio BBDO 2</a>
                 </td>
                 <td className="p-2 py-4 text-sm text-left">1</td>
               </tr>
 
-              <tr className="bg-gray-700">
-                <td className="p-2 py-4 text-sm text-left">1</td>
-                <td className="p-2 py-4 text-sm text-left">Sancho BBDO</td>
-                <td className="p-2 py-4 text-sm text-left">Juan Pérez</td>
-                <td className="p-2 py-4 text-sm text-left">
-                  <a className="underline text-cp-primary" href="">Servicio BBDO 1</a>, {" "}
-                  <a className="underline text-cp-primary" href="">Servicio BBDO 2</a>
+              <tr className="bg-gray-800">
+                <td className="p-4 text-sm text-left">1</td>
+                <td className="p-4 text-sm text-left">Sancho BBDO</td>
+                <td className="p-4 text-sm text-left">Juan Pérez</td>
+                <td className="p-4 text-sm text-left">
+                  <a className="underline text-green-500 hover:text-cp-primary" href="">Servicio BBDO 1</a>, {" "}
+                  <a className="underline text-green-500 hover:text-cp-primary" href="">Servicio BBDO 2</a>
                 </td>
                 <td className="p-2 py-4 text-sm text-left">1</td>
               </tr>
