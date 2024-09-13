@@ -4,32 +4,33 @@ import { useSelector } from "react-redux"
 import { useEffect } from "react"
 import { RootState } from "@/app/store"
 import CardAction from "@/app/components/CardAction/CardAction"
+import LinkCP from "@/app/utilities/ui/LinkCP"
 
 export default function DashboardHome() {
-  const {currentUser} = useSelector((state:RootState) => state.user)
+  const { currentUser } = useSelector((state: RootState) => state.user)
 
   useEffect(() => {
-    if(currentUser){
-        console.log('Current user dashboard:',currentUser)
+    if (currentUser) {
+      console.log('Current user dashboard:', currentUser)
     }
-  },[currentUser])
+  }, [currentUser])
 
   return (
     <div>
       <div className="grid grid-cols-4 gap-5">
-        <CardAction 
+        <CardAction
           title="Crear usuario"
           icon="user"
         />
-        <CardAction 
+        <CardAction
           title="Crear empresa"
           icon="company"
         />
-        <CardAction 
+        <CardAction
           title="Crear servicio"
           icon="service"
         />
-        <CardAction 
+        <CardAction
           title="Crear contenido"
           icon="content"
         />
@@ -49,38 +50,38 @@ export default function DashboardHome() {
             </tr>
           </thead>
           <tbody>
-              <tr className="bg-gray-700">
-                <td className="p-2 py-4 text-sm text-left">1</td>
-                <td className="p-2 py-4 text-sm text-left">Sancho BBDO</td>
-                <td className="p-2 py-4 text-sm text-left">Juan Pérez</td>
-                <td className="p-2 py-4 text-sm text-left">
-                  <a className="underline text-cp-primary" href="">Servicio BBDO 1</a>, {" "}
-                  <a className="underline text-cp-primary" href="">Servicio BBDO 2</a>
-                </td>
-                <td className="p-2 py-4 text-sm text-left">1</td>
-              </tr>
+            <tr className="bg-gray-700">
+              <td className="p-2 py-4 text-sm text-left">1</td>
+              <td className="p-2 py-4 text-sm text-left">Sancho BBDO</td>
+              <td className="p-2 py-4 text-sm text-left">Juan Pérez</td>
+              <td className="p-2 py-4 text-sm text-left">
+                <LinkCP href="">Servicio BBDO 1</LinkCP>, {" "}
+                <LinkCP href="">Servicio BBDO 2</LinkCP>
+              </td>
+              <td className="p-2 py-4 text-sm text-left">1</td>
+            </tr>
 
-              <tr className="">
-                <td className="p-2 py-4 text-sm text-left">1</td>
-                <td className="p-2 py-4 text-sm text-left">Sancho BBDO</td>
-                <td className="p-2 py-4 text-sm text-left">Juan Pérez</td>
-                <td className="p-2 py-4 text-sm text-left">
-                  <a className="underline text-cp-primary" href="">Servicio BBDO 1</a>, {" "}
-                  <a className="underline text-cp-primary" href="">Servicio BBDO 2</a>
-                </td>
-                <td className="p-2 py-4 text-sm text-left">1</td>
-              </tr>
+            <tr className="">
+              <td className="p-2 py-4 text-sm text-left">1</td>
+              <td className="p-2 py-4 text-sm text-left">Sancho BBDO</td>
+              <td className="p-2 py-4 text-sm text-left">Juan Pérez</td>
+              <td className="p-2 py-4 text-sm text-left">
+                <LinkCP href="">Servicio BBDO 1</LinkCP>, {" "}
+                <LinkCP href="">Servicio BBDO 2</LinkCP>
+              </td>
+              <td className="p-2 py-4 text-sm text-left">1</td>
+            </tr>
 
-              <tr className="bg-gray-700">
-                <td className="p-2 py-4 text-sm text-left">1</td>
-                <td className="p-2 py-4 text-sm text-left">Sancho BBDO</td>
-                <td className="p-2 py-4 text-sm text-left">Juan Pérez</td>
-                <td className="p-2 py-4 text-sm text-left">
-                  <a className="underline text-cp-primary" href="">Servicio BBDO 1</a>, {" "}
-                  <a className="underline text-cp-primary" href="">Servicio BBDO 2</a>
-                </td>
-                <td className="p-2 py-4 text-sm text-left">1</td>
-              </tr>
+            <tr className="bg-gray-700">
+              <td className="p-2 py-4 text-sm text-left">1</td>
+              <td className="p-2 py-4 text-sm text-left">Sancho BBDO</td>
+              <td className="p-2 py-4 text-sm text-left">Juan Pérez</td>
+              <td className="p-2 py-4 text-sm text-left">
+                <LinkCP href="">Servicio BBDO 1</LinkCP>, {" "}
+                <LinkCP href="">Servicio BBDO 2</LinkCP>
+              </td>
+              <td className="p-2 py-4 text-sm text-left">1</td>
+            </tr>
           </tbody>
         </table>
       </div>
