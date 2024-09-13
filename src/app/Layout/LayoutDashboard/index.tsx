@@ -10,10 +10,10 @@ interface LayoutDashboardProps {
 export default function LayoutDashboard({ children }: LayoutDashboardProps) {
   return (
     <div className="w-screen h-screen flex">
-      <div className="w-1/6">
+      <div className="w-1/6 border border-r-slate-700 border-black">
         <Sidebar />
       </div>
-      <div className="w-5/6 bg-cp-light text-cp-dark">
+      <div className="w-5/6 text-cp-light bg-black">
         <NavBar />
         <Content>
           {children}

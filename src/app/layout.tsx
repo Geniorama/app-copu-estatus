@@ -15,7 +15,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="bg-cp-dark text-cp-light">
+      <body className="bg-black text-cp-light">
         <UserProvider>
           <StoreProvider>{children}</StoreProvider>
         </UserProvider>

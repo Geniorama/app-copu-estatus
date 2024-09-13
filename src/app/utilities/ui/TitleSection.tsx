@@ -6,6 +6,6 @@ interface TitleSectionProps {
 
 export default function TitleSection({title}:TitleSectionProps) {
   return (
-    <h1 className="text-xl font-bold text-slate-600">{title}</h1>
+    <h1 className="text-xl font-bold text-slate-200">{title}</h1>
   )
 }

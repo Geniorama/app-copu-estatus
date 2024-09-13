@@ -9,6 +9,7 @@ import {
 interface CardActionProps {
   title: string;
   icon?: string;
+  handle?: () => void;
 }
 
 const actionIcons = [
@@ -35,7 +36,7 @@ const actionIcons = [
 
 export default function CardAction({ title, icon }: CardActionProps) {
   return (
-    <div className="w-full cursor-pointer bg-cp-primary p-8 rounded-full hover:outline-3 hover:outline hover:outline-offset-1 outline-cp-primary text-center hover:bg-cp-dark hover:text-cp-primary transition">
+    <div className="w-full cursor-pointer text-cp-primary bg-slate-800 p-8 rounded-lg hover:outline-3 hover:outline hover:outline-offset-1 text-center hover:bg-cp-primary hover:text-cp-dark transition">
       {icon && (
         <span className="text-4xl mb-4 inline-flex justify-center items-center ">
           <FontAwesomeIcon
