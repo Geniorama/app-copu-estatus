@@ -5,7 +5,7 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 export function Button({ children, mode, ...props }: ButtonProps) {
   const buttonClassMode =
     mode === "cp-green"
-      ? "bg-cp-primary text-cp-dark hover:bg-cp-dark"
+      ? "bg-cp-primary text-cp-dark hover:text-cp-primary hover:bg-cp-dark border-2 border-cp-primary"
       : mode === "cp-dark"
         ? "bg-cp-dark text-cp-light hover:bg-cp-primary"
         : mode === "cp-light"
