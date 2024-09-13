@@ -58,7 +58,7 @@ export default function DashboardHome() {
             </tr>
           </thead>
           <tbody>
-              <tr className="bg-gray-800">
+              <tr className="bg-gray-800 hover:outline outline-1 outline-cp-primary">
                 <td className="p-4 text-sm text-left">1</td>
                 <td className="p-4 text-sm text-left">Sancho BBDO</td>
                 <td className="p-4 text-sm text-left">Juan Pérez</td>
@@ -69,7 +69,7 @@ export default function DashboardHome() {
                 <td className="p-2 py-4 text-sm text-left">1</td>
               </tr>
 
-              <tr className="bg-gray-900">
+              <tr className="bg-gray-900 hover:outline outline-1 outline-cp-primary">
                 <td className="p-4 text-sm text-left">1</td>
                 <td className="p-4 text-sm text-left">Sancho BBDO</td>
                 <td className="p-4 text-sm text-left">Juan Pérez</td>
@@ -80,7 +80,7 @@ export default function DashboardHome() {
                 <td className="p-2 py-4 text-sm text-left">1</td>
               </tr>
 
-              <tr className="bg-gray-800">
+              <tr className="bg-gray-800 hover:outline outline-1 outline-cp-primary">
                 <td className="p-4 text-sm text-left">1</td>
                 <td className="p-4 text-sm text-left">Sancho BBDO</td>
                 <td className="p-4 text-sm text-left">Juan Pérez</td>
