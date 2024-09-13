@@ -27,7 +27,6 @@ export default function Search() {
         placeholder="Buscar..."
         type="text"
       />
-      {/* <Input type='text' placeholder='Buscar...' /> */}
       <button type="reset" className="absolute right-2 -translate-y-1/2 top-1/2 p-1">
         <svg
           xmlns="http://www.w3.org/2000/svg"

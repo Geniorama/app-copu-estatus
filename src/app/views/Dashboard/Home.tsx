@@ -4,8 +4,8 @@ import { useSelector } from "react-redux";
 import { useEffect } from "react";
 import { RootState } from "@/app/store";
 import CardAction from "@/app/components/CardAction/CardAction";
-import Input from "@/app/utilities/ui/Input";
 import Table from "@/app/components/Table/Table";
+import Search from "@/app/utilities/ui/Search";
 
 export default function DashboardHome() {
   const { currentUser } = useSelector((state: RootState) => state.user);
@@ -44,7 +44,7 @@ export default function DashboardHome() {
         <div className="flex justify-between items-center">
           <h3 className="text-xl font-bold">Mis empresas asignadas</h3>
           <div>
-            <Input placeholder="Buscar..." type="search" />
+            <Search />
           </div>
         </div>
 
