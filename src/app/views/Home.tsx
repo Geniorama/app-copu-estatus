@@ -51,7 +51,7 @@ export default function Home({ user }: HomeProps) {
     <main>
       <h1>WELCOME: You are authenticated</h1>
       <Logo />
-      <Profile />
+      <Profile URL="" />
       <Label htmlFor="name">Nombre</Label>
       <Input type="text" id="name" name="name" placeholder="Nombre" />
       <Label htmlFor="Textarea">Descripción</Label>
