@@ -13,7 +13,7 @@ export default function LayoutDashboard({ children }: LayoutDashboardProps) {
       <div className="w-1/6 border border-r-slate-700 border-black">
         <Sidebar />
       </div>
-      <div className="w-5/6 text-cp-light bg-black">
+      <div className="w-5/6 text-slate-300 bg-black">
         <NavBar />
         <Content>
           {children}
