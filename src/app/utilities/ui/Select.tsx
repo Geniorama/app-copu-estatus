@@ -1,12 +1,20 @@
-interface Props extends React.SelectHTMLAttributes<HTMLSelectElement> { }
+interface Props extends React.SelectHTMLAttributes<HTMLSelectElement> {
+  options: {
+    value: string;
+    name: string;
+  }[];
+  defaultOptionText?: string;
+}
 
-export function Select({ children, ...props }: Props) {
+export function Select({ options, defaultOptionText = 'Selecciona una opción', ...props }: Props) {
   return (
     <select
-      className="block w-full rounded-md border-0 py-3 px-4 text-cp-dark shadow-sm ring-1 ring-inset ring-gray-300"
+      className="block bg-transparent w-full rounded-md outline-none border-2 border-slate-300 text-cp-light py-3 px-4 placeholder:text-gray-400 focus-visible:border-cp-primary"
       {...props}
-    >
-      {children}
+    >v
+      <option className="text-slate-300 bg-cp-dark" disabled selected>{defaultOptionText}</option>
+      {options.map(option => <option key={option.value} className="text-slate-300 bg-cp-dark" value={option.value}>{option.name}</option>)}
+
     </select>
   )
 }

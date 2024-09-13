@@ -25,6 +25,28 @@ export default function Home({ user }: HomeProps) {
     }
   }, [user, dispatch]);
 
+  const optionsData = [
+    {
+      value: 'option1',
+      name: 'Option 1',
+    },
+    {
+      value: 'option2',
+      name: 'Option 2',
+    },
+    {
+      value: 'option3',
+      name: 'Option 3',
+    },
+    {
+      value: 'option4',
+      name: 'Option 4',
+    },
+    {
+      value: 'option5',
+      name: 'Option 5',
+    },
+  ]
   return (
     <main>
       <h1>WELCOME: You are authenticated</h1>
@@ -40,11 +62,7 @@ export default function Home({ user }: HomeProps) {
         rows={7}
       />
       <Label htmlFor="select">Opciones</Label>
-      <Select name="selectTest" id="select">
-        <option>United States</option>
-        <option>Canada</option>
-        <option>Mexico</option>
-      </Select>
+      <Select name="selectTest" id="select" options={optionsData} defaultOptionText="Elige" />
       <Button mode="cp-green" type="button">Prueba</Button>
     </main>
   );
