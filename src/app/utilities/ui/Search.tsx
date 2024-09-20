@@ -33,7 +33,7 @@ export default function Search({onChange, placeholder, value}:SearchProps) {
       </button>
       <input
         onChange={onChange ? (e)=>onChange(e) : () => console.log('change event')}
-        className="block bg-transparent w-full rounded-md outline-none border-2 border-slate-300 text-cp-light py-3 px-10 placeholder:text-gray-400 focus-visible:border-cp-primary"
+        className="block bg-transparent w-full rounded-md outline-none border-2 border-slate-300 text-cp-light py-2 px-10 placeholder:text-gray-400 focus-visible:border-cp-primary"
         placeholder={placeholder || 'Buscar...'}
         type="text"
         value={value}
