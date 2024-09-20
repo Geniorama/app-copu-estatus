@@ -16,47 +16,47 @@ const optionsSelect = [
 
 export default function FormCreateCompany() {
   return (
-    <form className="w-full flex flex-col gap-3">
+    <form className="w-full flex flex-col gap-3 bg-slate-100 p-8 rounded-lg">
       <div className="flex gap-3">
         <div className="w-1/2">
-          <Label>Nombre compañía</Label>
-          <Input required />
+          <Label mode="cp-dark">Nombre compañía</Label>
+          <Input mode="cp-dark" required />
         </div>
         <div className="w-1/2">
-          <Label>Dirección</Label>
-          <Input required type="text" />
+          <Label mode="cp-dark">Dirección</Label>
+          <Input mode="cp-dark" required type="text" />
         </div>
       </div>
 
       <div>
-        <Label>Teléfono</Label>
-        <Input required type="number" />
+        <Label mode="cp-dark">Teléfono</Label>
+        <Input mode="cp-dark" required type="number" />
       </div>
 
       <div>
-        <Label>Link grupo whatsapp</Label>
-        <Input required type="text" />
+        <Label mode="cp-dark">Link grupo whatsapp</Label>
+        <Input mode="cp-dark" required type="text" />
       </div>
 
       <div className="flex gap-3">
         <div className="w-1/2">
-          <Label>NIT</Label>
-          <Input required />
+          <Label mode="cp-dark">NIT</Label>
+          <Input mode="cp-dark" required />
         </div>
         <div className="w-1/2">
-          <Label>Razón social</Label>
-          <Input required type="text" />
+          <Label mode="cp-dark">Razón social</Label>
+          <Input mode="cp-dark" required type="text" />
         </div>
       </div>
 
       <div>
-        <Label>Compañía superior</Label>
+        <Label mode="cp-dark">Compañía superior</Label>
         <Select options={optionsSelect} />
       </div>
 
       <div>
-        <Label>Estadísticas anteriores {"(Drive link)"}</Label>
-        <Input required type="text" />
+        <Label mode="cp-dark">Estadísticas anteriores {"(Drive link)"}</Label>
+        <Input mode="cp-dark" required type="text" />
       </div>
 
       <div className="flex gap-3 items-center justify-end mt-3">

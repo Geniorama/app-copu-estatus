@@ -54,13 +54,14 @@ export default function Home({ user }: HomeProps) {
       <Logo />
       <Search />
       <Profile URL="" />
-      <Label htmlFor="name">Nombre</Label>
-      <Input type="text" id="name" name="name" placeholder="Nombre" />
+      <Label htmlFor="name" mode="cp-dark">Nombre</Label>
+      <Input type="text" id="name" name="name" placeholder="Nombre" mode="cp-dark" />
       <Label htmlFor="Textarea">Descripción</Label>
       <Textarea
         id="Textarea"
         name="description"
         placeholder="Descripción"
+        mode="cp-dark"
         rows={7}
       />
       <Label htmlFor="select">Opciones</Label>
