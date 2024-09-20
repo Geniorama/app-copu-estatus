@@ -6,9 +6,14 @@ import { RootState } from "@/app/store";
 import CardAction from "@/app/components/CardAction/CardAction";
 import Table from "@/app/components/Table/Table";
 import Search from "@/app/utilities/ui/Search";
-import type { ChangeEvent } from "react"
+import type { ChangeEvent } from "react";
 
-const initialData = {
+interface TableDataProps {
+  heads: string[];
+  rows: string[][];
+}
+
+const initialData: TableDataProps = {
   heads: ["ID", "Empresa", "Contacto", "Servicios", "Última modificación"],
   rows: [
     ["1", "Sancho BBDO", "Juan Pérez", "Servicio BBDO 1, Servicio BBDO 2", "1"],
@@ -20,26 +25,36 @@ const initialData = {
 
 export default function DashboardHome() {
   const [searchValue, setSearchValue] = useState('');
-  const [filteredData, setFilteredData] = useState(initialData);
+  const [filteredData, setFilteredData] = useState<TableDataProps | null>(null);
   const { currentUser } = useSelector((state: RootState) => state.user);
 
   useEffect(() => {
     if (currentUser) {
       console.log("Current user dashboard:", currentUser);
+      setFilteredData(initialData);
     }
   }, [currentUser]);
 
+  // Filtrar filas basadas en el valor de búsqueda
   useEffect(() => {
-    const filteredRows = initialData.rows.filter(row =>
-      row.some(cell =>
-        cell.toLowerCase().includes(searchValue.toLowerCase())
-      )
-    );
-    
-    setFilteredData(prevData => ({
-      ...prevData,
-      rows: filteredRows,
-    }));
+    if (initialData && searchValue.trim()) {
+      const filteredRows = initialData.rows.filter((row) =>
+        row.some((cell: string) =>
+          cell.toLowerCase().includes(searchValue.toLowerCase())
+        )
+      );
+
+      setFilteredData((prevData) =>
+        filteredRows.length > 0
+          ? {
+              heads: prevData?.heads || initialData.heads,
+              rows: filteredRows,
+            }
+          : null
+      );
+    } else {
+      setFilteredData(initialData);
+    }
   }, [searchValue]);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -59,14 +74,17 @@ export default function DashboardHome() {
         <div className="flex justify-between items-center">
           <h3 className="text-xl font-bold">Mis empresas asignadas</h3>
           <div>
-            <Search
-              onChange={handleChange}
-              value={searchValue}
-            />
+            <Search onChange={handleChange} value={searchValue} />
           </div>
         </div>
 
-        <Table data={filteredData} />
+        {filteredData ? (
+          <Table data={filteredData} />
+        ) : (
+          <div className=" text-center p-5 mt-10 flex justify-center items-center">
+            <p className="text-slate-400">No hay datos disponibles <br /> o no hay coincidencias con la búsqueda.</p>
+          </div>
+        )}
       </div>
     </div>
   );
