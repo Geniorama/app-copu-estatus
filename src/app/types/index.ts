@@ -1,5 +1,5 @@
 export interface Company {
-  id: string;
+  id?: string;
   logo: string;
   name: string;
   address?: string;
