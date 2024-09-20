@@ -8,6 +8,7 @@ import Table from "@/app/components/Table/Table";
 import Search from "@/app/utilities/ui/Search";
 import type { ChangeEvent } from "react";
 import type { TableDataProps } from "@/app/types";
+import TitleSection from "@/app/utilities/ui/TitleSection";
 
 const initialData: TableDataProps = {
   heads: ["ID", "Empresa", "Contacto", "Servicios", "Última modificación"],
@@ -59,6 +60,9 @@ export default function DashboardHome() {
 
   return (
     <div>
+      <div className="mb-5">
+        <TitleSection title="Home" />
+      </div>
       <div className="grid grid-cols-4 gap-5">
         <CardAction title="Crear usuario" icon="user" />
         <CardAction title="Crear empresa" icon="company" />

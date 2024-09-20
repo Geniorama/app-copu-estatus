@@ -6,7 +6,7 @@ import Table from "@/app/components/Table/Table";
 import Search from "@/app/utilities/ui/Search";
 import LinkCP from "@/app/utilities/ui/LinkCP";
 import Modal from "@/app/components/Modal/Modal";
-import FormCreateCompany from "@/app/components/Form/FormCreateCompany";
+import FormCreateService from "@/app/components/Form/FormCreateService";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import type { TableDataProps } from "@/app/types";
@@ -22,10 +22,10 @@ const initialData: TableDataProps = {
   ],
 };
 
-export default function Companies() {
+export default function Services() {
   const [searchValue, setSearchValue] = useState("");
   const [openModal, setOpenModal] = useState(false);
-  const [companies, setCompanies] = useState<TableDataProps | null>(initialData);
+  const [services, setSevices] = useState<TableDataProps | null>(initialData);
 
   useEffect(() => {
     if (initialData && searchValue.trim()) {
@@ -34,9 +34,9 @@ export default function Companies() {
           cell.toLowerCase().includes(searchValue.toLowerCase())
         )
       );
-      setCompanies(filteredRows.length > 0 ? { heads: initialData.heads, rows: filteredRows } : null);
+      setSevices(filteredRows.length > 0 ? { heads: initialData.heads, rows: filteredRows } : null);
     } else {
-      setCompanies(initialData);
+        setSevices(initialData);
     }
   }, [searchValue]);
 
@@ -47,15 +47,14 @@ export default function Companies() {
   return (
     <div>
       <Modal open={openModal} onClose={() => setOpenModal(false)}>
-        <FormCreateCompany onClose={() => setOpenModal(false)} />
+        <FormCreateService onClose={() => setOpenModal(false)} />
       </Modal>
-      
       <div className="mb-5">
-        <TitleSection title="Compañías" />
+        <TitleSection title="Servicios" />
       </div>
       <div className="flex gap-3 items-center justify-between">
         <Button onClick={() => setOpenModal(true)} mode="cp-green">
-          <span className="mr-3">Nueva compañía</span>
+          <span className="mr-3">Nuevo servicio</span>
           <FontAwesomeIcon icon={faPlus} />
         </Button>
 
@@ -65,8 +64,8 @@ export default function Companies() {
         </div>
       </div>
 
-      {companies ? (
-        <Table data={companies} />
+      {services ? (
+        <Table data={services} />
       ) : (
         <div className="text-center p-5 mt-10 flex justify-center items-center">
           <p className="text-slate-400">

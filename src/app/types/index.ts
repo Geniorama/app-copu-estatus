@@ -12,7 +12,7 @@ export interface Company {
 }
 
 export interface Service {
-  id: string;
+  id?: string;
   name: string;
   description?: string;
   features?: string;
