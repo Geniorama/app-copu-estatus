@@ -61,6 +61,7 @@ export default function Home({ user }: HomeProps) {
         id="Textarea"
         name="description"
         placeholder="Descripción"
+        mode="cp-dark"
         rows={7}
       />
       <Label htmlFor="select">Opciones</Label>
