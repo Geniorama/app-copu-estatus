@@ -7,11 +7,7 @@ import CardAction from "@/app/components/CardAction/CardAction";
 import Table from "@/app/components/Table/Table";
 import Search from "@/app/utilities/ui/Search";
 import type { ChangeEvent } from "react";
-
-interface TableDataProps {
-  heads: string[];
-  rows: string[][];
-}
+import type { TableDataProps } from "@/app/types";
 
 const initialData: TableDataProps = {
   heads: ["ID", "Empresa", "Contacto", "Servicios", "Última modificación"],
