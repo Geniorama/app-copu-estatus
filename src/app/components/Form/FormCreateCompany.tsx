@@ -176,6 +176,7 @@ export default function FormCreateCompany({ onClose }: FormCreateCompanyProps) {
           Compañía superior
         </Label>
         <Select
+          mode="cp-dark"
           name="superior"
           id="parentConpany"
           options={parentCompanies}

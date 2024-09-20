@@ -64,8 +64,8 @@ export default function Home({ user }: HomeProps) {
         mode="cp-dark"
         rows={7}
       />
-      <Label htmlFor="select">Opciones</Label>
-      <Select name="selectTest" id="select" options={optionsData} defaultOptionText="Elige" />
+      <Label htmlFor="select" mode="cp-dark">Opciones</Label>
+      <Select name="selectTest" id="select" options={optionsData} defaultOptionText="Elige" mode="cp-dark" />
       <Button mode="cp-green" type="button">Prueba</Button>
     </main>
   );
