@@ -14,7 +14,7 @@ export default function LayoutDashboard({ children }: LayoutDashboardProps) {
       <div className="w-1/6 border border-r-slate-700 border-black">
         <Sidebar />
       </div>
-      <div className="w-5/6 text-slate-300 bg-black h-full flex flex-col justify-between">
+      <div className="w-[82%] text-slate-300 bg-black h-full flex flex-col justify-between box-border">
         <div>
           <NavBar />
           <Content>{children}</Content>

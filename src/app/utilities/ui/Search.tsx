@@ -1,4 +1,13 @@
-export default function Search() {
+
+import { ChangeEvent } from "react"
+
+interface SearchProps {
+  placeholder?: string
+  value?: string
+  onChange?: (e:ChangeEvent<HTMLInputElement>) => void
+}
+
+export default function Search({onChange, placeholder, value}:SearchProps) {
   return (
     /* From Uiverse.io by ahmedyasserdev */
     <form className="form relative w-full">
@@ -23,9 +32,11 @@ export default function Search() {
         </svg>
       </button>
       <input
+        onChange={onChange ? (e)=>onChange(e) : () => console.log('change event')}
         className="block bg-transparent w-full rounded-md outline-none border-2 border-slate-300 text-cp-light py-3 px-10 placeholder:text-gray-400 focus-visible:border-cp-primary"
-        placeholder="Buscar..."
+        placeholder={placeholder || 'Buscar...'}
         type="text"
+        value={value}
       />
       <button type="reset" className="absolute right-2 -translate-y-1/2 top-1/2 p-1">
         <svg
