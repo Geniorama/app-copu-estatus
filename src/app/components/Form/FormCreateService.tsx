@@ -36,6 +36,21 @@ const optionsPlan = [
   },
 ];
 
+const optionServices = [
+  {
+    name: "Service 1",
+    value: "service-1"
+  },
+  {
+    name: "Service 2",
+    value: "service-2"
+  },
+  {
+    name: "Service 3",
+    value: "service-3"
+  }
+]
+
 const initialData: Service = {
   name: "",
   description: "",
@@ -118,6 +133,21 @@ export default function FormCreateService({ onClose }: FormCreateServiceProps) {
           Descripción
         </Label>
         <Textarea id="description" mode="cp-dark" name="description" />
+      </div>
+
+      <div>
+        <h2 className=" text-cp-dark font-bold">Características / Servicios</h2>
+        <div className="flex gap-3">
+          <div className="w-4/5">
+            <Select mode="cp-dark" options={optionServices} />
+          </div>
+          <div className="w-1/5">
+            <Input min={0} placeholder="Cant" mode="cp-dark" type="number" />
+          </div>
+        </div>
+        <div className="mt-2 text-right">
+          <button type="button" className=" bg-slate-600 text-sm px-2 py-1 rounded-md">Agregar servicio</button>
+        </div>
       </div>
       <div className="flex gap-3">
         <div className="w-1/2">

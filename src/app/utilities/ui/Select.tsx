@@ -18,7 +18,7 @@ export function Select({ options, defaultOptionText = 'Selecciona una opción', 
       : "text-slate-300 bg-cp-dark";
   return (
     <select
-      className={`block bg-transparent w-full rounded-md outline-none border-2 focus-visible:border-cp-primary py-2 px-4 ${classMode}`}
+      className={`text-md min-h-11 block bg-transparent w-full rounded-md outline-none border-2 focus-visible:border-cp-primary py-2 px-4 ${classMode}`}
       {...props}
     >v
       <option className={`${classOptions}`} disabled selected>{defaultOptionText}</option>

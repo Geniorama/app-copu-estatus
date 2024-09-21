@@ -9,7 +9,7 @@ export function Input({ mode, ...props }: Props) {
       : "border-slate-300 text-cp-light placeholder:text-gray-400";
   return (
     <input
-      className={`block bg-transparent w-full rounded-md outline-none border-2 py-2 px-4 focus-visible:border-cp-primary ${classMode}`}
+      className={`text-md min-h-11 block bg-transparent w-full rounded-md outline-none border-2 py-2 px-4 focus-visible:border-cp-primary ${classMode}`}
       {...props}
     />
   );
