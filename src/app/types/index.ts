@@ -46,3 +46,13 @@ export interface TableDataProps {
   heads: string[];
   rows: string[][];
 }
+
+export interface User{
+  fname: string;
+  lname: string;
+  email: string;
+  phone: string;
+  role: 'admin' | 'client';
+  position: string;
+  companies: string[]
+}
