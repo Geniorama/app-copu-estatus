@@ -1,6 +1,6 @@
-import Home from "./views/Home";
 import { withPageAuthRequired } from "@auth0/nextjs-auth0";
 import { getSession } from "@auth0/nextjs-auth0";
+import { redirect } from "next/navigation";
 
 async function HomePage() {
   const session = await getSession();
@@ -12,7 +12,7 @@ async function HomePage() {
     return <div>No estás autenticado</div>;
   }
 
-  return <Home user={user}/>
+  redirect('/dashboard');
 }
 
 export default withPageAuthRequired(HomePage)
