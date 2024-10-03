@@ -1,159 +1,98 @@
 "use client";
 
-import Input from "@/app/utilities/ui/Input";
-import Label from "@/app/utilities/ui/Label";
-import Button from "@/app/utilities/ui/Button";
-import type { User } from "@/app/types";
-import type { FormEvent, ChangeEvent } from "react";
-import { useState } from "react";
-import Swal from "sweetalert2";
+import { useEffect, useState } from "react";
 import TitleSection from "@/app/utilities/ui/TitleSection";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCamera } from "@fortawesome/free-solid-svg-icons";
+import type { User } from "@/app/types";
+import FormUpdateUser from "@/app/components/Form/FormUpdateUser";
 
 const initialData: User = {
-  fname: "",
-  lname: "",
-  email: "",
-  phone: "",
+  fname: "Venus María",
+  lname: "Del perpetuo socorro",
+  email: "comunicaciones@copu.media",
+  phone: "+573008976543",
   role: "client",
   position: "",
   companies: [],
 };
 
 export default function Profile() {
-  const [user, setUser] = useState<User>(initialData);
+  const [user, setUser] = useState<User | null>(null);
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  useEffect(() => {
+    if(initialData){
+      setUser(initialData)
+    }
+  },[initialData])
 
-    Swal.fire({
-      title: "¿Estás seguro?",
-      text: "Estás a punto de crear un nuevo usuario. ¿Deseas continuar?",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#3085d6",
-      cancelButtonColor: "#d33",
-      confirmButtonText: "Sí, crear usuario",
-      cancelButtonText: "Cancelar",
-    }).then((result) => {
-      if (result.isConfirmed) {
-        console.log("Company for send", user);
+  // const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+  //   e.preventDefault();
 
-        Swal.fire({
-          title: "Usuario creado",
-          text: "El usuario ha sido creada exitosamente",
-          icon: "success",
-          confirmButtonText: "OK",
-        }).then(() => {
-        });
-      } else {
-        console.log("Creación de usuario cancelada");
-      }
-    });
-  };
+  //   Swal.fire({
+  //     title: "¿Estás seguro?",
+  //     text: "Estás a punto de crear un nuevo usuario. ¿Deseas continuar?",
+  //     icon: "warning",
+  //     showCancelButton: true,
+  //     confirmButtonColor: "#3085d6",
+  //     cancelButtonColor: "#d33",
+  //     confirmButtonText: "Sí, crear usuario",
+  //     cancelButtonText: "Cancelar",
+  //   }).then((result) => {
+  //     if (result.isConfirmed) {
+  //       console.log("Company for send", user);
 
-  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setUser({
-      ...user,
-      [e.target.name]: value,
-    });
-  };
+  //       Swal.fire({
+  //         title: "Usuario creado",
+  //         text: "El usuario ha sido creada exitosamente",
+  //         icon: "success",
+  //         confirmButtonText: "OK",
+  //       }).then(() => {
+  //       });
+  //     } else {
+  //       console.log("Creación de usuario cancelada");
+  //     }
+  //   });
+  // };
+
+  // const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+  //   const value = e.target.value;
+  //   setUser({
+  //     ...user,
+  //     [e.target.name]: value,
+  //   });
+  // };
 
   return (
     <>
       <div className="mb-5">
         <TitleSection title="Mi perfil" />
       </div>
-      <form
-        onSubmit={(e) => handleSubmit(e)}
-        className="w-9/12 m-auto flex flex-col flex-wrap gap-3 p-8 rounded-lg"
-      >
-        <div className="flex gap-3">
-          <div className="w-40 h-40 rounded-full m-auto bg-slate-700 flex items-center justify-center">
-            <Label mode="cp-light">Subir foto</Label>
+      <div className=" mt-10">
+        <div className="bg-slate-400 w-32 aspect-square rounded-full overflow-hidden mx-auto relative">
+          <img className="w-full h-full object-cover" src="https://img.freepik.com/foto-gratis/elegante-empresaria-segura-sonriendo_176420-19466.jpg?t=st=1727960495~exp=1727964095~hmac=3560550d78c0c03aa916b015ddb11bc0b77b9faa3849dc9d3de99b30d62d182b&w=1380" alt="" />
+          <div className="absolute top-0 left-0 w-full h-full bg-black bg-opacity-25 text-[40px] flex justify-center items-center text-cp-primary opacity-0 transition hover:opacity-100 cursor-pointer">
+            <FontAwesomeIcon icon={faCamera} />
           </div>
         </div>
 
-        <div className="flex gap-3">
-          <div className="w-1/2">
-            <Label htmlFor="fname" mode="cp-light">
-              Nombre(s) *
-            </Label>
-            <Input
-              onChange={(e) => handleChange(e)}
-              name="fname"
-              id="fname"
-              mode="cp-light"
-              required
-            />
-          </div>
-          <div className="w-1/2">
-            <Label htmlFor="lname" mode="cp-light">
-              Apellido(s) *
-            </Label>
-            <Input
-              onChange={(e) => handleChange(e)}
-              name="lname"
-              id="lname"
-              mode="cp-light"
-              required
-              type="text"
-            />
-          </div>
+        <div className="text-center mt-5">
+          <p>{user?.fname} {user?.lname}</p>
+          <p>{user?.email}</p>
+          <p>{user?.phone}</p>
+          {/* <a href="#" target="blank" className="text-cp-primary underline hover:text-cp-primary-hover transition">Link Whatsapp</a> */}
         </div>
 
-        <div className="flex gap-3">
-          <div className="w-1/2">
-            <Label htmlFor="email" mode="cp-light">
-              Email *
-            </Label>
-            <Input
-              onChange={(e) => handleChange(e)}
-              name="email"
-              id="email"
-              mode="cp-light"
-              required
-              type="email"
-            />
-          </div>
+        <hr className="w-full border-slate-500 my-7" />
 
-          <div className="w-1/2">
-            <Label htmlFor="phone" mode="cp-light">
-              Teléfono *
-            </Label>
-            <Input
-              onChange={(e) => handleChange(e)}
-              name="phone"
-              id="phone"
-              mode="cp-dark"
-              type="text"
-            />
-          </div>
+        <div className="text-left">
+          <h2 className="font-bold mb-7">Editar perfil</h2>
+          <FormUpdateUser
+            onClose={() => console.log('close')}
+            defaultData={user}
+          />
         </div>
-
-        <div className="w-full flex gap-3">
-          <div className="w-full">
-            <Label htmlFor="whatsapp" mode="cp-light">
-              Link whatsApp
-            </Label>
-            <Input
-              onChange={(e) => handleChange(e)}
-              name="whatsapp"
-              id="whatsapp"
-              mode="cp-light"
-              type="url"
-            />
-          </div>
-        </div>
-
-        <div className="flex gap-3 items-center justify-end mt-3">
-          <div>
-            <Button mode="cp-green" type="submit">
-              Crear usuario
-            </Button>
-          </div>
-        </div>
-      </form>
+      </div>
     </>
   );
 }

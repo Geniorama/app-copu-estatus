@@ -53,6 +53,6 @@ export interface User{
   email: string;
   phone: string;
   role: 'admin' | 'client';
-  position: string;
-  companies: string[]
+  position?: string;
+  companies?: string[];
 }
