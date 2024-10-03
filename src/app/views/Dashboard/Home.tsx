@@ -9,6 +9,7 @@ import Search from "@/app/utilities/ui/Search";
 import type { ChangeEvent } from "react";
 import type { TableDataProps } from "@/app/types";
 import TitleSection from "@/app/utilities/ui/TitleSection";
+import { useRouter } from "next/navigation";
 
 const initialData: TableDataProps = {
   heads: ["ID", "Empresa", "Contacto", "Servicios", "Última modificación"],
@@ -24,6 +25,7 @@ export default function DashboardHome() {
   const [searchValue, setSearchValue] = useState('');
   const [filteredData, setFilteredData] = useState<TableDataProps | null>(null);
   const { currentUser } = useSelector((state: RootState) => state.user);
+  const router = useRouter()
 
   useEffect(() => {
     if (currentUser) {
@@ -64,10 +66,10 @@ export default function DashboardHome() {
         <TitleSection title="Home" />
       </div>
       <div className="grid grid-cols-4 gap-5">
-        <CardAction title="Crear usuario" icon="user" />
-        <CardAction title="Crear empresa" icon="company" />
-        <CardAction title="Crear servicio" icon="service" />
-        <CardAction title="Crear contenido" icon="content" />
+        <CardAction onClick={() => router.push('/dashboard/usuarios')} title="Crear usuario" icon="user" />
+        <CardAction onClick={() => router.push('/dashboard/companias')} title="Crear empresa" icon="company" />
+        <CardAction onClick={() => router.push('/dashboard/servicios')} title="Crear servicio" icon="service" />
+        <CardAction onClick={() => router.push('/dashboard/contenidos')} title="Crear contenido" icon="content" />
       </div>
 
       <div className="mt-8">

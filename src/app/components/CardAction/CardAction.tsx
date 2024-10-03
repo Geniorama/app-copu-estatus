@@ -9,7 +9,7 @@ import {
 interface CardActionProps {
   title: string;
   icon?: string;
-  handle?: () => void;
+  onClick?: () => void;
 }
 
 const actionIcons = [
@@ -34,9 +34,9 @@ const actionIcons = [
   },
 ];
 
-export default function CardAction({ title, icon }: CardActionProps) {
+export default function CardAction({ title, icon, onClick }: CardActionProps) {
   return (
-    <div className="w-full cursor-pointer text-cp-primary bg-slate-800 p-8 rounded-lg hover:outline-3 hover:outline hover:outline-offset-1 text-center hover:bg-cp-primary hover:text-cp-dark transition">
+    <div onClick={onClick} className="w-full cursor-pointer text-cp-primary bg-slate-800 p-8 rounded-lg hover:outline-3 hover:outline hover:outline-offset-1 text-center hover:bg-cp-primary hover:text-cp-dark transition">
       {icon && (
         <span className="text-4xl mb-4 inline-flex justify-center items-center ">
           <FontAwesomeIcon

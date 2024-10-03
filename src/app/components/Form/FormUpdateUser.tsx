@@ -2,23 +2,11 @@
 
 import Input from "@/app/utilities/ui/Input";
 import Label from "@/app/utilities/ui/Label";
-import Select from "@/app/utilities/ui/Select";
 import Button from "@/app/utilities/ui/Button";
 import type { User } from "@/app/types";
 import type { FormEvent, ChangeEvent } from "react";
 import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
-
-const optionsSelect = [
-  {
-    name: "Option 1",
-    value: "option-1",
-  },
-  {
-    name: "Option 2",
-    value: "option-2",
-  },
-];
 
 const initialData: User = {
   fname: "",

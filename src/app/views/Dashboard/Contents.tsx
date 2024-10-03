@@ -82,13 +82,14 @@ export default function Contents() {
       </div>
       <div className="flex justify-between mb-8 mt-16 items-center">
         <span>Total Contenidos</span>
-        <form action="" className="flex items-center gap-4">
+        <form action="" className="flex items-end gap-4">
           <div>
             <Label mode="cp-light" htmlFor="compny">Empresa</Label>
             <Select
               id="company"
               options={companiesData}
-              defaultOptionText="Empresa"
+              defaultValue={''}
+              defaultOptionText="Todas las empresas"
               name="company"
               mode="cp-light" />
           </div>
@@ -112,15 +113,24 @@ export default function Contents() {
               placeholder="Fecha fin"
             />
           </div>
+          <div className=" flex gap-3">
+            <button className=" bg-cp-primary text-cp-dark h-[45px] rounded-sm px-3 font-bold hover:bg-cp-primary-hover">
+              Aplicar
+            </button>
+
+            <button className="underline hover:text-white">
+              Limpiar
+            </button>
+          </div>
         </form>
       </div>
-      <div className="flex gap-4 mb-8">
-        <div className="w-full max-w-xs cursor-pointer text-cp-primary bg-slate-800 p-8 rounded-lg hover:outline-3 hover:outline hover:outline-offset-1 text-center hover:bg-cp-primary hover:text-cp-dark transition">
+      <div className="flex gap-4 mb-8 justify-center">
+        <div className="w-full max-w-xs text-cp-primary bg-slate-800 p-8 rounded-lg hover:outline-3 hover:outline hover:outline-offset-1 text-center">
           <h3 className="text-xl font-bold">Post en social media</h3>
           <span className="text-8xl">190</span>
         </div>
-        <div className="w-full max-w-xs cursor-pointer text-cp-primary bg-slate-800 p-8 rounded-lg hover:outline-3 hover:outline hover:outline-offset-1 text-center hover:bg-cp-primary hover:text-cp-dark transition">
-          <h3 className="text-xl font-bold">Artículo web</h3>
+        <div className="w-full max-w-xs text-cp-primary bg-slate-800 p-8 rounded-lg hover:outline-3 hover:outline hover:outline-offset-1 text-center">
+          <h3 className="text-xl font-bold">Artículos web</h3>
           <span className="text-8xl">190</span>
         </div>
       </div>
