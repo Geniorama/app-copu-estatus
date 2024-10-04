@@ -1,5 +1,7 @@
 import DashboardHome from "../views/Dashboard/Home";
 
-export default function HomeDashboard() {
+async function HomeDashboard() {
   return <DashboardHome />;
 }
+
+export default HomeDashboard;

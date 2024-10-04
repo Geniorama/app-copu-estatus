@@ -4,7 +4,6 @@ import { redirect } from "next/navigation";
 
 async function HomePage() {
   const session = await getSession();
-  
   const user = session?.user
 
   if(!user){
