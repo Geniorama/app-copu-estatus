@@ -10,7 +10,6 @@ import type { ChangeEvent } from "react";
 import type { TableDataProps } from "@/app/types";
 import TitleSection from "@/app/utilities/ui/TitleSection";
 import { useRouter } from "next/navigation";
-import { useUser } from "@auth0/nextjs-auth0/client";
 
 const initialData: TableDataProps = {
   heads: ["ID", "Empresa", "Contacto", "Servicios", "Última modificación"],
@@ -27,22 +26,12 @@ export default function DashboardHome() {
   const [filteredData, setFilteredData] = useState<TableDataProps | null>(null);
   const { currentUser } = useSelector((state: RootState) => state.user);
   const router = useRouter()
-  const { user } = useUser();
-
-  const role = user?.['https://localhost:3000/roles'];
 
   useEffect(() => {
     if (currentUser) {
-      console.log("Current user dashboard:", currentUser);
       setFilteredData(initialData);
     }
   }, [currentUser]);
-
-  useEffect(() => {
-    if(user){
-      console.log("user role", role)
-    }
-  },[user, role])
 
   // Filtrar filas basadas en el valor de búsqueda
   useEffect(() => {
