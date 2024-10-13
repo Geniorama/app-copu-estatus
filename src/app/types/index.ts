@@ -1,3 +1,5 @@
+import { ReactNode } from "react";
+
 export interface Company {
   id?: string;
   logo: string;
@@ -44,7 +46,7 @@ export interface UserAuth0 {
 
 export interface TableDataProps {
   heads: string[];
-  rows: string[][];
+  rows: ReactNode[][] | string[][];
 }
 
 export interface User{

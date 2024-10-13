@@ -17,36 +17,93 @@ import Select from "@/app/utilities/ui/Select";
 import Input from "@/app/utilities/ui/Input";
 
 const initialData: TableDataProps = {
-  heads: ["ID", "Tipo acción", "Titular", "Fecha Publicación", "Url Web", "Url IG", "Url FB", "Url LK", ""],
+  heads: [
+    "ID",
+    "Tipo acción",
+    "Titular",
+    "Fecha Publicación",
+    "Url Web",
+    "Url IG",
+    "Url FB",
+    "Url LK",
+    "",
+  ],
   rows: [
-    ["1", "Post en social media", "Titular del post", "1 feb 2024", "<a href='#' class='underline text-cp-primary hover:text-cp-primary-hover inline-block whitespace-nowrap'>Link</a>", "<a href='#' class='underline text-cp-primary hover:text-cp-primary-hover inline-block whitespace-nowrap'>Link</a>", "<a href='#' class='underline text-cp-primary hover:text-cp-primary-hover inline-block whitespace-nowrap'>Link</a>", "Sin enlace", "<a href='#' class='underline text-cp-primary hover:text-cp-primary-hover inline-block whitespace-nowrap'>Editar</a>"],
-    ["2", "Post en social media", "Titular del post", "1 feb 2024", "<a href='#' class='underline text-cp-primary hover:text-cp-primary-hover inline-block whitespace-nowrap'>Link</a>", "<a href='#' class='underline text-cp-primary hover:text-cp-primary-hover inline-block whitespace-nowrap'>Link</a>", "<a href='#' class='underline text-cp-primary hover:text-cp-primary-hover inline-block whitespace-nowrap'>Link</a>", "Sin enlace", "<a href='#' class='underline text-cp-primary hover:text-cp-primary-hover inline-block whitespace-nowrap'>Editar</a>"],
-    ["3", "Post en social media", "Titular del post", "1 feb 2024", "<a href='#' class='underline text-cp-primary hover:text-cp-primary-hover inline-block whitespace-nowrap'>Link</a>", "<a href='#' class='underline text-cp-primary hover:text-cp-primary-hover inline-block whitespace-nowrap'>Link</a>", "<a href='#' class='underline text-cp-primary hover:text-cp-primary-hover inline-block whitespace-nowrap'>Link</a>", "Sin enlace", "<a href='#' class='underline text-cp-primary hover:text-cp-primary-hover inline-block whitespace-nowrap'>Editar</a>"],
-    ["4", "Post en social media", "Titular del post", "1 feb 2024", "<a href='#' class='underline text-cp-primary hover:text-cp-primary-hover inline-block whitespace-nowrap'>Link</a>", "<a href='#' class='underline text-cp-primary hover:text-cp-primary-hover inline-block whitespace-nowrap'>Link</a>", "<a href='#' class='underline text-cp-primary hover:text-cp-primary-hover inline-block whitespace-nowrap'>Link</a>", "Sin enlace", "<a href='#' class='underline text-cp-primary hover:text-cp-primary-hover inline-block whitespace-nowrap'>Editar</a>"],
+    [
+      "1",
+      "Post en social media",
+      "Titular del post",
+      "1 feb 2024",
+      <a href='#' key={'link_1'} className='underline text-cp-primary hover:text-cp-primary-hover inline-block whitespace-nowrap'>Link</a>,
+      <a href='#' key={'link_2'} className='underline text-cp-primary hover:text-cp-primary-hover inline-block whitespace-nowrap'>Link</a>,
+      <a href='#' key={'link_3'} className='underline text-cp-primary hover:text-cp-primary-hover inline-block whitespace-nowrap'>Link</a>,
+      "Sin enlace",
+      <a href='#' key="editar" className='underline text-cp-primary hover:text-cp-primary-hover inline-block whitespace-nowrap'>Editar</a>,
+    ],
+    [
+      "2",
+      "Post en social media",
+      "Titular del post",
+      "1 feb 2024",
+      <a href='#' key={'link_1'} className='underline text-cp-primary hover:text-cp-primary-hover inline-block whitespace-nowrap'>Link</a>,
+      <a href='#' key={'link_2'} className='underline text-cp-primary hover:text-cp-primary-hover inline-block whitespace-nowrap'>Link</a>,
+      <a href='#' key={'link_3'} className='underline text-cp-primary hover:text-cp-primary-hover inline-block whitespace-nowrap'>Link</a>,
+      "Sin enlace",
+      <a href='#' key="editar" className='underline text-cp-primary hover:text-cp-primary-hover inline-block whitespace-nowrap'>Editar</a>,
+    ],
+    [
+      "3",
+      "Post en social media",
+      "Titular del post",
+      "1 feb 2024",
+      <a href='#' key={'link_1'} className='underline text-cp-primary hover:text-cp-primary-hover inline-block whitespace-nowrap'>Link</a>,
+      <a href='#' key={'link_2'} className='underline text-cp-primary hover:text-cp-primary-hover inline-block whitespace-nowrap'>Link</a>,
+      <a href='#' key={'link_3'} className='underline text-cp-primary hover:text-cp-primary-hover inline-block whitespace-nowrap'>Link</a>,
+      "Sin enlace",
+      <a href='#' key="editar" className='underline text-cp-primary hover:text-cp-primary-hover inline-block whitespace-nowrap'>Editar</a>,
+    ],
+    [
+      "4",
+      "Post en social media",
+      "Titular del post",
+      "1 feb 2024",
+      <a
+        key={"link"}
+        target="_blank"
+        href="https://facebook.com"
+        className="underline text-cp-primary hover:text-cp-primary-hover inline-block whitespace-nowrap"
+      >
+        Link
+      </a>,
+      <a href='#' key={'link_2'} className='underline text-cp-primary hover:text-cp-primary-hover inline-block whitespace-nowrap'>Link</a>,
+      <a href='#' key={'link_3'} className='underline text-cp-primary hover:text-cp-primary-hover inline-block whitespace-nowrap'>Link</a>,
+      "Sin enlace",
+      <a href='#' key="editar" className='underline text-cp-primary hover:text-cp-primary-hover inline-block whitespace-nowrap'>Editar</a>,
+    ],
     // Otras filas...
   ],
 };
 
 const companiesData = [
   {
-    value: 'company1',
-    name: 'Company 1',
+    value: "company1",
+    name: "Company 1",
   },
   {
-    value: 'company2',
-    name: 'Company 2',
+    value: "company2",
+    name: "Company 2",
   },
   {
-    value: 'company3',
-    name: 'Company 3',
+    value: "company3",
+    name: "Company 3",
   },
   {
-    value: 'company4',
-    name: 'Company 4',
+    value: "company4",
+    name: "Company 4",
   },
   {
-    value: 'company5',
-    name: 'Company 5',
+    value: "company5",
+    name: "Company 5",
   },
 ];
 
@@ -58,15 +115,21 @@ export default function Contents() {
   useEffect(() => {
     if (initialData && searchValue.trim()) {
       const filteredRows = initialData.rows.filter((row) =>
-        row.some((cell: string) =>
-          cell.toLowerCase().includes(searchValue.toLowerCase())
+        row.some(
+          (cell) =>
+            typeof cell === "string" &&
+            cell.toLowerCase().includes(searchValue.toLowerCase())
         )
       );
-      setSevices(filteredRows.length > 0 ? { heads: initialData.heads, rows: filteredRows } : null);
+      setSevices(
+        filteredRows.length > 0
+          ? { heads: initialData.heads, rows: filteredRows }
+          : null
+      );
     } else {
       setSevices(initialData);
     }
-  }, [searchValue]);
+  }, [searchValue, initialData]);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     setSearchValue(e.target.value);
@@ -84,17 +147,22 @@ export default function Contents() {
         <span>Total Contenidos</span>
         <form action="" className="flex items-end gap-4">
           <div>
-            <Label mode="cp-light" htmlFor="compny">Empresa</Label>
+            <Label mode="cp-light" htmlFor="compny">
+              Empresa
+            </Label>
             <Select
               id="company"
               options={companiesData}
-              defaultValue={''}
+              defaultValue={""}
               defaultOptionText="Todas las empresas"
               name="company"
-              mode="cp-light" />
+              mode="cp-light"
+            />
           </div>
           <div>
-            <Label mode="cp-light" htmlFor="startDate">Fecha Inicio</Label>
+            <Label mode="cp-light" htmlFor="startDate">
+              Fecha Inicio
+            </Label>
             <Input
               type="date"
               mode="cp-light"
@@ -104,7 +172,9 @@ export default function Contents() {
             />
           </div>
           <div>
-            <Label mode="cp-light" htmlFor="endDate">Fecha Fin</Label>
+            <Label mode="cp-light" htmlFor="endDate">
+              Fecha Fin
+            </Label>
             <Input
               type="date"
               mode="cp-light"
@@ -118,9 +188,7 @@ export default function Contents() {
               Aplicar
             </button>
 
-            <button className="underline hover:text-white">
-              Limpiar
-            </button>
+            <button className="underline hover:text-white">Limpiar</button>
           </div>
         </form>
       </div>

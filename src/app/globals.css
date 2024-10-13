@@ -15,6 +15,10 @@ html, body{
   border-radius: 50px;
 }
 
+.custom-progress-bar {
+  background: #1DF180 !important;
+}
+
 @layer base {
   /* Fuente Thin */
   @font-face {

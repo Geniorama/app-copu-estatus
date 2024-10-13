@@ -1,17 +1,18 @@
-import React from "react";
+import { ReactNode } from "react";
 
 interface TableProps {
   data: {
     heads: string[];
-    rows: string[][];
+    rows: ReactNode[][] | string[][];
   };
 }
 
 export default function Table({ data }: TableProps) {
+  console.log('Table data', data)
   return (
     <table className="w-full mt-4 text-slate-300">
       <thead className="text-slate-200 bg-gray-950">
-        <tr className="">
+        <tr>
           {data.heads.map((heading, i) => (
             <th key={i} className="p-4 uppercase text-sm text-left">
               {heading}
@@ -28,7 +29,9 @@ export default function Table({ data }: TableProps) {
             } hover:outline outline-1 outline-cp-primary`}
           >
             {row.map((cell, j) => (
-              <td key={j} dangerouslySetInnerHTML={{__html: cell}} className="p-4 text-sm text-left" />
+              <td key={j} className="p-4 text-sm text-left">
+                {cell}
+              </td>
             ))}
           </tr>
         ))}
