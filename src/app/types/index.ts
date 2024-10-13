@@ -58,3 +58,8 @@ export interface User{
   position?: string;
   companies?: string[];
 }
+export interface FilterDataProps {
+  company?: string | null;
+  startDate?: string;
+  endDate?: string;
+}

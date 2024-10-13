@@ -1,21 +1,16 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Button from "@/app/utilities/ui/Button";
 import Table from "@/app/components/Table/Table";
 import Search from "@/app/utilities/ui/Search";
 import LinkCP from "@/app/utilities/ui/LinkCP";
-import Modal from "@/app/components/Modal/Modal";
-import FormCreateService from "@/app/components/Form/FormCreateService";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPlus } from "@fortawesome/free-solid-svg-icons";
+import { faGoogleDrive } from "@fortawesome/free-brands-svg-icons";
 import type { TableDataProps } from "@/app/types";
 import type { ChangeEvent } from "react";
 import TitleSection from "@/app/utilities/ui/TitleSection";
-import Label from "@/app/utilities/ui/Label";
-import Select from "@/app/utilities/ui/Select";
-import Input from "@/app/utilities/ui/Input";
 import FilterContentBar from "../FilterContentBar";
+import type { FilterDataProps } from "@/app/types";
 
 const initialData: TableDataProps = {
   heads: [
@@ -35,33 +30,105 @@ const initialData: TableDataProps = {
       "Post en social media",
       "Titular del post",
       "1 feb 2024",
-      <a href='#' key={'link_1'} className='underline text-cp-primary hover:text-cp-primary-hover inline-block whitespace-nowrap'>Link</a>,
-      <a href='#' key={'link_2'} className='underline text-cp-primary hover:text-cp-primary-hover inline-block whitespace-nowrap'>Link</a>,
-      <a href='#' key={'link_3'} className='underline text-cp-primary hover:text-cp-primary-hover inline-block whitespace-nowrap'>Link</a>,
+      <a
+        href="#"
+        key={"link_1"}
+        className="underline text-cp-primary hover:text-cp-primary-hover inline-block whitespace-nowrap"
+      >
+        Link
+      </a>,
+      <a
+        href="#"
+        key={"link_2"}
+        className="underline text-cp-primary hover:text-cp-primary-hover inline-block whitespace-nowrap"
+      >
+        Link
+      </a>,
+      <a
+        href="#"
+        key={"link_3"}
+        className="underline text-cp-primary hover:text-cp-primary-hover inline-block whitespace-nowrap"
+      >
+        Link
+      </a>,
       "Sin enlace",
-      <a href='#' key="editar" className='underline text-cp-primary hover:text-cp-primary-hover inline-block whitespace-nowrap'>Editar</a>,
+      <a
+        href="#"
+        key="editar"
+        className="underline text-cp-primary hover:text-cp-primary-hover inline-block whitespace-nowrap"
+      >
+        Editar
+      </a>,
     ],
     [
       "2",
       "Post en social media",
       "Titular del post",
       "1 feb 2024",
-      <a href='#' key={'link_1'} className='underline text-cp-primary hover:text-cp-primary-hover inline-block whitespace-nowrap'>Link</a>,
-      <a href='#' key={'link_2'} className='underline text-cp-primary hover:text-cp-primary-hover inline-block whitespace-nowrap'>Link</a>,
-      <a href='#' key={'link_3'} className='underline text-cp-primary hover:text-cp-primary-hover inline-block whitespace-nowrap'>Link</a>,
+      <a
+        href="#"
+        key={"link_1"}
+        className="underline text-cp-primary hover:text-cp-primary-hover inline-block whitespace-nowrap"
+      >
+        Link
+      </a>,
+      <a
+        href="#"
+        key={"link_2"}
+        className="underline text-cp-primary hover:text-cp-primary-hover inline-block whitespace-nowrap"
+      >
+        Link
+      </a>,
+      <a
+        href="#"
+        key={"link_3"}
+        className="underline text-cp-primary hover:text-cp-primary-hover inline-block whitespace-nowrap"
+      >
+        Link
+      </a>,
       "Sin enlace",
-      <a href='#' key="editar" className='underline text-cp-primary hover:text-cp-primary-hover inline-block whitespace-nowrap'>Editar</a>,
+      <a
+        href="#"
+        key="editar"
+        className="underline text-cp-primary hover:text-cp-primary-hover inline-block whitespace-nowrap"
+      >
+        Editar
+      </a>,
     ],
     [
       "3",
       "Post en social media",
       "Titular del post",
       "1 feb 2024",
-      <a href='#' key={'link_1'} className='underline text-cp-primary hover:text-cp-primary-hover inline-block whitespace-nowrap'>Link</a>,
-      <a href='#' key={'link_2'} className='underline text-cp-primary hover:text-cp-primary-hover inline-block whitespace-nowrap'>Link</a>,
-      <a href='#' key={'link_3'} className='underline text-cp-primary hover:text-cp-primary-hover inline-block whitespace-nowrap'>Link</a>,
+      <a
+        href="#"
+        key={"link_1"}
+        className="underline text-cp-primary hover:text-cp-primary-hover inline-block whitespace-nowrap"
+      >
+        Link
+      </a>,
+      <a
+        href="#"
+        key={"link_2"}
+        className="underline text-cp-primary hover:text-cp-primary-hover inline-block whitespace-nowrap"
+      >
+        Link
+      </a>,
+      <a
+        href="#"
+        key={"link_3"}
+        className="underline text-cp-primary hover:text-cp-primary-hover inline-block whitespace-nowrap"
+      >
+        Link
+      </a>,
       "Sin enlace",
-      <a href='#' key="editar" className='underline text-cp-primary hover:text-cp-primary-hover inline-block whitespace-nowrap'>Editar</a>,
+      <a
+        href="#"
+        key="editar"
+        className="underline text-cp-primary hover:text-cp-primary-hover inline-block whitespace-nowrap"
+      >
+        Editar
+      </a>,
     ],
     [
       "4",
@@ -76,10 +143,28 @@ const initialData: TableDataProps = {
       >
         Link
       </a>,
-      <a href='#' key={'link_2'} className='underline text-cp-primary hover:text-cp-primary-hover inline-block whitespace-nowrap'>Link</a>,
-      <a href='#' key={'link_3'} className='underline text-cp-primary hover:text-cp-primary-hover inline-block whitespace-nowrap'>Link</a>,
+      <a
+        href="#"
+        key={"link_2"}
+        className="underline text-cp-primary hover:text-cp-primary-hover inline-block whitespace-nowrap"
+      >
+        Link
+      </a>,
+      <a
+        href="#"
+        key={"link_3"}
+        className="underline text-cp-primary hover:text-cp-primary-hover inline-block whitespace-nowrap"
+      >
+        Link
+      </a>,
       "Sin enlace",
-      <a href='#' key="editar" className='underline text-cp-primary hover:text-cp-primary-hover inline-block whitespace-nowrap'>Editar</a>,
+      <a
+        href="#"
+        key="editar"
+        className="underline text-cp-primary hover:text-cp-primary-hover inline-block whitespace-nowrap"
+      >
+        Editar
+      </a>,
     ],
     // Otras filas...
   ],
@@ -108,9 +193,8 @@ const companiesData = [
   },
 ];
 
-export default function Contents() {
+export default function ContentsClient() {
   const [searchValue, setSearchValue] = useState("");
-  const [openModal, setOpenModal] = useState(false);
   const [services, setSevices] = useState<TableDataProps | null>(initialData);
 
   useEffect(() => {
@@ -136,17 +220,18 @@ export default function Contents() {
     setSearchValue(e.target.value);
   };
 
+  const handleFilterBar = (data: FilterDataProps) => {
+    console.log(data);
+  };
+
   return (
     <div>
-      <Modal open={openModal} onClose={() => setOpenModal(false)}>
-        <FormCreateService onClose={() => setOpenModal(false)} />
-      </Modal>
       <div className="mb-5">
         <TitleSection title="Contenidos" />
       </div>
-      <FilterContentBar 
+      <FilterContentBar
         companies={companiesData}
-        onFilter={(data) => console.log(data)}
+        onFilter={(data) => handleFilterBar(data)}
       />
       <div className="flex gap-4 mb-8 justify-center">
         <div className="w-full max-w-xs text-cp-primary bg-slate-800 p-8 rounded-lg hover:outline-3 hover:outline hover:outline-offset-1 text-center">
@@ -158,14 +243,12 @@ export default function Contents() {
           <span className="text-8xl">190</span>
         </div>
       </div>
-      <div className="flex gap-3 items-center justify-between">
-        <Button onClick={() => setOpenModal(true)} mode="cp-green">
-          <span className="mr-3">Nuevo contenido</span>
-          <FontAwesomeIcon icon={faPlus} />
-        </Button>
-
+      <div className="flex gap-3 items-center justify-end">
         <div className="flex gap-6 items-center">
-          <LinkCP href="#">Exportar CSV</LinkCP>
+          <LinkCP href="#">
+            <FontAwesomeIcon icon={faGoogleDrive} />
+            <span className="ml-1">Estadísticas anteriores</span>
+          </LinkCP>
           <Search onChange={handleChange} value={searchValue} />
         </div>
       </div>

@@ -41,7 +41,7 @@ export default function BoxNotices() {
           </div>
           <div className="w-full text-center">
             <p className="text-xl">
-              Hola soy, <span className="font-bold">Venus María</span>
+              Hola, soy <span className="font-bold">Venus María</span>
             </p>
             <p>Tu ejecutiva de cuenta</p>
             <p className="text-xs mt-3">Contáctame si tienes dudas</p>
