@@ -17,7 +17,7 @@ const initialData: TableDataProps = {
   heads: ["ID", "Empresa", "Contacto", "Servicios", "Última modificación"],
   rows: [
     ["1", "Sancho BBDO", "Juan Pérez", "Servicio BBDO 1, Servicio BBDO 2", "1"],
-    ["2", "Company XYZ", "Jane Doe", "<a href='' class='underline text-cp-primary'>Servicio XYZ</a>", "3"],
+    ["2", "Company XYZ", "Jane Doe", <a href='#' key={'link_example'} className='underline text-cp-primary'>Servicio XYZ</a>, "3"],
     // Otras filas...
   ],
 };
@@ -25,20 +25,26 @@ const initialData: TableDataProps = {
 export default function Services() {
   const [searchValue, setSearchValue] = useState("");
   const [openModal, setOpenModal] = useState(false);
-  const [services, setSevices] = useState<TableDataProps | null>(initialData);
+  const [services, setServices] = useState<TableDataProps | null>(initialData);
 
   useEffect(() => {
     if (initialData && searchValue.trim()) {
       const filteredRows = initialData.rows.filter((row) =>
-        row.some((cell: string) =>
-          cell.toLowerCase().includes(searchValue.toLowerCase())
+        row.some(
+          (cell) =>
+            typeof cell === "string" &&
+            cell.toLowerCase().includes(searchValue.toLowerCase())
         )
       );
-      setSevices(filteredRows.length > 0 ? { heads: initialData.heads, rows: filteredRows } : null);
+      setServices(
+        filteredRows.length > 0
+          ? { heads: initialData.heads, rows: filteredRows }
+          : null
+      );
     } else {
-        setSevices(initialData);
+      setServices(initialData);
     }
-  }, [searchValue]);
+  }, [searchValue, initialData]);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     setSearchValue(e.target.value);

@@ -17,7 +17,7 @@ const initialData: TableDataProps = {
   heads: ["ID", "Empresa", "Contacto", "Servicios", "Última modificación"],
   rows: [
     ["1", "Sancho BBDO", "Juan Pérez", "Servicio BBDO 1, Servicio BBDO 2", "1"],
-    ["2", "Company XYZ", "Jane Doe", "<a href='' class='underline text-cp-primary'>Servicio XYZ</a>", "3"],
+    ["2", "Company XYZ", "Jane Doe", <a href='#' key={'link_example'} className='underline text-cp-primary'>Servicio XYZ</a>, "3"],
     // Otras filas...
   ],
 };
@@ -30,15 +30,21 @@ export default function Companies() {
   useEffect(() => {
     if (initialData && searchValue.trim()) {
       const filteredRows = initialData.rows.filter((row) =>
-        row.some((cell: string) =>
-          cell.toLowerCase().includes(searchValue.toLowerCase())
+        row.some(
+          (cell) =>
+            typeof cell === "string" &&
+            cell.toLowerCase().includes(searchValue.toLowerCase())
         )
       );
-      setCompanies(filteredRows.length > 0 ? { heads: initialData.heads, rows: filteredRows } : null);
+      setCompanies(
+        filteredRows.length > 0
+          ? { heads: initialData.heads, rows: filteredRows }
+          : null
+      );
     } else {
       setCompanies(initialData);
     }
-  }, [searchValue]);
+  }, [searchValue, initialData]);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     setSearchValue(e.target.value);

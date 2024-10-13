@@ -15,9 +15,9 @@ const initialData: TableDataProps = {
   heads: ["ID", "Empresa", "Contacto", "Servicios", "Última modificación"],
   rows: [
     ["1", "Sancho BBDO", "Juan Pérez", "Servicio BBDO 1, Servicio BBDO 2", "1"],
-    ["2", "Company XYZ", "Jane Doe", "<a href='' class='underline text-cp-primary'>Servicio XYZ</a>", "3"],
+    ["2", "Company XYZ", "Jane Doe", <a href='#' key={'link_example'} className='underline text-cp-primary'>Servicio XYZ</a>, "3"],
     ["3", "Sancho BBDO", "Juan Pérez", "Servicio BBDO 1, Servicio BBDO 2", "1"],
-    ["4", "Company ABC", "Alice Smith", "<a href='' class='underline text-cp-primary'>Servicio ABC</a>", "2"],
+    ["4", "Company ABC", "Alice Smith", <a href='#' key={'link_example'} className='underline text-cp-primary'>Servicio ABC</a>, "2"],
   ],
 };
 
@@ -33,27 +33,24 @@ export default function DashboardHome() {
     }
   }, [currentUser]);
 
-  // Filtrar filas basadas en el valor de búsqueda
   useEffect(() => {
     if (initialData && searchValue.trim()) {
       const filteredRows = initialData.rows.filter((row) =>
-        row.some((cell: string) =>
-          cell.toLowerCase().includes(searchValue.toLowerCase())
+        row.some(
+          (cell) =>
+            typeof cell === "string" &&
+            cell.toLowerCase().includes(searchValue.toLowerCase())
         )
       );
-
-      setFilteredData((prevData) =>
+      setFilteredData(
         filteredRows.length > 0
-          ? {
-              heads: prevData?.heads || initialData.heads,
-              rows: filteredRows,
-            }
+          ? { heads: initialData.heads, rows: filteredRows }
           : null
       );
     } else {
       setFilteredData(initialData);
     }
-  }, [searchValue]);
+  }, [searchValue, initialData]);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     setSearchValue(e.target.value);

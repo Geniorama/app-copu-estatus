@@ -64,7 +64,13 @@ export default function DashboardHomeClient() {
   };
 
 
-  const actionLinkButtons = (link: string) => {
+  const actionLinkButtons = (link: string | null) => {
+    if(!link){
+      return(
+        <p>Sin enlace</p>
+      )
+    }
+
     return (
       <div className="flex gap-3 text-xl">
         <button  onClick={() => handleCopyText(link)} className="inline-block text-cp-primary hover:text-cp-primary-hover" title="Copiar Url">
@@ -97,7 +103,19 @@ export default function DashboardHomeClient() {
         actionLinkButtons('https://facebook.com'),
         actionLinkButtons('https://linkedin.com'),
         actionLinkButtons('https://instagram.com'),
+        actionLinkButtons(null),
+        actionLinkButtons('https://instagram.com')
+      ],
+
+      [
+        "2",
+        "Post en social media",
+        "13 feb 2025",
         actionLinkButtons('https://instagram.com'),
+        actionLinkButtons('https://facebook.com'),
+        actionLinkButtons('https://linkedin.com'),
+        actionLinkButtons('https://instagram.com'),
+        actionLinkButtons(null),
         actionLinkButtons('https://instagram.com')
       ],
       // Otras filas...
@@ -108,7 +126,7 @@ export default function DashboardHomeClient() {
 
   return (
     <div>
-      <ToastContainer theme="dark" toastStyle={{ fontFamily: 'inherit' }} progressClassName={'custom-progress-bar'} />
+      <ToastContainer toastStyle={{ fontFamily: 'inherit' }} progressClassName={'custom-progress-bar'} />
       <div className="mb-5">
         <TitleSection title="Home" />
       </div>
