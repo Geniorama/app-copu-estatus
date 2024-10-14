@@ -7,7 +7,7 @@ export default async function ServicesPage() {
   const session = await getSession();
 
   if (!session) {
-    redirect("/api/auth/login");
+   return redirect("/api/auth/login");
   }
 
   const { user } = session;
