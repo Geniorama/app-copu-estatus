@@ -25,20 +25,26 @@ const initialData: TableDataProps = {
 export default function Users() {
   const [searchValue, setSearchValue] = useState("");
   const [openModal, setOpenModal] = useState(false);
-  const [services, setSevices] = useState<TableDataProps | null>(initialData);
+  const [users, setUsers] = useState<TableDataProps | null>(initialData);
 
   useEffect(() => {
     if (initialData && searchValue.trim()) {
       const filteredRows = initialData.rows.filter((row) =>
-        row.some((cell: string) =>
-          cell.toLowerCase().includes(searchValue.toLowerCase())
+        row.some(
+          (cell) =>
+            typeof cell === "string" &&
+            cell.toLowerCase().includes(searchValue.toLowerCase())
         )
       );
-      setSevices(filteredRows.length > 0 ? { heads: initialData.heads, rows: filteredRows } : null);
+      setUsers(
+        filteredRows.length > 0
+          ? { heads: initialData.heads, rows: filteredRows }
+          : null
+      );
     } else {
-        setSevices(initialData);
+      setUsers(initialData);
     }
-  }, [searchValue]);
+  }, [searchValue, initialData]);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     setSearchValue(e.target.value);
@@ -64,8 +70,8 @@ export default function Users() {
         </div>
       </div>
 
-      {services ? (
-        <Table data={services} />
+      {users ? (
+        <Table data={users} />
       ) : (
         <div className="text-center p-5 mt-10 flex justify-center items-center">
           <p className="text-slate-400">
