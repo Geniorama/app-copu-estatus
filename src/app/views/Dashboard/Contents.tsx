@@ -12,9 +12,6 @@ import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import type { TableDataProps } from "@/app/types";
 import type { ChangeEvent } from "react";
 import TitleSection from "@/app/utilities/ui/TitleSection";
-import Label from "@/app/utilities/ui/Label";
-import Select from "@/app/utilities/ui/Select";
-import Input from "@/app/utilities/ui/Input";
 import FilterContentBar from "../FilterContentBar";
 
 const initialData: TableDataProps = {
