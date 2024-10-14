@@ -18,12 +18,9 @@ export default async function ServicesPage() {
   }
   const userRole = user[userRoleUri];
 
-  switch (userRole) {
-    case "admin":
-      return <Services />;
-    case "cliente":
-      return <ServicesClient />;
-    default:
-      return <ServicesClient />;
+  if(userRole === 'admin'){
+    return <Services />;
   }
+
+  return <ServicesClient />;
 }
