@@ -1,6 +1,7 @@
 import { getSession } from "@auth0/nextjs-auth0";
 import { redirect } from "next/navigation";
 import DashboardClientWrapper from "./DashboardWrapper";
+import { withPageAuthRequired } from "@auth0/nextjs-auth0";
 
 async function HomeDashboard() {
   const userRoleUri = process.env.NEXT_PUBLIC_ROLE_URL;
@@ -23,4 +24,4 @@ async function HomeDashboard() {
   );
 }
 
-export default HomeDashboard;
+export default withPageAuthRequired(HomeDashboard);

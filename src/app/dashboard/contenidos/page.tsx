@@ -1,9 +1,9 @@
 import Contents from "@/app/views/Dashboard/Contents"
 import ContentsClient from "@/app/views/DashboardClient/ContentsClient"
-import { getSession } from "@auth0/nextjs-auth0"
+import { getSession, withPageAuthRequired } from "@auth0/nextjs-auth0"
 import { redirect } from "next/navigation"
 
-export default async function ContentsPage() {
+async function ContentsPage() {
   const session = await getSession();
 
   if (!session) {
@@ -23,3 +23,5 @@ export default async function ContentsPage() {
       return <ContentsClient />;
   }
 }
+
+export default withPageAuthRequired(ContentsPage)

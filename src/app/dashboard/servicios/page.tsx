@@ -2,8 +2,9 @@ import Services from "@/app/views/Dashboard/Services"
 import ServicesClient from "@/app/views/DashboardClient/ServicesClient"
 import { getSession } from "@auth0/nextjs-auth0";
 import { redirect } from "next/navigation";
+import { withPageAuthRequired } from "@auth0/nextjs-auth0";
 
-export default async function ServicesPage() {
+async function ServicesPage() {
   const userRoleUri = process.env.NEXT_PUBLIC_ROLE_URL;
   const session = await getSession();
 
@@ -24,3 +25,5 @@ export default async function ServicesPage() {
 
   return <ServicesClient />;
 }
+
+export default withPageAuthRequired(ServicesPage)

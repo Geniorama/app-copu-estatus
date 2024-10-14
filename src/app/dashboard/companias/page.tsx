@@ -2,8 +2,9 @@ import Companies from "@/app/views/Dashboard/Companies"
 import CompaniesClient from "@/app/views/DashboardClient/CompaniesClient"
 import { getSession } from "@auth0/nextjs-auth0"
 import { redirect } from "next/navigation"
+import { withPageAuthRequired } from "@auth0/nextjs-auth0"
 
-export default async function CompaniesPage() {
+async function CompaniesPage() {
   const session = await getSession();
 
   if (!session) {
@@ -23,3 +24,5 @@ export default async function CompaniesPage() {
       return <CompaniesClient />;
   }
 }
+
+export default withPageAuthRequired(CompaniesPage)
