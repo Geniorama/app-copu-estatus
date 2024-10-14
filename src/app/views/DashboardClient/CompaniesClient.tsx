@@ -1,6 +1,5 @@
 "use client";
 
-import type { TableDataProps } from "@/app/types";
 import TitleSection from "@/app/utilities/ui/TitleSection";
 import CardCompany from "@/app/components/CardCompany/CardCompany";
 

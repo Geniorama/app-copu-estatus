@@ -1,7 +1,6 @@
-import DashboardHome from "../views/Dashboard/Home";
-import DashboardHomeClient from "../views/DashboardClient/HomeClient";
 import { getSession } from "@auth0/nextjs-auth0";
 import { redirect } from "next/navigation";
+import DashboardClientWrapper from "./DashboardWrapper";
 
 async function HomeDashboard() {
   const session = await getSession();
@@ -14,14 +13,9 @@ async function HomeDashboard() {
   const userRoleUri = "https://localhost:3000/roles";
   const userRole = user[userRoleUri];
 
-  switch (userRole) {
-    case "admin":
-      return <DashboardHome />;
-    case "cliente":
-      return <DashboardHomeClient />;
-    default:
-      return <DashboardHomeClient />;
-  }
+  return (
+    <DashboardClientWrapper user={user} userRole={userRole} />
+  );
 }
 
 export default HomeDashboard;
