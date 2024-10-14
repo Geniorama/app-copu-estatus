@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import DashboardClientWrapper from "./DashboardWrapper";
 
 async function HomeDashboard() {
+  const userRoleUri = process.env.NEXT_PUBLIC_ROLE_URL;
   const session = await getSession();
 
   if (!session) {
@@ -10,7 +11,11 @@ async function HomeDashboard() {
   }
 
   const { user } = session;
-  const userRoleUri = "https://localhost:3000/roles";
+  
+  if (!userRoleUri) {
+    throw new Error('NEXT_PUBLIC_ROLE_URL is not defined');
+  }
+
   const userRole = user[userRoleUri];
 
   return (
