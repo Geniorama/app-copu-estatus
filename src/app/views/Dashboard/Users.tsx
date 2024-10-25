@@ -9,42 +9,127 @@ import Modal from "@/app/components/Modal/Modal";
 import FormCreateUser from "@/app/components/Form/FormCreateUser";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
-import type { TableDataProps } from "@/app/types";
+import type { TableDataProps, User } from "@/app/types";
 import type { ChangeEvent } from "react";
 import TitleSection from "@/app/utilities/ui/TitleSection";
-
-const initialData: TableDataProps = {
-  heads: ["ID", "Empresa", "Contacto", "Servicios", "Última modificación"],
-  rows: [
-    ["1", "Sancho BBDO", "Juan Pérez", "Servicio BBDO 1, Servicio BBDO 2", "1"],
-    ["2", "Company XYZ", "Jane Doe", "<a href='' class='underline text-cp-primary'>Servicio XYZ</a>", "3"],
-    // Otras filas...
-  ],
-};
+import type { Entry } from "contentful";
+import { useSelector } from "react-redux";
+import type { RootState } from "@/app/store";
+import type { MouseEvent } from "react";
 
 export default function Users() {
   const [searchValue, setSearchValue] = useState("");
   const [openModal, setOpenModal] = useState(false);
-  const [users, setUsers] = useState<TableDataProps | null>(initialData);
+  const [tableData, setTableData] = useState<TableDataProps | null>(null);
+  const [originalData, setOriginalData] = useState<User[]>([]);
+  
+  const { currentUser } = useSelector((state: RootState) => state.user);
+  const currentUserId = currentUser?.user.sub;
+
+  const headsTable = ["Correo", "Nombres(s)", "Apellido(s)", "Rol", "Estado", "Acciones"];
+
+  const handleEdit = (userId?: string) => {
+    if(!userId){
+      return
+    }
+
+    const userInfo = originalData.find(user => user.auth0Id === userId)
+    setOpenModal(true)
+    console.log(userInfo)
+  }
+
+  const handleClick = (e:MouseEvent<HTMLAnchorElement, globalThis.MouseEvent>, userId?: string) => {
+    e.preventDefault()
+    handleEdit(userId)
+  }
+
+  const editButton = (userId?: string) => {
+    return(
+      <a href="#" className="cursor-pointer text-cp-primary hover:underline" onClick={(e) => handleClick(e, userId)}>
+        Editar
+      </a>
+    )
+  }
+
+  const getAllUsers = async () => {
+    try {
+      const fetchUsers = await fetch('/api/users');
+      if (fetchUsers.ok) {
+        const res = await fetchUsers.json();
+        const transformData: User[] = res.map((user: Entry) => ({
+          id: user.sys.id,
+          fname: (user.fields.firstName as { "en-US": string })?.["en-US"] || null,
+          lname: (user.fields.lastName as { "en-US": string })?.["en-US"] || null,
+          email: (user.fields.email as { "en-US": string })?.["en-US"] || null,
+          role: (user.fields.role as { "en-US": string })?.["en-US"] || null,
+          phone: (user.fields.phone as { "en-US": string })?.["en-US"] || null,
+          imageProfile: (user.fields.imageProfile as { "en-US": string })?.["en-US"] || null,
+          status: (user.fields.status as { "en-US": string })?.["en-US"] || null,
+          auth0Id: (user.fields.auth0Id as { "en-US": string })?.["en-US"] || null,
+        }));
+
+        const filteredData = transformData.filter(user => user.auth0Id !== currentUserId);
+
+        const dataTable: TableDataProps = {
+          heads: headsTable,
+          rows: filteredData.map((user: User) => [
+            user.email,
+            user.fname,
+            user.lname,
+            user.role,
+            user.status ? 'Activo' : 'Inactivo',
+            editButton(user.auth0Id)
+          ]),
+        };
+
+        setTableData(dataTable);
+        setOriginalData(filteredData); // Guarda los datos originales
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   useEffect(() => {
-    if (initialData && searchValue.trim()) {
-      const filteredRows = initialData.rows.filter((row) =>
-        row.some(
-          (cell) =>
-            typeof cell === "string" &&
-            cell.toLowerCase().includes(searchValue.toLowerCase())
-        )
-      );
-      setUsers(
-        filteredRows.length > 0
-          ? { heads: initialData.heads, rows: filteredRows }
-          : null
-      );
+    getAllUsers();
+  }, []);
+
+  useEffect(() => {
+    if (searchValue.trim() === "") {
+      const dataTable: TableDataProps = {
+        heads: headsTable,
+        rows: originalData.map((user: User) => [
+          user.email,
+          user.fname,
+          user.lname,
+          user.role,
+          user.status ? 'Activo' : 'Inactivo',
+          editButton(user.auth0Id)
+        ]),
+      };
+      setTableData(dataTable);
     } else {
-      setUsers(initialData);
+      const filteredRows = originalData.filter((user) =>
+        user.email.toLowerCase().includes(searchValue.toLowerCase()) ||
+        user.fname.toLowerCase().includes(searchValue.toLowerCase()) ||
+        user.lname.toLowerCase().includes(searchValue.toLowerCase()) ||
+        user.role?.toLowerCase().includes(searchValue.toLowerCase()) ||
+        (user.status ? 'Activo' : 'Inactivo').toLowerCase().includes(searchValue.toLowerCase())
+      );
+
+      const dataTable: TableDataProps = {
+        heads: ["Correo", "Nombres(s)", "Apellido(s)", "Rol", "Estado"],
+        rows: filteredRows.map((user: User) => [
+          user.email,
+          user.fname,
+          user.lname,
+          user.role,
+          user.status ? 'Activo' : 'Inactivo',
+        ]),
+      };
+      setTableData(dataTable);
     }
-  }, [searchValue, initialData]);
+  }, [searchValue, originalData]); // Actualiza en base a originalData
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     setSearchValue(e.target.value);
@@ -70,8 +155,8 @@ export default function Users() {
         </div>
       </div>
 
-      {users ? (
-        <Table data={users} />
+      {tableData && tableData.rows.length > 0 ? (
+        <Table data={tableData} />
       ) : (
         <div className="text-center p-5 mt-10 flex justify-center items-center">
           <p className="text-slate-400">

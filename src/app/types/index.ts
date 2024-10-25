@@ -50,6 +50,7 @@ export interface TableDataProps {
 }
 
 export interface User{
+  id: string;
   fname: string;
   lname: string;
   email: string;
@@ -57,6 +58,10 @@ export interface User{
   role: 'admin' | 'client';
   position?: string;
   companies?: string[];
+  auth0Id?: string;
+  imageProfile?: string;
+  linkWhatsApp?: string;
+  status?: boolean;
 }
 export interface FilterDataProps {
   company?: string | null;
