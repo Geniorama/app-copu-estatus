@@ -8,7 +8,6 @@ interface TableProps {
 }
 
 export default function Table({ data }: TableProps) {
-  console.log('Table data', data)
   return (
     <table className="w-full mt-4 text-slate-300">
       <thead className="text-slate-200 bg-gray-950">
