@@ -4,11 +4,17 @@ import Profile from "@/app/utilities/ui/Profile";
 import Link from "next/link";
 import { useState, useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
+import { useRouter } from "next/navigation";
+import { useDispatch } from "react-redux";
+import { resetCurrentUser } from "@/app/store/features/userSlice";
+import type { MouseEvent } from "react";
 
 export default function NavBar() {
   const [openMenu, setOpenMenu] = useState(false);
   const pathname = usePathname();
   const menuRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
+  const dispatch = useDispatch();
 
   useEffect(() => {
     setOpenMenu(false);
@@ -28,6 +34,12 @@ export default function NavBar() {
     };
   }, []);
 
+  const handleLogout = (e: MouseEvent<HTMLAnchorElement, globalThis.MouseEvent>) => {
+    e.preventDefault()
+    dispatch(resetCurrentUser())
+    router.push('/api/auth/logout')
+  }
+
   return (
     <div className=" p-3 flex justify-between items-center border-b-slate-700 border border-black">
       <h1 className="text-md font-bold">Copu Estatus</h1>
@@ -45,7 +57,7 @@ export default function NavBar() {
                 </li>
                 <hr />
                 <li className="hover:bg-slate-200">
-                  <Link className="block p-2 py-3" href="/api/auth/logout">
+                  <Link href={'#'} className="block p-2 py-3" onClick={(e) => handleLogout(e)}>
                     Cerrar sesión
                   </Link>
                 </li>
