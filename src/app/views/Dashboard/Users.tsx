@@ -9,7 +9,7 @@ import Modal from "@/app/components/Modal/Modal";
 import FormCreateUser from "@/app/components/Form/FormCreateUser";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
-import type { TableDataProps, User } from "@/app/types";
+import type { Company, TableDataProps, User } from "@/app/types";
 import type { ChangeEvent } from "react";
 import TitleSection from "@/app/utilities/ui/TitleSection";
 import type { Entry } from "contentful";
@@ -22,6 +22,7 @@ export default function Users() {
   const [openModal, setOpenModal] = useState(false);
   const [tableData, setTableData] = useState<TableDataProps | null>(null);
   const [originalData, setOriginalData] = useState<User[]>([]);
+  const [companies, setCompanies] = useState<Company | null>(null)
   
   const { currentUser } = useSelector((state: RootState) => state.user);
   const currentUserId = currentUser?.user.sub;
@@ -89,6 +90,18 @@ export default function Users() {
       console.log(error);
     }
   };
+
+  const getAllCompanies = async () => {
+    try {
+      const res = await fetch('/api/companies')
+      if(res.ok){
+        const data = await res.json()
+        console.log('companies', data)
+      }
+    } catch (error) {
+      console.log('Error data companies', error)
+    }
+  }
 
   useEffect(() => {
     getAllUsers();

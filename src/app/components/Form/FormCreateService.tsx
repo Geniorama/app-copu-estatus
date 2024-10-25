@@ -58,6 +58,7 @@ const initialData: Service = {
   endDate: new Date(),
   plan: "",
   company: {
+    id: "",
     logo: "",
     name: "",
   },

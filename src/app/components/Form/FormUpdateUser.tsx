@@ -9,6 +9,7 @@ import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
 
 const initialData: User = {
+  id: "",
   fname: "",
   lname: "",
   email: "",
@@ -29,7 +30,6 @@ export default function FormUpdateUser({ onClose, defaultData }: FormCreateCompa
         setUser(defaultData)
     }
   },[defaultData])
-
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 

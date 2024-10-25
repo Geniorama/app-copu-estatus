@@ -1,7 +1,7 @@
 import { ReactNode } from "react";
 
 export interface Company {
-  id?: string;
+  id: string;
   logo: string;
   name: string;
   address?: string;
@@ -55,12 +55,12 @@ export interface User{
   lname: string;
   email: string;
   phone: string;
-  role: 'admin' | 'client';
+  role: 'admin' | 'cliente';
   position?: string;
-  companies?: string[];
+  companies?: Company[] | null;
   auth0Id?: string;
   imageProfile?: string;
-  linkWhatsApp?: string;
+  linkWhatsApp?: string | null;
   status?: boolean;
 }
 export interface FilterDataProps {

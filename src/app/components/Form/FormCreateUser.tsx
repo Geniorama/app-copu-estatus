@@ -4,41 +4,86 @@ import Input from "@/app/utilities/ui/Input";
 import Label from "@/app/utilities/ui/Label";
 import Select from "@/app/utilities/ui/Select";
 import Button from "@/app/utilities/ui/Button";
-import type { User } from "@/app/types";
+import type { Company, User } from "@/app/types";
 import type { FormEvent, ChangeEvent } from "react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Swal from "sweetalert2";
-
-const optionsSelect = [
-  {
-    name: "Option 1",
-    value: "option-1",
-  },
-  {
-    name: "Option 2",
-    value: "option-2",
-  },
-];
+import { randomBytes } from "crypto";
 
 const initialData: User = {
+  id: "",
   fname: "",
   lname: "",
   email: "",
   phone: "",
-  role: "client",
+  role: "cliente",
   position: "",
-  companies: [],
+  companies: null,
+  status: true,
+  linkWhatsApp: null,
+  auth0Id: "",
 };
-
 interface FormCreateCompanyProps {
-  onClose: () => void;
+  onClose?: () => void;
+  companies?: Company[];
+}
+interface OptionSelect {
+  name: string;
+  value: string;
 }
 
-export default function FormCreateUser({ onClose }: FormCreateCompanyProps) {
+export default function FormCreateUser({
+  onClose,
+  companies,
+}: FormCreateCompanyProps) {
   const [user, setUser] = useState<User>(initialData);
+  const [companiesOptions, setCompaniesOptions] = useState<
+    OptionSelect[] | null
+  >(null);
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+  useEffect(() => {
+    if (user.auth0Id) {
+      console.log(user);
+    }
+  }, [user.auth0Id]);
+
+  const createUserInContentful = async (infoUser: User) => {
+    try {
+      const res = await fetch("/api/users", {
+        method: "POST",
+        headers: {
+          "Content-type": "application/json",
+        },
+        body: JSON.stringify(infoUser),
+      });
+    } catch (error) {
+      console.log("Error create user", error);
+    }
+  };
+
+  const generatePassword = (length = 12) => {
+    return randomBytes(length).toString("base64").slice(0, length);
+  };
+
+  if (companies) {
+    const companiesForOptions: OptionSelect[] = companies.map((company) => ({
+      name: company.name,
+      value: company.id,
+    }));
+
+    setCompaniesOptions(companiesForOptions);
+  }
+
+  const handleClose = () => {
+    if (onClose) {
+      onClose();
+    }
+  };
+
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    const password = generatePassword();
 
     Swal.fire({
       title: "¿Estás seguro?",
@@ -49,25 +94,54 @@ export default function FormCreateUser({ onClose }: FormCreateCompanyProps) {
       cancelButtonColor: "#d33",
       confirmButtonText: "Sí, crear usuario",
       cancelButtonText: "Cancelar",
-    }).then((result) => {
+    }).then(async (result) => {
       if (result.isConfirmed) {
-        console.log("Company for send", user);
+        try {
+          const response = await fetch("/api/auth0-user", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ ...user, password }),
+          });
 
-        Swal.fire({
-          title: "Usuario creado",
-          text: "El usuario ha sido creada exitosamente",
-          icon: "success",
-          confirmButtonText: "OK",
-        }).then(() => {
-          onClose();
-        });
+          if (response.ok) {
+            const auth0User = await response.json();
+            if (auth0User) {
+              const updatedUser = { ...user, auth0Id: auth0User.auth0Id }
+              setUser(updatedUser);
+
+              await createUserInContentful(updatedUser);
+
+              Swal.fire({
+                title: "Usuario creado",
+                text: "El usuario ha sido creado exitosamente en Auth0.",
+                icon: "success",
+                confirmButtonText: "OK",
+              }).then(() => {
+                handleClose();
+              });
+            } else {
+              console.log("No se encuentra el id");
+            }
+          } else {
+            console.error(
+              "Error al crear usuario en Auth0",
+              response.statusText
+            );
+          }
+        } catch (error) {
+          console.error("Error al conectar con la API de Auth0", error);
+        }
       } else {
         console.log("Creación de usuario cancelada");
       }
     });
   };
 
-  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (
+    e: ChangeEvent<HTMLInputElement> | ChangeEvent<HTMLSelectElement>
+  ) => {
     const value = e.target.value;
     setUser({
       ...user,
@@ -128,6 +202,7 @@ export default function FormCreateUser({ onClose }: FormCreateCompanyProps) {
             Teléfono *
           </Label>
           <Input
+            required
             onChange={(e) => handleChange(e)}
             name="phone"
             id="phone"
@@ -143,10 +218,16 @@ export default function FormCreateUser({ onClose }: FormCreateCompanyProps) {
             Rol *
           </Label>
           <Select
+            required
+            onChange={(e) => handleChange(e)}
+            defaultValue={initialData.role}
             mode="cp-dark"
             name="role"
             id="role"
-            options={optionsSelect}
+            options={[
+              { name: "Admin", value: "admin" },
+              { name: "Cliente", value: "cliente" },
+            ]}
             defaultOptionText="Selecciona una opción"
           />
         </div>
@@ -164,16 +245,20 @@ export default function FormCreateUser({ onClose }: FormCreateCompanyProps) {
         </div>
       </div>
 
-      <div>
-        <Label htmlFor="linkDrive" mode="cp-dark">
-          Compañía(s) *
-        </Label>
-        <Select
-          mode="cp-dark"
-          options={optionsSelect}
-          defaultOptionText="Selecciona una opción"
-        />
-      </div>
+      {user.role === "cliente" && (
+        <div>
+          <Label htmlFor="linkDrive" mode="cp-dark">
+            Compañía(s) *
+          </Label>
+          <Select
+            required={user.role === "cliente"}
+            mode="cp-dark"
+            disabled={!companies}
+            options={companiesOptions || [{ name: "", value: "" }]}
+            defaultOptionText="Selecciona una opción"
+          />
+        </div>
+      )}
 
       <div className="flex gap-3 items-center justify-end mt-3">
         <div>

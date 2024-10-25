@@ -32,7 +32,7 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const environment = await getContentfulEnvironment();
-    const user: User = await request.json();
+    const user:User = await request.json();
 
     const newEntry = await environment.createEntry("user", {
       fields: {
