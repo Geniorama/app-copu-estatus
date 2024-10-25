@@ -25,6 +25,7 @@ const initialData: User = {
 };
 interface FormCreateCompanyProps {
   onClose?: () => void;
+  onSubmit?: (userInfo: User) => void;
   companies?: Company[];
 }
 interface OptionSelect {
@@ -34,6 +35,7 @@ interface OptionSelect {
 
 export default function FormCreateUser({
   onClose,
+  onSubmit,
   companies,
 }: FormCreateCompanyProps) {
   const [user, setUser] = useState<User>(initialData);
@@ -61,7 +63,7 @@ export default function FormCreateUser({
     }
   };
 
-  const generatePassword = (length = 12) => {
+  const generatePassword:any = (length = 12) => {
     return randomBytes(length).toString("base64").slice(0, length);
   };
 
@@ -112,6 +114,10 @@ export default function FormCreateUser({
               setUser(updatedUser);
 
               await createUserInContentful(updatedUser);
+
+              if(onSubmit){
+                onSubmit(updatedUser)
+              }
 
               Swal.fire({
                 title: "Usuario creado",

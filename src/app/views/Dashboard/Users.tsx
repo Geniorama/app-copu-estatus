@@ -23,6 +23,7 @@ export default function Users() {
   const [tableData, setTableData] = useState<TableDataProps | null>(null);
   const [originalData, setOriginalData] = useState<User[]>([]);
   const [companies, setCompanies] = useState<Company | null>(null)
+  const [userCreated, setUserCreated] = useState<User | null>(null)
   
   const { currentUser } = useSelector((state: RootState) => state.user);
   const currentUserId = currentUser?.user.sub;
@@ -84,7 +85,7 @@ export default function Users() {
         };
 
         setTableData(dataTable);
-        setOriginalData(filteredData); // Guarda los datos originales
+        setOriginalData(filteredData); 
       }
     } catch (error) {
       console.log(error);
@@ -144,14 +145,23 @@ export default function Users() {
     }
   }, [searchValue, originalData]); // Actualiza en base a originalData
 
+  useEffect(() => {
+    getAllUsers();
+  },[userCreated])
+
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     setSearchValue(e.target.value);
   };
 
+  const handleCreateUser = (user:User) => {
+    setUserCreated(user)
+    console.log('user created', user)
+  }
+ 
   return (
     <div>
       <Modal open={openModal} onClose={() => setOpenModal(false)}>
-        <FormCreateUser onClose={() => setOpenModal(false)} />
+        <FormCreateUser onSubmit={handleCreateUser} onClose={() => setOpenModal(false)} />
       </Modal>
       <div className="mb-5">
         <TitleSection title="Usuarios" />
