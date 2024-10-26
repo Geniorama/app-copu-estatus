@@ -6,25 +6,30 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCamera } from "@fortawesome/free-solid-svg-icons";
 import type { User } from "@/app/types";
 import FormUpdateUser from "@/app/components/Form/FormUpdateUser";
+import { useSelector } from "react-redux";
+import { RootState } from "@/app/store";
 
 const initialData: User = {
+  id:"",
   fname: "Venus María",
   lname: "Del perpetuo socorro",
   email: "comunicaciones@copu.media",
   phone: "+573008976543",
-  role: "client",
+  role: "cliente",
   position: "",
   companies: [],
 };
 
 export default function Profile() {
   const [user, setUser] = useState<User | null>(null);
+  const {userData} = useSelector((state:RootState) => state.user)
 
   useEffect(() => {
-    if(initialData){
-      setUser(initialData)
+    if(userData){
+      setUser(userData)
     }
-  },[initialData])
+  },[userData])
+  
 
   // const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
   //   e.preventDefault();
@@ -70,7 +75,7 @@ export default function Profile() {
       </div>
       <div className=" mt-10">
         <div className="bg-slate-400 w-32 aspect-square rounded-full overflow-hidden mx-auto relative">
-          <img className="w-full h-full object-cover" src="https://img.freepik.com/foto-gratis/elegante-empresaria-segura-sonriendo_176420-19466.jpg?t=st=1727960495~exp=1727964095~hmac=3560550d78c0c03aa916b015ddb11bc0b77b9faa3849dc9d3de99b30d62d182b&w=1380" alt="" />
+          <img className="w-full h-full object-cover" src={user?.imageProfile} alt="" />
           <div className="absolute top-0 left-0 w-full h-full bg-black bg-opacity-25 text-[40px] flex justify-center items-center text-cp-primary opacity-0 transition hover:opacity-100 cursor-pointer">
             <FontAwesomeIcon icon={faCamera} />
           </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { useEffect, useState } from "react";
 import { RootState } from "@/app/store";
 import CardAction from "@/app/components/CardAction/CardAction";
@@ -10,6 +10,7 @@ import type { ChangeEvent } from "react";
 import type { TableDataProps } from "@/app/types";
 import TitleSection from "@/app/utilities/ui/TitleSection";
 import { useRouter } from "next/navigation";
+import { setUserData } from "@/app/store/features/userSlice";
 
 const initialData: TableDataProps = {
   heads: ["ID", "Empresa", "Contacto", "Servicios", "Última modificación"],
@@ -24,12 +25,36 @@ const initialData: TableDataProps = {
 export default function DashboardHome() {
   const [searchValue, setSearchValue] = useState('');
   const [filteredData, setFilteredData] = useState<TableDataProps | null>(null);
-  const { currentUser } = useSelector((state: RootState) => state.user);
+  const { currentUser, userData } = useSelector((state: RootState) => state.user);
   const router = useRouter()
+  const dispatch = useDispatch()
+
+  const fetchUserData = async (auth0Id:string) => {
+    try {
+      const response = await fetch(`/api/user?auth0Id=${auth0Id}`);
+  
+      if (!response.ok) {
+        throw new Error(`Error al obtener el usuario: ${response.statusText}`);
+      }
+  
+      const userData = await response.json();
+      console.log(userData); // Maneja los datos del usuario
+
+      const transformData = {
+        ...userData,
+        fname: userData.firstName,
+        lname: userData.lastName
+      }
+      dispatch(setUserData(transformData))
+    } catch (error) {
+      console.error("Error fetching user data", error);
+    }
+  };  
 
   useEffect(() => {
     if (currentUser) {
-      setFilteredData(initialData);
+      setFilteredData(initialData); 
+      fetchUserData(currentUser.user.sub)
     }
   }, [currentUser]);
 
