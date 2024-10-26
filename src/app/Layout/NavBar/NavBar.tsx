@@ -4,22 +4,19 @@ import Profile from "@/app/utilities/ui/Profile";
 import Link from "next/link";
 import { useState, useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
-import { useRouter } from "next/navigation";
-import { useDispatch, useSelector } from "react-redux";
-import { resetCurrentUser } from "@/app/store/features/userSlice";
-import type { MouseEvent } from "react";
+import { useSelector } from "react-redux";
 import { RootState } from "@/app/store";
 import type { User } from "@/app/types";
+import useLogout from "@/app/hooks/useLogout";
 
 export default function NavBar() {
   const [openMenu, setOpenMenu] = useState(false);
   const [userInfo, setUserInfo] = useState<User | null>(null)
   const pathname = usePathname();
   const menuRef = useRef<HTMLDivElement>(null);
-  const router = useRouter();
-  const dispatch = useDispatch();
 
   const {userData} = useSelector((state:RootState) => state.user)
+  const handleLogout = useLogout()
 
   useEffect(() => {
     setOpenMenu(false);
@@ -45,16 +42,7 @@ export default function NavBar() {
     };
   }, []);
 
-  const handleLogout = (e: MouseEvent<HTMLAnchorElement, globalThis.MouseEvent>) => {
-    e.preventDefault()
-    dispatch(resetCurrentUser())
-    router.push('/api/auth/logout')
-  }
-
-  if(!userInfo){
-    router.push('/dashboard')
-    return
-  }
+  
 
   return (
     <div className=" p-3 flex justify-between items-center border-b-slate-700 border border-black">

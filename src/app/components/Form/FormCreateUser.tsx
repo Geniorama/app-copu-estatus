@@ -26,7 +26,7 @@ const initialData: User = {
 interface FormCreateCompanyProps {
   onClose?: () => void;
   onSubmit?: (userInfo: User) => void;
-  companies?: Company[];
+  companies?: Company[] | null;
 }
 interface OptionSelect {
   name: string;
@@ -63,7 +63,7 @@ export default function FormCreateUser({
     }
   };
 
-  const generatePassword:any = (length = 12) => {
+  const generatePassword = (length = 12) => {
     return randomBytes(length).toString("base64").slice(0, length);
   };
 

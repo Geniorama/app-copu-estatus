@@ -4,20 +4,17 @@ import Link from "next/link";
 import { menuDashboard } from "@/app/utilities/data/menus/menuDashboard";
 import { usePathname } from "next/navigation";
 import Logo from "@/app/utilities/ui/Logo";
-import { useSelector, useDispatch } from "react-redux";
+import { useSelector } from "react-redux";
 import { RootState } from "@/app/store";
 import { useState, useEffect } from "react";
-import type { MouseEvent } from "react";
-import { useRouter } from "next/navigation";
-import { resetCurrentUser } from "@/app/store/features/userSlice";
+import useLogout from "@/app/hooks/useLogout";
 
 export default function Sidebar() {
   const [menuData, setMenuData] = useState(menuDashboard)
   const pathname = usePathname();
   const { currentUser } = useSelector((state: RootState) => state.user)
-  const router = useRouter()
-  const dispatch = useDispatch()
-
+  
+  const handleLogout = useLogout()
 
   useEffect(() => {
     if(currentUser){
@@ -33,12 +30,6 @@ export default function Sidebar() {
       }
     }
   },[currentUser])
-
-  const handleLogout = (e: MouseEvent<HTMLAnchorElement, globalThis.MouseEvent>) => {
-    e.preventDefault()
-    dispatch(resetCurrentUser())
-    router.push('/api/auth/logout')
-  }
 
   return (
     <div className="p-8 h-full flex flex-col justify-between">

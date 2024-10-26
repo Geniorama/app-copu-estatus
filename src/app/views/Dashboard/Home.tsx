@@ -25,7 +25,7 @@ const initialData: TableDataProps = {
 export default function DashboardHome() {
   const [searchValue, setSearchValue] = useState('');
   const [filteredData, setFilteredData] = useState<TableDataProps | null>(null);
-  const { currentUser, userData } = useSelector((state: RootState) => state.user);
+  const { currentUser } = useSelector((state: RootState) => state.user);
   const router = useRouter()
   const dispatch = useDispatch()
 
@@ -38,7 +38,7 @@ export default function DashboardHome() {
       }
   
       const userData = await response.json();
-      console.log(userData); // Maneja los datos del usuario
+      console.log(userData);
 
       const transformData = {
         ...userData,
