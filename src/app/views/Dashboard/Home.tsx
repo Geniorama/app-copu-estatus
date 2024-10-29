@@ -1,16 +1,18 @@
 "use client";
 
-import { useSelector, useDispatch } from "react-redux";
+import { useSelector } from "react-redux";
 import { useEffect, useState } from "react";
 import { RootState } from "@/app/store";
 import CardAction from "@/app/components/CardAction/CardAction";
 import Table from "@/app/components/Table/Table";
 import Search from "@/app/utilities/ui/Search";
 import type { ChangeEvent } from "react";
-import type { TableDataProps } from "@/app/types";
+import type { Company, TableDataProps } from "@/app/types";
 import TitleSection from "@/app/utilities/ui/TitleSection";
 import { useRouter } from "next/navigation";
-import { setUserData } from "@/app/store/features/userSlice";
+import { useFetchUserData } from "@/app/hooks/useFetchUserData";
+import { useApiData } from "@/app/hooks/useApiData";
+import Spinner from "@/app/utilities/ui/Spinner";
 
 const initialData: TableDataProps = {
   heads: ["ID", "Empresa", "Contacto", "Servicios", "Última modificación"],
@@ -22,41 +24,70 @@ const initialData: TableDataProps = {
   ],
 };
 
+const headsTable = [
+  "Logo",
+  "Nombre empresa",
+  "Teléfono",
+];
+
 export default function DashboardHome() {
   const [searchValue, setSearchValue] = useState('');
   const [filteredData, setFilteredData] = useState<TableDataProps | null>(null);
   const { currentUser } = useSelector((state: RootState) => state.user);
+  const [tableData, setTableData] = useState<TableDataProps | null>(null);
+  const [originalData, setOriginalData] = useState<Company[]>([]);
   const router = useRouter()
-  const dispatch = useDispatch()
+  const fetchUserData  = useFetchUserData()
+  const { fetchData, loading } = useApiData();
 
-  const fetchUserData = async (auth0Id:string) => {
-    try {
-      const response = await fetch(`/api/user?auth0Id=${auth0Id}`);
-  
-      if (!response.ok) {
-        throw new Error(`Error al obtener el usuario: ${response.statusText}`);
-      }
-  
-      const userData = await response.json();
-      console.log(userData);
-
-      const transformData = {
-        ...userData,
-        fname: userData.firstName,
-        lname: userData.lastName
-      }
-      dispatch(setUserData(transformData))
-    } catch (error) {
-      console.error("Error fetching user data", error);
-    }
-  };  
+  const LogoBox = (url:string) => {
+    return(
+      <div className="w-11 aspect-square rounded-full overflow-hidden bg-slate-950">
+        {url && (
+          <img src={url} style={{width: '100%', height: '100%', objectFit: 'cover'}} />
+        )}
+      </div>
+    )
+  }
 
   useEffect(() => {
-    if (currentUser) {
-      setFilteredData(initialData); 
+    if (currentUser) { 
       fetchUserData(currentUser.user.sub)
     }
   }, [currentUser]);
+
+  useEffect(() => {
+    const fetchCompanies = async() => {
+      try {
+        const companiesData = await fetchData("/api/companies");
+        const transformData:Company[] = companiesData.map((company:any) => ({
+          id: company.sys.id,
+          name: company.fields.name?.["en-US"],
+          logo: company.fields.logo?.["en-US"],
+          phone: company.fields.phone?.["en-US"],
+        }))
+
+        console.log('companies data', transformData)
+
+        const dataTable:TableDataProps = {
+          heads: headsTable,
+          rows: transformData.map((company: Company) => [
+            LogoBox(company.logo || ''),
+            company.name,
+            company.phone
+          ])
+        } 
+
+        setOriginalData(transformData)
+        setTableData(dataTable)
+
+      } catch (error) {
+        console.error("Error fetching user data", error);
+      }
+    }
+
+    fetchCompanies()
+  },[])
 
   useEffect(() => {
     if (initialData && searchValue.trim()) {
@@ -81,6 +112,21 @@ export default function DashboardHome() {
     setSearchValue(e.target.value);
   };
 
+  if (loading) {
+    return (
+      <div>
+        <div className="mb-5">
+          <TitleSection title="Home" />
+        </div>
+        <div className="w-full h-[70vh] flex justify-center items-center">
+          <span className="text-8xl">
+            <Spinner />
+          </span>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div>
       <div className="mb-5">
@@ -101,8 +147,8 @@ export default function DashboardHome() {
           </div>
         </div>
 
-        {filteredData ? (
-          <Table data={filteredData} />
+        {tableData ? (
+          <Table data={tableData} />
         ) : (
           <div className=" text-center p-5 mt-10 flex justify-center items-center">
             <p className="text-slate-400">No hay datos disponibles <br /> o no hay coincidencias con la búsqueda.</p>
