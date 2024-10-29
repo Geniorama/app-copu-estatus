@@ -68,3 +68,14 @@ export interface FilterDataProps {
   startDate?: string;
   endDate?: string;
 }
+
+export interface CompanyContentful {
+  logo?: string,
+  name?: string,
+  address?: string,
+  phone?: string,
+  whatsappLink?: string,
+  nit?: string,
+  businessName?: string,
+  driveLink?: string,
+}

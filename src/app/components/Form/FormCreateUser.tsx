@@ -4,7 +4,7 @@ import Input from "@/app/utilities/ui/Input";
 import Label from "@/app/utilities/ui/Label";
 import Select from "@/app/utilities/ui/Select";
 import Button from "@/app/utilities/ui/Button";
-import type { Company, User } from "@/app/types";
+import type { User } from "@/app/types";
 import type { FormEvent, ChangeEvent } from "react";
 import { useState, useEffect } from "react";
 import Swal from "sweetalert2";
@@ -26,7 +26,7 @@ const initialData: User = {
 interface FormCreateCompanyProps {
   onClose?: () => void;
   onSubmit?: (userInfo: User) => void;
-  companies?: Company[] | null;
+  companies?: {id: string, name: string}[] | null;
 }
 interface OptionSelect {
   name: string;
@@ -39,9 +39,16 @@ export default function FormCreateUser({
   companies,
 }: FormCreateCompanyProps) {
   const [user, setUser] = useState<User>(initialData);
-  const [companiesOptions, setCompaniesOptions] = useState<
-    OptionSelect[] | null
-  >(null);
+  const [companiesOptions, setCompaniesOptions] = useState<OptionSelect[] | null>(null);
+
+  useEffect(() => {
+    const updateCompaniesFields = companies?.map((company) => ({
+      value: company.id,
+      name: company.name
+    }))
+
+    setCompaniesOptions(updateCompaniesFields || null)
+  },[companies])
 
   useEffect(() => {
     if (user.auth0Id) {
@@ -58,6 +65,7 @@ export default function FormCreateUser({
         },
         body: JSON.stringify(infoUser),
       });
+      console.log(res)
     } catch (error) {
       console.log("Error create user", error);
     }
@@ -66,15 +74,6 @@ export default function FormCreateUser({
   const generatePassword = (length = 12) => {
     return randomBytes(length).toString("base64").slice(0, length);
   };
-
-  if (companies) {
-    const companiesForOptions: OptionSelect[] = companies.map((company) => ({
-      name: company.name,
-      value: company.id,
-    }));
-
-    setCompaniesOptions(companiesForOptions);
-  }
 
   const handleClose = () => {
     if (onClose) {

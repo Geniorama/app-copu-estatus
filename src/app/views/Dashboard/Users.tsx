@@ -9,7 +9,7 @@ import Modal from "@/app/components/Modal/Modal";
 import FormCreateUser from "@/app/components/Form/FormCreateUser";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
-import type { Company, TableDataProps, User } from "@/app/types";
+import type { TableDataProps, User } from "@/app/types";
 import type { ChangeEvent } from "react";
 import TitleSection from "@/app/utilities/ui/TitleSection";
 import type { Entry } from "contentful";
@@ -18,13 +18,14 @@ import type { RootState } from "@/app/store";
 import type { MouseEvent } from "react";
 import Spinner from "@/app/utilities/ui/Spinner";
 import { usePathname } from "next/navigation";
+import Switch from "@/app/utilities/ui/Switch";
 
 export default function Users() {
   const [searchValue, setSearchValue] = useState("");
   const [openModal, setOpenModal] = useState(false);
   const [tableData, setTableData] = useState<TableDataProps | null>(null);
   const [originalData, setOriginalData] = useState<User[]>([]);
-  const [companies, setCompanies] = useState<Company[] | null>(null);
+  const [companies, setCompanies] = useState<{id: string, name: string}[] | null>(null);
   const [userCreated, setUserCreated] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -50,6 +51,9 @@ export default function Users() {
     setOpenModal(true);
     console.log(userInfo);
   };
+  const handleSwitch = (userId?: string) => {
+    console.log('switch', userId)
+  }
 
   const handleClick = (
     e: MouseEvent<HTMLAnchorElement, globalThis.MouseEvent>,
@@ -105,7 +109,7 @@ export default function Users() {
             user.fname,
             user.lname,
             user.role,
-            user.status ? "Activo" : "Inactivo",
+            <Switch onClick={() => handleSwitch(user.id)} active={user.status || false} key={user.id} />,
             editButton(user.auth0Id),
           ]),
         };
@@ -124,7 +128,13 @@ export default function Users() {
       const res = await fetch("/api/companies");
       if (res.ok) {
         const data = await res.json();
-        console.log("companies", data);
+
+        const transformData:{id: string, name: string}[] = await data.map((company:any) => ({
+          id: company.sys.id,
+          name: company.fields.name?.["en-US"],
+        }))
+
+        setCompanies(transformData)
       }
     } catch (error) {
       console.log("Error data companies", error);
@@ -133,6 +143,7 @@ export default function Users() {
 
   useEffect(() => {
     getAllUsers();
+    getAllCompanies();
   }, [pathname]);
 
   useEffect(() => {
@@ -144,7 +155,7 @@ export default function Users() {
           user.fname,
           user.lname,
           user.role,
-          user.status ? "Activo" : "Inactivo",
+          <Switch onClick={() => handleSwitch(user.id)} active={user.status || false} key={user.id} />,
           editButton(user.auth0Id),
         ]),
       };
@@ -155,10 +166,7 @@ export default function Users() {
           user.email.toLowerCase().includes(searchValue.toLowerCase()) ||
           user.fname.toLowerCase().includes(searchValue.toLowerCase()) ||
           user.lname.toLowerCase().includes(searchValue.toLowerCase()) ||
-          user.role?.toLowerCase().includes(searchValue.toLowerCase()) ||
-          (user.status ? "Activo" : "Inactivo")
-            .toLowerCase()
-            .includes(searchValue.toLowerCase())
+          user.role?.toLowerCase().includes(searchValue.toLowerCase())
       );
 
       const dataTable: TableDataProps = {
@@ -168,7 +176,7 @@ export default function Users() {
           user.fname,
           user.lname,
           user.role,
-          user.status ? "Activo" : "Inactivo",
+          <Switch onClick={() => handleSwitch(user.id)} active={user.status || false} key={user.id} />,
         ]),
       };
       setTableData(dataTable);
@@ -188,6 +196,8 @@ export default function Users() {
     setUserCreated(user);
     console.log("user created", user);
   };
+
+  console.log(companies)
 
   if (loading) {
     return (
