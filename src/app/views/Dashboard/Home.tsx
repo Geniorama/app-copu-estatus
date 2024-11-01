@@ -14,26 +14,19 @@ import { useFetchUserData } from "@/app/hooks/useFetchUserData";
 import { useApiData } from "@/app/hooks/useApiData";
 import Spinner from "@/app/utilities/ui/Spinner";
 
-const initialData: TableDataProps = {
-  heads: ["ID", "Empresa", "Contacto", "Servicios", "Última modificación"],
-  rows: [
-    ["1", "Sancho BBDO", "Juan Pérez", "Servicio BBDO 1, Servicio BBDO 2", "1"],
-    ["2", "Company XYZ", "Jane Doe", <a href='#' key={'link_example'} className='underline text-cp-primary'>Servicio XYZ</a>, "3"],
-    ["3", "Sancho BBDO", "Juan Pérez", "Servicio BBDO 1, Servicio BBDO 2", "1"],
-    ["4", "Company ABC", "Alice Smith", <a href='#' key={'link_example'} className='underline text-cp-primary'>Servicio ABC</a>, "2"],
-  ],
-};
 
 const headsTable = [
   "Logo",
   "Nombre empresa",
   "Teléfono",
+  "Servicios activos",
+  "Última modificación"
 ];
 
 export default function DashboardHome() {
   const [searchValue, setSearchValue] = useState('');
   const [filteredData, setFilteredData] = useState<TableDataProps | null>(null);
-  const { currentUser } = useSelector((state: RootState) => state.user);
+  const { currentUser, userData } = useSelector((state: RootState) => state.user);
   const [tableData, setTableData] = useState<TableDataProps | null>(null);
   const [originalData, setOriginalData] = useState<Company[]>([]);
   const router = useRouter()
@@ -57,56 +50,71 @@ export default function DashboardHome() {
   }, [currentUser]);
 
   useEffect(() => {
-    const fetchCompanies = async() => {
-      try {
-        const companiesData = await fetchData("/api/companies");
-        const transformData:Company[] = companiesData.map((company:any) => ({
-          id: company.sys.id,
-          name: company.fields.name?.["en-US"],
-          logo: company.fields.logo?.["en-US"],
-          phone: company.fields.phone?.["en-US"],
-        }))
-
-        console.log('companies data', transformData)
-
+    if(userData){
+      const transformDataForCompany = userData.companies?.map((company) => {
+        const dateUpdatedAt = new Date(company.sys.updatedAt)
+        const formattedDate = dateUpdatedAt.toLocaleDateString("es-ES", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+        });
+        return(
+          {
+            id: company.sys.id,
+            logo: company.fields.logo,
+            name: company.fields.name,
+            address: company.fields.address,
+            phone: company.fields.phone,
+            linkWhatsApp: company.fields.linkWhatsApp,
+            nit: company.fields.nit,
+            businessName: company.fields.businessName,
+            driveLink: company.fields.driveLink,
+            superior: company.fields.superior,
+            updatedAt: `${formattedDate}`
+          }
+        )
+      })
+      
+      if(transformDataForCompany){
         const dataTable:TableDataProps = {
           heads: headsTable,
-          rows: transformData.map((company: Company) => [
+          rows: transformDataForCompany.map((company: Company) => [
             LogoBox(company.logo || ''),
             company.name,
-            company.phone
+            company.phone,
+            [],
+            company.updatedAt
           ])
         } 
-
-        setOriginalData(transformData)
+  
+        setOriginalData(transformDataForCompany)
         setTableData(dataTable)
-
-      } catch (error) {
-        console.error("Error fetching user data", error);
       }
     }
+  },[userData])
 
-    fetchCompanies()
-  },[])
+  // useEffect(() => {
+  //   const fetchCompanies = async() => {
+  //     try {
+  //       const companiesData = await fetchData("/api/companies");
+  //       const transformData:Company[] = companiesData.map((company:any) => ({
+  //         id: company.sys.id,
+  //         name: company.fields.name?.["en-US"],
+  //         logo: company.fields.logo?.["en-US"],
+  //         phone: company.fields.phone?.["en-US"],
+  //       }))
 
-  useEffect(() => {
-    if (initialData && searchValue.trim()) {
-      const filteredRows = initialData.rows.filter((row) =>
-        row.some(
-          (cell) =>
-            typeof cell === "string" &&
-            cell.toLowerCase().includes(searchValue.toLowerCase())
-        )
-      );
-      setFilteredData(
-        filteredRows.length > 0
-          ? { heads: initialData.heads, rows: filteredRows }
-          : null
-      );
-    } else {
-      setFilteredData(initialData);
-    }
-  }, [searchValue, initialData]);
+  //       console.log('companies data', transformData)
+
+        
+
+  //     } catch (error) {
+  //       console.error("Error fetching user data", error);
+  //     }
+  //   }
+
+  //   fetchCompanies()
+  // },[])
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     setSearchValue(e.target.value);
@@ -151,7 +159,7 @@ export default function DashboardHome() {
           <Table data={tableData} />
         ) : (
           <div className=" text-center p-5 mt-10 flex justify-center items-center">
-            <p className="text-slate-400">No hay datos disponibles <br /> o no hay coincidencias con la búsqueda.</p>
+            <p className="text-slate-400">No hay empresas asignadas <br /> o no hay coincidencias con la búsqueda.</p>
           </div>
         )}
       </div>

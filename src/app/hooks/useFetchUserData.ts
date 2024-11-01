@@ -19,6 +19,8 @@ export function useFetchUserData() {
         ...userData,
         fname: userData.firstName,
         lname: userData.lastName,
+        companies: userData.company,
+        company: null,
       };
 
       dispatch(setUserData(transformData));

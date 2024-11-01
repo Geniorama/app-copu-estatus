@@ -1,16 +1,38 @@
 import { ReactNode } from "react";
 
-export interface Company {
+// Representa los datos del sistema de un recurso en Contentful
+export interface Sys {
   id: string;
-  logo: string;
-  name: string;
+  type: string;
+  createdAt: string;
+  updatedAt: string;
+  locale?: string;
+  // Otros campos opcionales que podrías necesitar
+}
+
+// Representa los datos de metadata de un recurso en Contentful
+export interface Metadata {
+  tags: { 
+    sys: { 
+      type: string; 
+      id: string;
+    };
+  }[];
+}
+
+
+export interface Company {
+  id?: string;
+  logo?: string;
+  name?: string;
   address?: string;
   phone?: string;
-  whatsappLink?: string;
+  linkWhatsApp?: string;
   nit?: string;
   businessName?: string;
-  superior?: Company;
+  superior?: {metadata:Metadata, sys:Sys, fields:Company}[] | null;
   driveLink?: string;
+  updatedAt?: string | null;
 }
 
 export interface Service {
@@ -20,7 +42,7 @@ export interface Service {
   features?: string;
   startDate: Date;
   endDate: Date;
-  company: Company;
+  company: {metadata:Metadata, sys:Sys, fields:Company}[] | null;
   plan: string;
 }
 
@@ -57,7 +79,7 @@ export interface User{
   phone: string;
   role: 'admin' | 'cliente';
   position?: string;
-  companies?: Company[] | null;
+  companies?: {metadata:Metadata, sys:Sys, fields:Company}[] | null;
   auth0Id?: string;
   imageProfile?: string;
   linkWhatsApp?: string | null;
