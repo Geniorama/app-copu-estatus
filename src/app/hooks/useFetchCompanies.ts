@@ -1,8 +1,8 @@
 // useFetchCompanies.ts
 import { useState, useEffect } from "react";
-import { Company, User } from "@/app/types";
+import { Company, User, Metadata, Sys, Service } from "@/app/types";
 
-export const useFetchCompanies = (userData: User | undefined, fetchServicesByCompany: (companyId: string) => Promise<any>) => {
+export const useFetchCompanies = (userData: User | undefined, fetchServicesByCompany: (companyId: string) => Promise<Service[]>) => {
   const [originalData, setOriginalData] = useState<Company[]>([]);
   const [loading, setLoading] = useState(true);
   
@@ -10,7 +10,7 @@ export const useFetchCompanies = (userData: User | undefined, fetchServicesByCom
     const fetchAllCompanyServices = async () => {
       if (userData && userData.companies) {
         const transformDataForCompany = await Promise.all(
-          userData.companies.map(async (company:any) => {
+          userData.companies.map(async (company:{metadata: Metadata, sys: Sys, fields: Company}) => {
             const dateUpdatedAt = new Date(company.sys.updatedAt);
             const formattedDate = dateUpdatedAt.toLocaleDateString("es-ES", {
               day: "2-digit",
