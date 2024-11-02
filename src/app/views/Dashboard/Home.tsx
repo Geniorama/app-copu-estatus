@@ -54,7 +54,7 @@ export default function DashboardHome() {
         <BoxLogo key={company.id} url={company.logo || ""} />,
         company.name,
         company.linkWhatsApp,
-        <ListServices key={company.id} services={company.services} />,
+        <ListServices key={company.id} services={company.services || null} />,
         company.updatedAt,
       ]),
     };

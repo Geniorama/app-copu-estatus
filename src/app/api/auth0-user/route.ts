@@ -1,3 +1,4 @@
+import { User } from '@/app/types';
 import { NextResponse } from 'next/server';
 
 const getAuth0Token = async () => {
@@ -20,9 +21,13 @@ const getAuth0Token = async () => {
     const data = await response.json();
     return data.access_token;
 };
+
+interface UserForAuth extends User {
+  password: string
+}
   
 
-const createAuth0User = async (token: string, user: any) => {
+const createAuth0User = async (token: string, user: UserForAuth) => {
   const response = await fetch(`https://${process.env.AUTH0_DOMAIN}/api/v2/users`, {
     method: 'POST',
     headers: {

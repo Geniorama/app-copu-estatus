@@ -1,7 +1,8 @@
+import { Service } from "@/app/types";
 import React from "react";
 
 interface ListServicesProps {
-    services: {name: string}[]
+    services?: Service[] | null
 }
 
 export default function ListServices({services}:ListServicesProps) {

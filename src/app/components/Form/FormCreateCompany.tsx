@@ -27,7 +27,7 @@ const initialData: Company = {
   phone: "",
   superior: undefined,
   driveLink: "",
-  whatsappLink: "",
+  linkWhatsApp: "",
   businessName: "",
   nit: undefined,
 };
@@ -135,7 +135,7 @@ export default function FormCreateCompany({ onClose }: FormCreateCompanyProps) {
           </Label>
           <Input
             onChange={(e) => handleChange(e)}
-            name="whatsappLink"
+            name="linkWhatsapp"
             id="linkWp"
             mode="cp-dark"
             type="text"

@@ -9,17 +9,6 @@ import FormUpdateUser from "@/app/components/Form/FormUpdateUser";
 import { useSelector } from "react-redux";
 import { RootState } from "@/app/store";
 
-const initialData: User = {
-  id:"",
-  fname: "Venus María",
-  lname: "Del perpetuo socorro",
-  email: "comunicaciones@copu.media",
-  phone: "+573008976543",
-  role: "cliente",
-  position: "",
-  companies: [],
-};
-
 export default function Profile() {
   const [user, setUser] = useState<User | null>(null);
   const {userData} = useSelector((state:RootState) => state.user)

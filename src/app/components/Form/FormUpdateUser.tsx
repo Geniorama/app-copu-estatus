@@ -14,7 +14,7 @@ const initialData: User = {
   lname: "",
   email: "",
   phone: "",
-  role: "client",
+  role: "cliente",
 };
 
 interface FormCreateCompanyProps {

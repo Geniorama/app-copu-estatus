@@ -57,11 +57,7 @@ const initialData: Service = {
   startDate: new Date(),
   endDate: new Date(),
   plan: "",
-  company: {
-    id: "",
-    logo: "",
-    name: "",
-  },
+  company: null,
 };
 
 interface FormCreateServiceProps {

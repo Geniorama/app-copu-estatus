@@ -9,7 +9,7 @@ import Modal from "@/app/components/Modal/Modal";
 import FormCreateUser from "@/app/components/Form/FormCreateUser";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
-import type { TableDataProps, User } from "@/app/types";
+import type { Company, Metadata, Sys, TableDataProps, User } from "@/app/types";
 import type { ChangeEvent } from "react";
 import TitleSection from "@/app/utilities/ui/TitleSection";
 import type { Entry } from "contentful";
@@ -129,9 +129,11 @@ export default function Users() {
       if (res.ok) {
         const data = await res.json();
 
-        const transformData:{id: string, name: string}[] = await data.map((company:any) => ({
+        const transformData:{id: string, name: string}[] = await data.map((company:{metadata: Metadata, sys: Sys, fields: Company}) => ({
           id: company.sys.id,
-          name: company.fields.name?.["en-US"],
+          name: typeof company.fields.name === "object" && company.fields.name
+            ? company.fields.name["en-US"]
+            : "N/A",
         }))
 
         setCompanies(transformData)

@@ -33,7 +33,7 @@ export interface Company {
   superior?: {metadata:Metadata, sys:Sys, fields:Company}[] | null;
   driveLink?: string;
   updatedAt?: string | null;
-  services?: any
+  services?: Service[]
 }
 
 export interface Service {
