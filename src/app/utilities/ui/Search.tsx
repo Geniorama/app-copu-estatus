@@ -5,9 +5,10 @@ interface SearchProps {
   placeholder?: string
   value?: string
   onChange?: (e:ChangeEvent<HTMLInputElement>) => void
+  onReset?: () => void
 }
 
-export default function Search({onChange, placeholder, value}:SearchProps) {
+export default function Search({onChange, placeholder, value, onReset}:SearchProps) {
   return (
     /* From Uiverse.io by ahmedyasserdev */
     <form className="form relative w-full">
@@ -38,7 +39,7 @@ export default function Search({onChange, placeholder, value}:SearchProps) {
         type="text"
         value={value}
       />
-      <button type="reset" className="absolute right-2 -translate-y-1/2 top-1/2 p-1">
+      <button onClick={onReset} type="reset" className="absolute right-2 -translate-y-1/2 top-1/2 p-1">
         <svg
           xmlns="http://www.w3.org/2000/svg"
           className="w-5 h-5 text-cp-primary"

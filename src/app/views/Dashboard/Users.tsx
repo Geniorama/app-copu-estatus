@@ -170,7 +170,7 @@ export default function Users() {
       );
 
       const dataTable: TableDataProps = {
-        heads: ["Correo", "Nombres(s)", "Apellido(s)", "Rol", "Estado"],
+        heads: headsTable,
         rows: filteredRows.map((user: User) => [
           user.email,
           user.fname,
