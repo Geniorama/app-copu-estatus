@@ -29,9 +29,7 @@ export default function DashboardHome() {
 
   const fetchServicesByCompany = useCallback(async (companyId: string) => {
     try {
-      const response = await fetch(
-        `/api/getServicesByCompany?companyId=${companyId}`
-      );
+      const response = await fetch(`/api/getServicesByCompany?companyId=${companyId}`);
       const data = await response.json();
       return Array.isArray(data) ? data : [];
     } catch (error) {
@@ -40,29 +38,29 @@ export default function DashboardHome() {
     }
   }, []);
 
-  const { originalData, loading } = useFetchCompanies(
-    userData,
-    fetchServicesByCompany
-  );
+  const { originalData, loading } = useFetchCompanies(userData, fetchServicesByCompany);
 
   useEffect(() => {
-    if (loading) return;
+    // Update the table data only when loading is complete
+    if (!loading) {
+      const dataTable: TableDataProps = {
+        heads: headsTable,
+        rows: originalData.map((company: Company) => [
+          <BoxLogo key={company.id} url={company.logo || ""} />,
+          company.name,
+          company.linkWhatsApp,
+          <ListServices key={company.id} services={company.services || null} />,
+          company.updatedAt,
+        ]),
+      };
 
-    const dataTable: TableDataProps = {
-      heads: headsTable,
-      rows: originalData.map((company: Company) => [
-        <BoxLogo key={company.id} url={company.logo || ""} />,
-        company.name,
-        company.linkWhatsApp,
-        <ListServices key={company.id} services={company.services || null} />,
-        company.updatedAt,
-      ]),
-    };
-
-    setTableData(dataTable);
+      // Set table data or null if no companies found
+      setTableData(originalData.length > 0 ? dataTable : null);
+    }
   }, [loading, originalData]);
 
   useEffect(() => {
+    // Handle search functionality
     const filteredData = originalData.filter((company) =>
       company?.name?.toLowerCase().includes(searchValue.toLowerCase())
     );
@@ -110,37 +108,17 @@ export default function DashboardHome() {
         <TitleSection title="Home" />
       </div>
       <div className="grid grid-cols-4 gap-5">
-        <CardAction
-          onClick={() => router.push("/dashboard/usuarios")}
-          title="Crear usuario"
-          icon="user"
-        />
-        <CardAction
-          onClick={() => router.push("/dashboard/companias")}
-          title="Crear empresa"
-          icon="company"
-        />
-        <CardAction
-          onClick={() => router.push("/dashboard/servicios")}
-          title="Crear servicio"
-          icon="service"
-        />
-        <CardAction
-          onClick={() => router.push("/dashboard/contenidos")}
-          title="Crear contenido"
-          icon="content"
-        />
+        <CardAction onClick={() => router.push("/dashboard/usuarios")} title="Crear usuario" icon="user" />
+        <CardAction onClick={() => router.push("/dashboard/companias")} title="Crear empresa" icon="company" />
+        <CardAction onClick={() => router.push("/dashboard/servicios")} title="Crear servicio" icon="service" />
+        <CardAction onClick={() => router.push("/dashboard/contenidos")} title="Crear contenido" icon="content" />
       </div>
 
       <div className="mt-8">
         <div className="flex justify-between items-center">
           <h3 className="text-xl font-bold">Mis empresas asignadas</h3>
           <div>
-            <Search
-              onReset={handleClearSearch}
-              onChange={handleChange}
-              value={searchValue}
-            />
+            <Search onReset={handleClearSearch} onChange={handleChange} value={searchValue} />
           </div>
         </div>
 
@@ -149,8 +127,7 @@ export default function DashboardHome() {
         ) : (
           <div className="text-center p-5 mt-10 flex justify-center items-center">
             <p className="text-slate-400">
-              No hay empresas asignadas <br /> o no hay coincidencias con la
-              búsqueda.
+              No hay empresas asignadas <br /> o no hay coincidencias con la búsqueda.
             </p>
           </div>
         )}

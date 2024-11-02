@@ -16,7 +16,7 @@ const DashboardClientWrapper = ({ user, userRole }: DashboardClientWrapperProps)
   const dispatch = useDispatch();
 
   useEffect(() => {
-    if (user) {
+    if (user && userRole) {
       dispatch(setCurrentUser({ user }));
     }
   }, [dispatch, user, userRole]);
@@ -28,9 +28,9 @@ const DashboardClientWrapper = ({ user, userRole }: DashboardClientWrapperProps)
     return <DashboardHome />;
   } else if (userRole === "cliente") {
     return <DashboardHomeClient />;
-  } else {
-    return <DashboardHomeClient />;
   }
+
+  return <div>Acceso denegado</div>;
 };
 
 export default DashboardClientWrapper;

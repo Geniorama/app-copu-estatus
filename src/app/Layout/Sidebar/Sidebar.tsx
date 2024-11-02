@@ -12,17 +12,16 @@ import useLogout from "@/app/hooks/useLogout";
 export default function Sidebar() {
   const [menuData, setMenuData] = useState(menuDashboard)
   const pathname = usePathname();
-  const { currentUser } = useSelector((state: RootState) => state.user)
+  const { currentUser, userData } = useSelector((state: RootState) => state.user)
   
   const handleLogout = useLogout()
 
   useEffect(() => {
     if(currentUser){
-      const userRoleUri = "https://localhost:3000/roles";
+      const userRoleUri = `${process.env.NEXT_PUBLIC_ROLE_URL}roles`;
       const role =  currentUser.user[userRoleUri]
-
-      console.log(currentUser.user)
-      
+      console.log(currentUser)
+      console.log(userData)
       if(role === 'cliente'){
         const updatedMenu = menuDashboard.filter((item) => item.path !== '/dashboard/usuarios')
 
@@ -43,7 +42,7 @@ export default function Sidebar() {
           <ul>
             {menuData.map((item) => (
               <>
-                <li>
+                <li >
                   <Link
                     href={item.path || "/"}
                     className={`tracking-wide hover:text-cp-primary transition active:text-cp-primary ${

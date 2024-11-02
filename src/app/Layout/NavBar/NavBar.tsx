@@ -2,50 +2,72 @@
 
 import Profile from "@/app/utilities/ui/Profile";
 import Link from "next/link";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { usePathname } from "next/navigation";
 import { useSelector } from "react-redux";
 import { RootState } from "@/app/store";
 import type { User } from "@/app/types";
 import useLogout from "@/app/hooks/useLogout";
+import { useDispatch } from "react-redux";
+import { setUserData } from "@/app/store/features/userSlice";
 
 export default function NavBar() {
   const [openMenu, setOpenMenu] = useState(false);
-  const [userInfo, setUserInfo] = useState<User | null>(null)
+  const [userInfo, setUserInfo] = useState<User | null>(null);
   const pathname = usePathname();
   const menuRef = useRef<HTMLDivElement>(null);
+  const dispatch = useDispatch();
 
-  const {userData} = useSelector((state:RootState) => state.user)
-  const handleLogout = useLogout()
+  const { userData, currentUser } = useSelector((state: RootState) => state.user);
+  const handleLogout = useLogout();
+
+  const fetchUser = useCallback(async () => {
+    if (currentUser) {
+      const result = await fetch(`/api/user?auth0Id=${currentUser.user.sub}`);
+      
+      if (result.ok) {
+        const data = await result.json();
+        console.log('origin data', data);
+        const transformData: User = {
+          ...data,
+          fname: data.firstName,
+          lname: data.lastName,
+          companies: data.company || [],
+        };
+        dispatch(setUserData(transformData));
+      }
+    }
+  }, [currentUser, dispatch]);
+
+  useEffect(() => {
+    fetchUser();
+  }, [fetchUser]);
+
+  useEffect(() => {
+    if (userData) {
+      setUserInfo(userData);
+    }
+  }, [userData]);
+
+  const handleClickOutside = useCallback((event: Event) => {
+    if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+      setOpenMenu(false);
+    }
+  }, []);
 
   useEffect(() => {
     setOpenMenu(false);
   }, [pathname]);
 
   useEffect(() => {
-    if(userData){
-      setUserInfo(userData)
-    }
-  },[userData])
-
-  useEffect(() => {
-    const handleClickOutside = (event: Event) => {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setOpenMenu(false);
-      }
-    };
-
     document.addEventListener("mousedown", handleClickOutside);
-
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, []);
-
-  
+  }, [handleClickOutside]);
 
   return (
-    <div className=" p-3 flex justify-between items-center border-b-slate-700 border border-black">
+    <div className="p-3 flex justify-between items-center border-b-slate-700 border border-black">
       <h1 className="text-md font-bold">Copu Estatus</h1>
       <div className="flex items-center gap-3">
         <span className="text-sm">{userInfo?.fname}</span>

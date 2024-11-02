@@ -15,6 +15,7 @@ export async function GET(request: NextRequest) {
     const response = await contentfulClient.getEntries({
       content_type: "user",
       "fields.auth0Id": auth0Id,
+      include: 3
     });
 
     if (response.items.length === 0) {
