@@ -40,7 +40,7 @@ export interface Service {
   id?: string;
   name: string;
   description?: string;
-  features?: string;
+  features?: FeatureService[] | null;
   startDate: Date;
   endDate: Date;
   company: {metadata:Metadata, sys:Sys, fields:Company}[] | null;
@@ -101,4 +101,47 @@ export interface CompanyContentful {
   nit?: string,
   businessName?: string,
   driveLink?: string,
+}
+
+export interface FeatureService {
+  id: string
+  title: string,
+  description?: string,
+  quantity?: number | null
+}
+
+export interface CompanyResponse {
+  sys: {
+    id: string;
+    updatedAt: string;
+  };
+  fields: {
+    name: {
+      "en-US": string;
+    };
+    logo: {
+      "en-US": string;
+    };
+    address: {
+      "en-US": string;
+    };
+    phone: {
+      "en-US": string;
+    };
+    whatsappLink?: {
+      "en-US": string;
+    };
+    nit?: {
+      "en-US": string;
+    };
+    businessName?: {
+      "en-US": string;
+    };
+    driveLink?: {
+      "en-US": string;
+    };
+    superior?: {
+      "en-US": string;
+    };
+  };
 }

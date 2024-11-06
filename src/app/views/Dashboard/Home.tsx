@@ -12,6 +12,7 @@ import Spinner from "@/app/utilities/ui/Spinner";
 import { useFetchCompanies } from "@/app/hooks/useFetchCompanies";
 import BoxLogo from "@/app/utilities/ui/BoxLogo";
 import ListServices from "@/app/utilities/ui/ListServices";
+import LinkCP from "@/app/utilities/ui/LinkCP";
 
 const headsTable = [
   "Logo",
@@ -48,7 +49,13 @@ export default function DashboardHome() {
         rows: originalData.map((company: Company) => [
           <BoxLogo key={company.id} url={company.logo || ""} />,
           company.name,
-          company.linkWhatsApp,
+          company.linkWhatsApp ? (
+            <LinkCP rel="noopener noreferrer" target="_blank" href={company.linkWhatsApp}>
+              {company.linkWhatsApp}
+            </LinkCP>
+          ) : (
+            <span className="text-slate-400">No existe link del grupo</span>
+          ),
           <ListServices key={company.id} services={company.services || null} />,
           company.updatedAt,
         ]),
@@ -70,7 +77,13 @@ export default function DashboardHome() {
       rows: filteredData.map((company: Company) => [
         <BoxLogo key={company.id} url={company.logo || ""} />,
         company.name,
-        company.linkWhatsApp,
+        company.linkWhatsApp ? (
+          <LinkCP rel="noopener noreferrer" target="_blank" href={company.linkWhatsApp}>
+            {company.linkWhatsApp}
+          </LinkCP>
+        ) : (
+          <span className="text-slate-400">No existe link del grupo</span>
+        ),
         <ListServices key={company.id} services={company.services} />,
         company.updatedAt,
       ]),

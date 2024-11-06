@@ -1,18 +1,25 @@
-
-import { ChangeEvent } from "react"
+import { ChangeEvent } from "react";
 
 interface SearchProps {
-  placeholder?: string
-  value?: string
-  onChange?: (e:ChangeEvent<HTMLInputElement>) => void
-  onReset?: () => void
+  placeholder?: string;
+  value?: string;
+  onChange?: (e: ChangeEvent<HTMLInputElement>) => void;
+  onReset?: () => void;
 }
 
-export default function Search({onChange, placeholder, value, onReset}:SearchProps) {
+export default function Search({
+  onChange,
+  placeholder,
+  value,
+  onReset,
+}: SearchProps) {
   return (
     /* From Uiverse.io by ahmedyasserdev */
     <form className="form relative w-full">
-      <button type='submit' className="absolute left-2 -translate-y-1/2 top-1/2 p-1">
+      <button
+        type="submit"
+        className="absolute left-2 -translate-y-1/2 top-1/2 p-1"
+      >
         {/* <button type='submit' className=""> */}
         <svg
           width="17"
@@ -33,28 +40,35 @@ export default function Search({onChange, placeholder, value, onReset}:SearchPro
         </svg>
       </button>
       <input
-        onChange={onChange ? (e)=>onChange(e) : () => console.log('change event')}
+        onChange={
+          onChange ? (e) => onChange(e) : () => console.log("change event")
+        }
         className="block bg-transparent w-full rounded-md outline-none border-2 border-slate-300 text-cp-light py-2 px-10 placeholder:text-gray-400 focus-visible:border-cp-primary"
-        placeholder={placeholder || 'Buscar...'}
+        placeholder={placeholder || "Buscar..."}
         type="text"
         value={value}
       />
-      <button onClick={onReset} type="reset" className="absolute right-2 -translate-y-1/2 top-1/2 p-1">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          className="w-5 h-5 text-cp-primary"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
+      {value && (
+        <button
+          onClick={onReset}
+          type="reset"
+          className="absolute right-2 -translate-y-1/2 top-1/2 p-1"
         >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            d="M6 18L18 6M6 6l12 12"
-          ></path>
-        </svg>
-      </button>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="w-5 h-5 text-cp-primary"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M6 18L18 6M6 6l12 12"
+            ></path>
+          </svg>
+        </button>
+      )}
     </form>
-
-  )
+  );
 }

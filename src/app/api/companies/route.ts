@@ -7,8 +7,7 @@ export async function GET() {
     const environment = await getContentfulEnvironment();
 
     const entries = await environment.getEntries({
-      content_type: 'company',
-      limit: 5
+      content_type: 'company'
     });
 
     const items = entries.items;

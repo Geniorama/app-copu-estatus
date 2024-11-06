@@ -6,40 +6,68 @@ import Select from "@/app/utilities/ui/Select";
 import Button from "@/app/utilities/ui/Button";
 import type { Company } from "@/app/types";
 import type { FormEvent, ChangeEvent } from "react";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import Swal from "sweetalert2";
-
-const optionsSelect = [
-  {
-    name: "Option 1",
-    value: "option-1",
-  },
-  {
-    name: "Option 2",
-    value: "option-2",
-  },
-];
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCamera } from "@fortawesome/free-solid-svg-icons";
 
 const initialData: Company = {
   name: "",
   address: "",
   logo: "",
   phone: "",
-  superior: undefined,
+  superior: null,
   driveLink: "",
   linkWhatsApp: "",
   businessName: "",
-  nit: undefined,
+  nit: "",
 };
 
 interface FormCreateCompanyProps {
   onClose: () => void;
+  companies?: Company[] | null;
 }
 
-export default function FormCreateCompany({ onClose }: FormCreateCompanyProps) {
-  const [company, setCompany] = useState<Company>(initialData);
-  const [parentCompanies] =
-    useState<{ value: string; name: string }[]>(optionsSelect);
+export default function FormCreateCompany({
+  onClose,
+  companies,
+}: FormCreateCompanyProps) {
+  const [newCompany, setNewCompany] = useState<Company>(initialData);
+  const [parentCompanies, setParentCompanies] = useState<
+    { value: string; name: string }[] | null
+  >(null);
+  const [logoImage, setLogoImage] = useState<File | null>(null);
+  const [logoPreview, setLogoPreview] = useState<string | null>(null); 
+  const logoRef = useRef<HTMLInputElement | null>(null);
+
+  const handleLogoClick = () => {
+    logoRef.current?.click();
+  };
+
+  useEffect(() => {
+    if (companies) {
+      const dataForSelect = companies.map((company) => ({
+        name: company.name,
+        value: company.id,
+      }));
+      setParentCompanies(dataForSelect as { value: string; name: string }[]);
+    }
+  }, [companies]);
+
+  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      console.log("Selected file:", file);
+      setLogoImage(file)
+      setNewCompany({ ...newCompany, logo: file.name });
+
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setLogoPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -55,9 +83,8 @@ export default function FormCreateCompany({ onClose }: FormCreateCompanyProps) {
       cancelButtonText: "Cancelar",
     }).then((result) => {
       if (result.isConfirmed) {
-        console.log("Company for send", company);
+        console.log("Company for send", newCompany);
 
-        
         Swal.fire({
           title: "Compañía creada",
           text: "La compañía ha sido creada exitosamente",
@@ -74,10 +101,16 @@ export default function FormCreateCompany({ onClose }: FormCreateCompanyProps) {
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    setCompany({
-      ...company,
+    setNewCompany({
+      ...newCompany,
       [e.target.name]: value,
     });
+  };
+  
+  const handleRemoveImage = () => {
+    setLogoImage(null);
+    setNewCompany({ ...newCompany, logo: "" }); // Eliminar el nombre de la imagen en el estado
+    setLogoPreview(null); // Limpiar la previsualización
   };
 
   return (
@@ -85,6 +118,39 @@ export default function FormCreateCompany({ onClose }: FormCreateCompanyProps) {
       onSubmit={(e) => handleSubmit(e)}
       className="w-full flex flex-col gap-3 bg-slate-100 p-8 rounded-lg"
     >
+      <div>
+        <div
+          onClick={handleLogoClick}
+          className="bg-slate-300 text-slate-500 w-20 aspect-square rounded-full flex justify-center items-center relative cursor-pointer"
+        >
+          {logoPreview ? (
+            <img
+            src={logoPreview}
+            alt="Logo Previsualización"
+            className="w-20 h-20 object-cover rounded-full border border-slate-300 absolute top-0 left-0"
+          />
+          ):(
+            <span>Logo</span>
+          )}
+          
+          <div className="absolute w-full h-full flex justify-center items-center text-2xl text-cp-primary bg-slate-500 rounded-full bg-opacity-70 opacity-0 hover:opacity-100">
+            <FontAwesomeIcon icon={faCamera} />
+          </div>
+        </div>
+        
+        {logoPreview && (
+          <span onClick={handleRemoveImage} className=" underline text-blue-600 text-xs cursor-pointer hover:opacity-70">Quitar imagen</span>
+        )}
+        <input
+          onChange={handleFileChange}
+          className="hidden"
+          ref={logoRef}
+          type="file"
+          name=""
+          id=""
+        />
+      </div>
+
       <div className="flex gap-3">
         <div className="w-1/2">
           <Label htmlFor="companyName" mode="cp-dark">
@@ -125,7 +191,7 @@ export default function FormCreateCompany({ onClose }: FormCreateCompanyProps) {
             id="companyPhone"
             mode="cp-dark"
             required
-            type="number"
+            type="tel"
           />
         </div>
 
@@ -179,7 +245,7 @@ export default function FormCreateCompany({ onClose }: FormCreateCompanyProps) {
           mode="cp-dark"
           name="superior"
           id="parentConpany"
-          options={parentCompanies}
+          options={parentCompanies || []}
           defaultOptionText="Selecciona una opción"
         />
       </div>

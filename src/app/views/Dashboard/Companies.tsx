@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Button from "@/app/utilities/ui/Button";
 import Table from "@/app/components/Table/Table";
 import Search from "@/app/utilities/ui/Search";
@@ -12,48 +12,126 @@ import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import type { TableDataProps } from "@/app/types";
 import type { ChangeEvent } from "react";
 import TitleSection from "@/app/utilities/ui/TitleSection";
-
-const initialData: TableDataProps = {
-  heads: ["ID", "Empresa", "Contacto", "Servicios", "Última modificación"],
-  rows: [
-    ["1", "Sancho BBDO", "Juan Pérez", "Servicio BBDO 1, Servicio BBDO 2", "1"],
-    ["2", "Company XYZ", "Jane Doe", <a href='#' key={'link_example'} className='underline text-cp-primary'>Servicio XYZ</a>, "3"],
-    // Otras filas...
-  ],
-};
+import { useFetchCompanies } from "@/app/hooks/useFetchCompanies";
+import { useSelector } from "react-redux";
+import { RootState } from "@/app/store";
+import BoxLogo from "@/app/utilities/ui/BoxLogo";
+import ListServices from "@/app/utilities/ui/ListServices";
+import type { Company } from "@/app/types";
+import Spinner from "@/app/utilities/ui/Spinner";
+import Switch from "@/app/utilities/ui/Switch";
 
 export default function Companies() {
   const [searchValue, setSearchValue] = useState("");
   const [openModal, setOpenModal] = useState(false);
-  const [companies, setCompanies] = useState<TableDataProps | null>(initialData);
+  const { userData } = useSelector((state: RootState) => state.user);
+  const [tableData, setTableData] = useState<TableDataProps | null>(null);
+  const [companiesForm, setCompaniesForm] = useState<Company[] | null>(null)
+
+  const headsTable = [
+    "Logo",
+    "Nombre empresa",
+    "Grupo Whatsapp",
+    "Servicios activos",
+    "Última modificación",
+    "Estado"
+  ];
+
+  const fetchServicesByCompany = useCallback(async (companyId: string) => {
+    try {
+      const response = await fetch(`/api/getServicesByCompany?companyId=${companyId}`);
+      const data = await response.json();
+      return Array.isArray(data) ? data : [];
+    } catch (error) {
+      console.error("Error fetching services by company:", error);
+      return [];
+    }
+  }, []);
+
+  const { originalData, loading } = useFetchCompanies(userData, fetchServicesByCompany, true);
 
   useEffect(() => {
-    if (initialData && searchValue.trim()) {
-      const filteredRows = initialData.rows.filter((row) =>
-        row.some(
-          (cell) =>
-            typeof cell === "string" &&
-            cell.toLowerCase().includes(searchValue.toLowerCase())
-        )
-      );
-      setCompanies(
-        filteredRows.length > 0
-          ? { heads: initialData.heads, rows: filteredRows }
-          : null
-      );
-    } else {
-      setCompanies(initialData);
+    if (!loading) {
+      const dataTable: TableDataProps = {
+        heads: headsTable,
+        rows: originalData.map((company: Company) => [
+          <BoxLogo key={company.id} url={company.logo || ""} />,
+          company.name,
+          company.linkWhatsApp ? (
+            <LinkCP rel="noopener noreferrer" target="_blank" href={company.linkWhatsApp}>
+              {company.linkWhatsApp}
+            </LinkCP>
+          ) : (
+            <span className="text-slate-400">No existe link del grupo</span>
+          ),
+          <ListServices key={company.id} services={company.services || null} />,
+          company.updatedAt,
+          <Switch key={company.id} active={true}/>
+        ]),
+      };
+      setCompaniesForm(originalData)
+
+      // Set table data or null if no companies found
+      setTableData(originalData.length > 0 ? dataTable : null);
     }
-  }, [searchValue, initialData]);
+  }, [loading, originalData]);
+
+  useEffect(() => {
+    // Handle search functionality
+    const filteredData = originalData.filter((company) =>
+      company?.name?.toLowerCase().includes(searchValue.toLowerCase())
+    );
+
+    const dataTable: TableDataProps = {
+      heads: headsTable,
+      rows: filteredData.map((company: Company) => [
+        <BoxLogo key={company.id} url={company.logo || ""} />,
+        company.name,
+        company.linkWhatsApp ? (
+          <LinkCP rel="noopener noreferrer" target="_blank" href={company.linkWhatsApp}>
+            {company.linkWhatsApp}
+          </LinkCP>
+        ) : (
+          <span className="text-slate-400">No existe link del grupo</span>
+        ),
+        <ListServices key={company.id} services={company.services} />,
+        company.updatedAt,
+        <Switch key={company.id} active={true}/>
+      ]),
+    };
+
+    setTableData(filteredData.length > 0 ? dataTable : null);
+  }, [searchValue, originalData]);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     setSearchValue(e.target.value);
   };
 
+  const handleClearSearch = () => {
+    setSearchValue("");
+  };
+
+  console.log(companiesForm)
+
+  if (loading) {
+    return (
+      <div>
+        <div className="mb-5">
+          <TitleSection title="Home" />
+        </div>
+        <div className="w-full h-[70vh] flex justify-center items-center">
+          <span className="text-8xl">
+            <Spinner />
+          </span>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div>
       <Modal open={openModal} onClose={() => setOpenModal(false)}>
-        <FormCreateCompany onClose={() => setOpenModal(false)} />
+        <FormCreateCompany companies={companiesForm} onClose={() => setOpenModal(false)} />
       </Modal>
       
       <div className="mb-5">
@@ -67,12 +145,12 @@ export default function Companies() {
 
         <div className="flex gap-6 items-center">
           <LinkCP href="#">Exportar CSV</LinkCP>
-          <Search onChange={handleChange} value={searchValue} />
+          <Search onReset={handleClearSearch} onChange={handleChange} value={searchValue} />
         </div>
       </div>
 
-      {companies ? (
-        <Table data={companies} />
+      {tableData ? (
+        <Table data={tableData} />
       ) : (
         <div className="text-center p-5 mt-10 flex justify-center items-center">
           <p className="text-slate-400">

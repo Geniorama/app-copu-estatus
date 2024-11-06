@@ -7,7 +7,7 @@ export async function GET() {
     const environment = await getContentfulEnvironment();
 
     const entries = await environment.getEntries({
-      content_type: 'service'
+      content_type: 'servicesFeatures'
     });
 
     const items = entries.items;
