@@ -10,6 +10,7 @@ import { useState, useEffect, useRef } from "react";
 import Swal from "sweetalert2";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCamera } from "@fortawesome/free-solid-svg-icons";
+import { v4 as uuidv4 } from "uuid";
 
 const initialData: Company = {
   name: "",
@@ -37,11 +38,35 @@ export default function FormCreateCompany({
     { value: string; name: string }[] | null
   >(null);
   const [logoImage, setLogoImage] = useState<File | null>(null);
-  const [logoPreview, setLogoPreview] = useState<string | null>(null); 
+  const [logoPreview, setLogoPreview] = useState<string | null>(null);
+  const [uploadFileUrl, setUploadFileUrl] = useState<string | null>(null)
   const logoRef = useRef<HTMLInputElement | null>(null);
 
   const handleLogoClick = () => {
     logoRef.current?.click();
+  };
+
+  const fetchUploadLogo = async (file:File) => {
+    try {
+      const uniqueFileName = `${uuidv4()}-${file.name.replace(/\s+/g, "_")}`;
+      const formData = new FormData()
+      formData.append("file", file, uniqueFileName);
+      const result = await fetch("/api/upload-file", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!result.ok) {
+        console.error("File upload failed");
+        return;
+      }
+
+      const { fileUrl } = await result.json();
+      console.log("Uploaded file URL:", fileUrl);
+      setUploadFileUrl(fileUrl)
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   useEffect(() => {
@@ -54,12 +79,20 @@ export default function FormCreateCompany({
     }
   }, [companies]);
 
+  useEffect(() => {
+    if(uploadFileUrl){
+      setNewCompany({
+        ...newCompany,
+        logo: uploadFileUrl
+      })
+    }
+  },[uploadFileUrl, newCompany])
+
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
       console.log("Selected file:", file);
-      setLogoImage(file)
-      setNewCompany({ ...newCompany, logo: file.name });
+      setLogoImage(file);
 
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -85,6 +118,10 @@ export default function FormCreateCompany({
       if (result.isConfirmed) {
         console.log("Company for send", newCompany);
 
+        if(logoImage){
+          fetchUploadLogo(logoImage)
+        }
+
         Swal.fire({
           title: "Compañía creada",
           text: "La compañía ha sido creada exitosamente",
@@ -106,7 +143,7 @@ export default function FormCreateCompany({
       [e.target.name]: value,
     });
   };
-  
+
   const handleRemoveImage = () => {
     setLogoImage(null);
     setNewCompany({ ...newCompany, logo: "" }); // Eliminar el nombre de la imagen en el estado
@@ -125,21 +162,26 @@ export default function FormCreateCompany({
         >
           {logoPreview ? (
             <img
-            src={logoPreview}
-            alt="Logo Previsualización"
-            className="w-20 h-20 object-cover rounded-full border border-slate-300 absolute top-0 left-0"
-          />
-          ):(
+              src={logoPreview}
+              alt="Logo Previsualización"
+              className="w-20 h-20 object-cover rounded-full border border-slate-300 absolute top-0 left-0"
+            />
+          ) : (
             <span>Logo</span>
           )}
-          
+
           <div className="absolute w-full h-full flex justify-center items-center text-2xl text-cp-primary bg-slate-500 rounded-full bg-opacity-70 opacity-0 hover:opacity-100">
             <FontAwesomeIcon icon={faCamera} />
           </div>
         </div>
-        
+
         {logoPreview && (
-          <span onClick={handleRemoveImage} className=" underline text-blue-600 text-xs cursor-pointer hover:opacity-70">Quitar imagen</span>
+          <span
+            onClick={handleRemoveImage}
+            className=" underline text-blue-600 text-xs cursor-pointer hover:opacity-70"
+          >
+            Quitar imagen
+          </span>
         )}
         <input
           onChange={handleFileChange}
@@ -148,6 +190,7 @@ export default function FormCreateCompany({
           type="file"
           name=""
           id=""
+          accept="image/png, image/jpeg, image/png, image/jpg, image/png, image/webp"
         />
       </div>
 
@@ -201,7 +244,7 @@ export default function FormCreateCompany({
           </Label>
           <Input
             onChange={(e) => handleChange(e)}
-            name="linkWhatsapp"
+            name="linkWhatsApp"
             id="linkWp"
             mode="cp-dark"
             type="text"

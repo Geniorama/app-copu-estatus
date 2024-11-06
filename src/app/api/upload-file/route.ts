@@ -1,32 +1,31 @@
 import { NextRequest, NextResponse } from "next/server";
-import { PutObjectCommand } from "@aws-sdk/client-s3";
 import r2Client from "@/app/lib/r2Client";
+import { PutObjectCommand } from "@aws-sdk/client-s3";
 
 export async function POST(req: NextRequest) {
-  try {
-    const formData = await req.formData();
-    const file = formData.get("file") as File | null;
+    try {
+        const formData = await req.formData();
+        const file = formData.get("file") as File;
 
-    if (!file) {
-      return NextResponse.json({ error: "Archivo no encontrado" }, { status: 400 });
+        if (!file) {
+            return NextResponse.json({ error: "No file uploaded" }, { status: 400 });
+        }
+        const fileKey = `uploads/${file.name}`;
+
+        const fileBuffer = Buffer.from(await file.arrayBuffer());
+
+        await r2Client.send(new PutObjectCommand({
+            Bucket: process.env.CLOUDFLARE_R2_BUCKET_NAME,
+            Key: fileKey,
+            Body: fileBuffer,
+            ContentType: file.type,
+        }));
+
+        const fileUrl = `${process.env.CLOUDFLARE_BUCKET_URL}/${fileKey}`;
+
+        return NextResponse.json({ fileUrl }, { status: 200 });
+    } catch (error) {
+        console.error("Error al subir el archivo:", error);
+        return NextResponse.json({ error: "La subida de archivo falló" }, { status: 500 });
     }
-
-    const buffer = await file.arrayBuffer();
-    const fileName = file.name;
-
-    const uploadParams = {
-      Bucket: process.env.CLOUDFLARE_R2_BUCKET_NAME,
-      Key: fileName,
-      Body: Buffer.from(buffer),
-      ContentType: file.type,
-    };
-
-    const command = new PutObjectCommand(uploadParams);
-    await r2Client.send(command);
-
-    return NextResponse.json({ message: "Archivo subido exitosamente", fileName }, { status: 200 });
-  } catch (error) {
-    console.error("Error al subir el archivo:", error);
-    return NextResponse.json({ error: "Error al subir el archivo" }, { status: 500 });
-  }
 }
