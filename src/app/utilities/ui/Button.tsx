@@ -13,7 +13,7 @@ export function Button({ children, mode, ...props }: ButtonProps) {
 
   return (
     <button
-      className={`flex justify-center rounded-3xl ${buttonClassMode} px-4 py-2 text-base leading-none font-semibold shadow-sm transition-all duration-300`}
+      className={`flex justify-center rounded-3xl ${buttonClassMode} px-4 py-2 text-base leading-none font-semibold shadow-sm transition-all duration-300 disabled:opacity-45 disabled:pointer-events-none`}
       {...props}
     >
       {children}

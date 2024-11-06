@@ -8,29 +8,35 @@ import type { FormEvent, ChangeEvent } from "react";
 import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
 
-const initialData: User = {
-  id: "",
-  fname: "",
-  lname: "",
-  email: "",
-  phone: "",
-  role: "cliente",
-};
-
 interface FormCreateCompanyProps {
   onClose?: () => void;
   defaultData?: User | null;
 }
 
-export default function FormUpdateUser({ onClose, defaultData }: FormCreateCompanyProps) {
-  const [user, setUser] = useState<User>(initialData);
+export default function FormUpdateUser({
+  onClose,
+  defaultData,
+}: FormCreateCompanyProps) {
+  const [originalData, setOriginalData] = useState<User | null>(null);
+  const [user, setUser] = useState<Partial<User> | null>(null);
+  const [isChanged, setIsChanged] = useState(false);
 
   useEffect(() => {
-    if(defaultData){
-        setUser(defaultData)
+    if (defaultData) {
+      setOriginalData(defaultData);
+      setUser(defaultData);
     }
-  },[defaultData])
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+  }, [defaultData]);
+
+  const hasChanges = () => {
+    return JSON.stringify(user) !== JSON.stringify(originalData);
+  };
+
+  useEffect(() => {
+    setIsChanged(hasChanges());
+  }, [user]);
+
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     Swal.fire({
@@ -42,20 +48,41 @@ export default function FormUpdateUser({ onClose, defaultData }: FormCreateCompa
       cancelButtonColor: "#d33",
       confirmButtonText: "Sí, actualizar usuario",
       cancelButtonText: "Cancelar",
-    }).then((result) => {
-      if (result.isConfirmed) {
-        console.log("Company for send", user);
+    }).then(async (result) => {
+      if (result.isConfirmed && user) {
+        try {
+          const response = await fetch(`/api/users`, {
+            method: "PATCH",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(user),
+          });
 
-        Swal.fire({
-          title: "Usuario creado",
-          text: "La información se ha actualizado exitosamente",
-          icon: "success",
-          confirmButtonText: "OK",
-        }).then(() => {
-         if(onClose){
-            onClose();
-         }
-        });
+          if (!response.ok) {
+            throw new Error("Error al actualizar el usuario");
+          }
+
+          const updatedUser = await response.json();
+          console.log(updatedUser)
+          Swal.fire({
+            title: "Usuario actualizado",
+            text: "La información se ha actualizado exitosamente",
+            icon: "success",
+            confirmButtonText: "OK",
+          }).then(() => {
+            if (onClose) {
+              onClose();
+            }
+          });
+        } catch (error) {
+          Swal.fire({
+            title: "Error",
+            text: "No se pudo actualizar la información del usuario",
+            icon: "error",
+          });
+          console.error("Error al actualizar el usuario:", error);
+        }
       } else {
         console.log("Actualización de usuario cancelada");
       }
@@ -64,78 +91,71 @@ export default function FormUpdateUser({ onClose, defaultData }: FormCreateCompa
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    setUser({
-      ...user,
+    setUser((prevUser) => ({
+      ...prevUser,
       [e.target.name]: value,
-    });
+    }));
   };
 
   return (
     <form
-      onSubmit={(e) => handleSubmit(e)}
+      onSubmit={handleSubmit}
       className="w-full flex flex-col gap-3 rounded-lg"
     >
       <div className="flex gap-3">
         <div className="w-1/2">
-          <Label htmlFor="fname">
-            Nombre(s) *
-          </Label>
+          <Label htmlFor="fname">Nombre(s) *</Label>
           <Input
-            onChange={(e) => handleChange(e)}
+            onChange={handleChange}
             name="fname"
             id="fname"
             required
-            value={user.fname}
+            value={user?.fname || ""}
           />
         </div>
         <div className="w-1/2">
-          <Label htmlFor="lname">
-            Apellido(s) *
-          </Label>
+          <Label htmlFor="lname">Apellido(s) *</Label>
           <Input
-            onChange={(e) => handleChange(e)}
+            onChange={handleChange}
             name="lname"
             id="lname"
             required
             type="text"
-            value={user.lname}
+            value={user?.lname || ""}
           />
         </div>
       </div>
 
       <div className="flex gap-3">
         <div className="w-1/2">
-          <Label htmlFor="email">
-            Email *
-          </Label>
+          <Label htmlFor="email">Email *</Label>
           <Input
-            onChange={(e) => handleChange(e)}
+            readOnly
+            disabled
             name="email"
             id="email"
             required
             type="email"
-            value={user.email}
+            value={user?.email || ""}
           />
         </div>
 
         <div className="w-1/2">
-          <Label htmlFor="phone">
-            Teléfono *
-          </Label>
+          <Label htmlFor="phone">Teléfono *</Label>
           <Input
-            onChange={(e) => handleChange(e)}
+            onChange={handleChange}
             name="phone"
             id="phone"
             type="text"
-            value={user.phone}
+            value={user?.phone || ""}
           />
         </div>
       </div>
 
       <div className="flex gap-3 items-center justify-end mt-3">
         <div>
-          <Button mode="cp-green" type="submit">
-            Guardar
+          <Button disabled={!isChanged} mode="cp-green" type="submit">
+            Actualizar
           </Button>
         </div>
       </div>
