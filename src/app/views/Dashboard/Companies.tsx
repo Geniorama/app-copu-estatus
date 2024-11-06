@@ -26,7 +26,7 @@ export default function Companies() {
   const [openModal, setOpenModal] = useState(false);
   const { userData } = useSelector((state: RootState) => state.user);
   const [tableData, setTableData] = useState<TableDataProps | null>(null);
-  const [companiesForm, setCompaniesForm] = useState<Company[] | null>(null)
+  const [companiesForm, setCompaniesForm] = useState<Company[] | null>(null);
 
   const headsTable = [
     "Logo",
@@ -34,12 +34,14 @@ export default function Companies() {
     "Grupo Whatsapp",
     "Servicios activos",
     "Última modificación",
-    "Estado"
+    "Estado",
   ];
 
   const fetchServicesByCompany = useCallback(async (companyId: string) => {
     try {
-      const response = await fetch(`/api/getServicesByCompany?companyId=${companyId}`);
+      const response = await fetch(
+        `/api/getServicesByCompany?companyId=${companyId}`
+      );
       const data = await response.json();
       return Array.isArray(data) ? data : [];
     } catch (error) {
@@ -48,7 +50,11 @@ export default function Companies() {
     }
   }, []);
 
-  const { originalData, loading } = useFetchCompanies(userData, fetchServicesByCompany, true);
+  const { originalData, loading } = useFetchCompanies(
+    userData,
+    fetchServicesByCompany,
+    true
+  );
 
   useEffect(() => {
     if (!loading) {
@@ -58,7 +64,11 @@ export default function Companies() {
           <BoxLogo key={company.id} url={company.logo || ""} />,
           company.name,
           company.linkWhatsApp ? (
-            <LinkCP rel="noopener noreferrer" target="_blank" href={company.linkWhatsApp}>
+            <LinkCP
+              rel="noopener noreferrer"
+              target="_blank"
+              href={company.linkWhatsApp}
+            >
               {company.linkWhatsApp}
             </LinkCP>
           ) : (
@@ -66,10 +76,10 @@ export default function Companies() {
           ),
           <ListServices key={company.id} services={company.services || null} />,
           company.updatedAt,
-          <Switch key={company.id} active={true}/>
+          <Switch key={company.id} active={true} />,
         ]),
       };
-      setCompaniesForm(originalData)
+      setCompaniesForm(originalData);
 
       // Set table data or null if no companies found
       setTableData(originalData.length > 0 ? dataTable : null);
@@ -77,7 +87,6 @@ export default function Companies() {
   }, [loading, originalData]);
 
   useEffect(() => {
-    // Handle search functionality
     const filteredData = originalData.filter((company) =>
       company?.name?.toLowerCase().includes(searchValue.toLowerCase())
     );
@@ -88,7 +97,11 @@ export default function Companies() {
         <BoxLogo key={company.id} url={company.logo || ""} />,
         company.name,
         company.linkWhatsApp ? (
-          <LinkCP rel="noopener noreferrer" target="_blank" href={company.linkWhatsApp}>
+          <LinkCP
+            rel="noopener noreferrer"
+            target="_blank"
+            href={company.linkWhatsApp}
+          >
             {company.linkWhatsApp}
           </LinkCP>
         ) : (
@@ -96,7 +109,7 @@ export default function Companies() {
         ),
         <ListServices key={company.id} services={company.services} />,
         company.updatedAt,
-        <Switch key={company.id} active={true}/>
+        <Switch key={company.id} active={true} />,
       ]),
     };
 
@@ -111,13 +124,11 @@ export default function Companies() {
     setSearchValue("");
   };
 
-  console.log(companiesForm)
-
   if (loading) {
     return (
       <div>
         <div className="mb-5">
-          <TitleSection title="Home" />
+          <TitleSection title="Compañías" />
         </div>
         <div className="w-full h-[70vh] flex justify-center items-center">
           <span className="text-8xl">
@@ -131,9 +142,12 @@ export default function Companies() {
   return (
     <div>
       <Modal open={openModal} onClose={() => setOpenModal(false)}>
-        <FormCreateCompany companies={companiesForm} onClose={() => setOpenModal(false)} />
+        <FormCreateCompany
+          companies={companiesForm}
+          onClose={() => setOpenModal(false)}
+        />
       </Modal>
-      
+
       <div className="mb-5">
         <TitleSection title="Compañías" />
       </div>
@@ -145,7 +159,11 @@ export default function Companies() {
 
         <div className="flex gap-6 items-center">
           <LinkCP href="#">Exportar CSV</LinkCP>
-          <Search onReset={handleClearSearch} onChange={handleChange} value={searchValue} />
+          <Search
+            onReset={handleClearSearch}
+            onChange={handleChange}
+            value={searchValue}
+          />
         </div>
       </div>
 

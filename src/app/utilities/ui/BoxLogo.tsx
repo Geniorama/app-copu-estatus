@@ -4,7 +4,7 @@ interface BoxLogoProps {
 
 export default function BoxLogo({url}: BoxLogoProps) {
   return (
-    <div className="w-11 aspect-square rounded-full overflow-hidden bg-slate-950">
+    <div className="w-11 aspect-square rounded-full overflow-hidden bg-slate-200 overflow-hidden">
       {url && (
         <img
           src={url}

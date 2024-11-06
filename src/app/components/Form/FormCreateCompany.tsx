@@ -11,6 +11,9 @@ import Swal from "sweetalert2";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCamera } from "@fortawesome/free-solid-svg-icons";
 import { v4 as uuidv4 } from "uuid";
+import { PhoneInput } from 'react-international-phone';
+import 'react-international-phone/style.css';
+import phoneInputStyles from './PhoneInput.module.css'
 
 const initialData: Company = {
   name: "",
@@ -27,11 +30,13 @@ const initialData: Company = {
 interface FormCreateCompanyProps {
   onClose: () => void;
   companies?: Company[] | null;
+  onSubmit?: () => void;
 }
 
 export default function FormCreateCompany({
   onClose,
   companies,
+  onSubmit
 }: FormCreateCompanyProps) {
   const [newCompany, setNewCompany] = useState<Company>(initialData);
   const [parentCompanies, setParentCompanies] = useState<
@@ -45,6 +50,30 @@ export default function FormCreateCompany({
   const handleLogoClick = () => {
     logoRef.current?.click();
   };
+
+  const fetchCreateCompany = async (data: Company) => {
+    try {
+      const result = await fetch("/api/companies", {
+        method: "POST",
+        headers: {
+          "Content-type": "application/json",
+        },
+        body: JSON.stringify(data),
+      });
+  
+      if (!result.ok) {
+        const error = await result.text();
+        console.error("Error al crear empresa:", error);
+        return;
+      }
+  
+      const dataRes = await result.json();
+      console.log("Compañía creada:", dataRes);
+    } catch (error) {
+      console.error("Fetch error:", error);
+    }
+  };
+  
 
   const fetchUploadLogo = async (file:File) => {
     try {
@@ -79,15 +108,6 @@ export default function FormCreateCompany({
     }
   }, [companies]);
 
-  useEffect(() => {
-    if(uploadFileUrl){
-      setNewCompany({
-        ...newCompany,
-        logo: uploadFileUrl
-      })
-    }
-  },[uploadFileUrl, newCompany])
-
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
@@ -102,9 +122,16 @@ export default function FormCreateCompany({
     }
   };
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const handlePhoneChange = (phone: string) => {
+    setNewCompany({
+      ...newCompany,
+      phone
+    })
+  }
 
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+  
     Swal.fire({
       title: "¿Estás seguro?",
       text: "Estás a punto de crear una nueva compañía. ¿Deseas continuar?",
@@ -114,14 +141,23 @@ export default function FormCreateCompany({
       cancelButtonColor: "#d33",
       confirmButtonText: "Sí, crear compañía",
       cancelButtonText: "Cancelar",
-    }).then((result) => {
+    }).then(async (result) => {
       if (result.isConfirmed) {
-        console.log("Company for send", newCompany);
-
-        if(logoImage){
-          fetchUploadLogo(logoImage)
+        if (logoImage) {
+          await fetchUploadLogo(logoImage); // Espera a que termine la subida del logo
         }
+  
+        if (!uploadFileUrl && logoImage) {
+          console.log("No hay logo disponible aún");
+          return;
+        }
+  
+        await fetchCreateCompany({ ...newCompany, logo: uploadFileUrl || "" });
 
+        if(onSubmit){
+          onSubmit()
+        }
+  
         Swal.fire({
           title: "Compañía creada",
           text: "La compañía ha sido creada exitosamente",
@@ -135,6 +171,7 @@ export default function FormCreateCompany({
       }
     });
   };
+  
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -190,7 +227,7 @@ export default function FormCreateCompany({
           type="file"
           name=""
           id=""
-          accept="image/png, image/jpeg, image/png, image/jpg, image/png, image/webp"
+          accept="image/*"
         />
       </div>
 
@@ -227,7 +264,13 @@ export default function FormCreateCompany({
           <Label htmlFor="companyPhone" mode="cp-dark">
             Teléfono *
           </Label>
-          <Input
+          <PhoneInput 
+           defaultCountry="co"
+           onChange={(phone) => handlePhoneChange(phone)}
+           value={newCompany.phone}
+           className={phoneInputStyles.customPhoneInput}
+          />
+          {/* <Input
             onChange={(e) => handleChange(e)}
             name="phone"
             placeholder="Ej: +573001234567"
@@ -235,7 +278,7 @@ export default function FormCreateCompany({
             mode="cp-dark"
             required
             type="tel"
-          />
+          /> */}
         </div>
 
         <div className="w-1/2">

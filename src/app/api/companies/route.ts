@@ -33,6 +33,9 @@ export async function POST(request: NextRequest) {
         name: {
           'en-US': company.name
         },
+        logo:{
+          'en-US': company.logo || undefined
+        },
         address: {
           'en-US': company.address 
         },
