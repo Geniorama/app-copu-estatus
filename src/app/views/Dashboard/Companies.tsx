@@ -139,12 +139,17 @@ export default function Companies() {
     );
   }
 
+  const handleCreateCompany = (idCompany: string) => {
+    console.log('New company id', idCompany)
+  }
+
   return (
     <div>
       <Modal open={openModal} onClose={() => setOpenModal(false)}>
         <FormCreateCompany
           companies={companiesForm}
           onClose={() => setOpenModal(false)}
+          onSubmit={handleCreateCompany}
         />
       </Modal>
 

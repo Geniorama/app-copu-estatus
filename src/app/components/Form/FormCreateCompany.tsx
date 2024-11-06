@@ -30,7 +30,7 @@ const initialData: Company = {
 interface FormCreateCompanyProps {
   onClose: () => void;
   companies?: Company[] | null;
-  onSubmit?: () => void;
+  onSubmit?: (idCompany: string) => void;
 }
 
 export default function FormCreateCompany({
@@ -68,17 +68,17 @@ export default function FormCreateCompany({
       }
   
       const dataRes = await result.json();
-      console.log("Compañía creada:", dataRes);
+      return dataRes
     } catch (error) {
       console.error("Fetch error:", error);
     }
   };
   
 
-  const fetchUploadLogo = async (file:File) => {
+  const fetchUploadLogo = async (file: File): Promise<string | null> => {
     try {
       const uniqueFileName = `${uuidv4()}-${file.name.replace(/\s+/g, "_")}`;
-      const formData = new FormData()
+      const formData = new FormData();
       formData.append("file", file, uniqueFileName);
       const result = await fetch("/api/upload-file", {
         method: "POST",
@@ -87,16 +87,19 @@ export default function FormCreateCompany({
 
       if (!result.ok) {
         console.error("File upload failed");
-        return;
+        return null;
       }
 
       const { fileUrl } = await result.json();
       console.log("Uploaded file URL:", fileUrl);
-      setUploadFileUrl(fileUrl)
+      setUploadFileUrl(fileUrl);
+      return fileUrl;
     } catch (error) {
       console.error(error);
+      return null;
     }
-  };
+};
+
 
   useEffect(() => {
     if (companies) {
@@ -143,19 +146,22 @@ export default function FormCreateCompany({
       cancelButtonText: "Cancelar",
     }).then(async (result) => {
       if (result.isConfirmed) {
-        if (logoImage) {
-          await fetchUploadLogo(logoImage); // Espera a que termine la subida del logo
+        let finalLogoUrl = uploadFileUrl;
+        if (logoImage && !uploadFileUrl) {
+          finalLogoUrl = await fetchUploadLogo(logoImage);
         }
   
-        if (!uploadFileUrl && logoImage) {
+        if (!finalLogoUrl) {
           console.log("No hay logo disponible aún");
           return;
         }
   
-        await fetchCreateCompany({ ...newCompany, logo: uploadFileUrl || "" });
+        // Procede a crear la compañía con la URL del logo
+        const newCompanyContentful = await fetchCreateCompany({ ...newCompany, logo: finalLogoUrl });
 
-        if(onSubmit){
-          onSubmit()
+        if (onSubmit && newCompanyContentful) {
+          console.log('newCompanyContentful', newCompanyContentful);
+          onSubmit(newCompanyContentful.sys.id);
         }
   
         Swal.fire({
@@ -171,6 +177,7 @@ export default function FormCreateCompany({
       }
     });
   };
+
   
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
