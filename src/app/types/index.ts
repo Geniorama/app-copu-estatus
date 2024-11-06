@@ -80,7 +80,7 @@ export interface User{
   phone: string;
   role: 'admin' | 'cliente';
   position?: string;
-  companies?: {metadata:Metadata, sys:Sys, fields:Company}[] | null;
+  companies?: CompanyResponse[] | null;
   auth0Id?: string;
   imageProfile?: string;
   linkWhatsApp?: string | null;

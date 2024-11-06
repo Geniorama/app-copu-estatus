@@ -9,7 +9,7 @@ import Modal from "@/app/components/Modal/Modal";
 import FormCreateUser from "@/app/components/Form/FormCreateUser";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
-import type { Company, Metadata, Sys, TableDataProps, User } from "@/app/types";
+import type { CompanyResponse, TableDataProps, User } from "@/app/types";
 import type { ChangeEvent } from "react";
 import TitleSection from "@/app/utilities/ui/TitleSection";
 import type { Entry } from "contentful";
@@ -25,7 +25,7 @@ export default function Users() {
   const [openModal, setOpenModal] = useState(false);
   const [tableData, setTableData] = useState<TableDataProps | null>(null);
   const [originalData, setOriginalData] = useState<User[]>([]);
-  const [companies, setCompanies] = useState<{id: string, name: string}[] | null>(null);
+  const [companies, setCompanies] = useState<CompanyResponse[] | null>(null);
   const [userCreated, setUserCreated] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -129,14 +129,14 @@ export default function Users() {
       if (res.ok) {
         const data = await res.json();
 
-        const transformData:{id: string, name: string}[] = await data.map((company:{metadata: Metadata, sys: Sys, fields: Company}) => ({
-          id: company.sys.id,
-          name: typeof company.fields.name === "object" && company.fields.name
-            ? company.fields.name["en-US"]
-            : "N/A",
-        }))
+        // const transformData:{id: string, name: string}[] = await data.map((company:{metadata: Metadata, sys: Sys, fields: Company}) => ({
+        //   id: company.sys.id,
+        //   name: typeof company.fields.name === "object" && company.fields.name
+        //     ? company.fields.name["en-US"]
+        //     : "N/A",
+        // }))
 
-        setCompanies(transformData)
+        setCompanies(data)
       }
     } catch (error) {
       console.log("Error data companies", error);

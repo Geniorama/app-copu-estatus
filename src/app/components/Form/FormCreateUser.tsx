@@ -4,7 +4,7 @@ import Input from "@/app/utilities/ui/Input";
 import Label from "@/app/utilities/ui/Label";
 import Select from "@/app/utilities/ui/Select";
 import Button from "@/app/utilities/ui/Button";
-import type { User } from "@/app/types";
+import type { CompanyResponse, User } from "@/app/types";
 import type { FormEvent, ChangeEvent } from "react";
 import { useState, useEffect } from "react";
 import Swal from "sweetalert2";
@@ -26,7 +26,7 @@ const initialData: User = {
 interface FormCreateCompanyProps {
   onClose?: () => void;
   onSubmit?: (userInfo: User) => void;
-  companies?: {id: string, name: string}[] | null;
+  companies?: CompanyResponse[] | null;
 }
 interface OptionSelect {
   name: string;
@@ -39,16 +39,18 @@ export default function FormCreateUser({
   companies,
 }: FormCreateCompanyProps) {
   const [user, setUser] = useState<User>(initialData);
-  const [companiesOptions, setCompaniesOptions] = useState<OptionSelect[] | null>(null);
+  const [companiesOptions, setCompaniesOptions] = useState<
+    OptionSelect[] | null
+  >(null);
 
   useEffect(() => {
     const updateCompaniesFields = companies?.map((company) => ({
-      value: company.id,
-      name: company.name
-    }))
+      value: `${company.sys.id}`,
+      name: `${company.fields.name['en-US']}`,
+    }));
 
-    setCompaniesOptions(updateCompaniesFields || null)
-  },[companies])
+    setCompaniesOptions(updateCompaniesFields || null);
+  }, [companies]);
 
   useEffect(() => {
     if (user.auth0Id) {
@@ -65,7 +67,7 @@ export default function FormCreateUser({
         },
         body: JSON.stringify(infoUser),
       });
-      console.log(res)
+      console.log(res);
     } catch (error) {
       console.log("Error create user", error);
     }
@@ -80,6 +82,22 @@ export default function FormCreateUser({
       onClose();
     }
   };
+
+  const handleChangeCompany = (e:ChangeEvent<HTMLSelectElement>) => {
+    const idCompany = e.target.value
+
+    if(companies){
+      const filterCompany = companies.filter((company) => company.sys.id === idCompany)
+
+      setUser({
+        ...user,
+        companies: filterCompany
+      })
+
+      console.log(user)
+    }
+    
+  }
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -109,18 +127,18 @@ export default function FormCreateUser({
           if (response.ok) {
             const auth0User = await response.json();
             if (auth0User) {
-              const updatedUser = { ...user, auth0Id: auth0User.auth0Id }
+              const updatedUser = { ...user, auth0Id: auth0User.auth0Id };
               setUser(updatedUser);
 
               await createUserInContentful(updatedUser);
 
-              if(onSubmit){
-                onSubmit(updatedUser)
+              if (onSubmit) {
+                onSubmit(updatedUser);
               }
 
               Swal.fire({
                 title: "Usuario creado",
-                text: "El usuario ha sido creado exitosamente en Auth0.",
+                text: "El usuario ha sido creado exitosamente",
                 icon: "success",
                 confirmButtonText: "OK",
               }).then(() => {
@@ -250,20 +268,19 @@ export default function FormCreateUser({
         </div>
       </div>
 
-      {user.role === "cliente" && (
-        <div>
-          <Label htmlFor="linkDrive" mode="cp-dark">
-            Compañía(s) *
-          </Label>
-          <Select
-            required={user.role === "cliente"}
-            mode="cp-dark"
-            disabled={!companies}
-            options={companiesOptions || [{ name: "", value: "" }]}
-            defaultOptionText="Selecciona una opción"
-          />
-        </div>
-      )}
+      <div>
+        <Label htmlFor="linkDrive" mode="cp-dark">
+          Compañía(s) *
+        </Label>
+        <Select
+          required={user.role === "cliente"}
+          mode="cp-dark"
+          disabled={!companies}
+          onChange={(e) => handleChangeCompany(e)}
+          options={companiesOptions || [{ name: "", value: "" }]}
+          defaultOptionText="Selecciona una opción"
+        />
+      </div>
 
       <div className="flex gap-3 items-center justify-end mt-3">
         <div>

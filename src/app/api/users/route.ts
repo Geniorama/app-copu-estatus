@@ -63,6 +63,15 @@ export async function POST(request: NextRequest) {
         linkWhatsApp: {
           "en-US": user.linkWhatsApp,
         },
+        company: {
+          "en-US": user.companies?.map((company) => ({
+            sys: {
+              type: 'Link',
+              linkType: 'Entry',
+              id: company.sys.id
+            }
+          }))
+        }
       },
     });
 
