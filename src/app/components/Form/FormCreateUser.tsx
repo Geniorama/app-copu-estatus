@@ -11,7 +11,8 @@ import Swal from "sweetalert2";
 import { randomBytes } from "crypto";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUser, faCamera } from "@fortawesome/free-solid-svg-icons";
-import { v4 as uuidv4 } from "uuid";
+import { fetchUploadImage, createUserInContentful } from "@/app/utilities/helpers/fetchers";
+
 
 const initialData: User = {
   id: "",
@@ -60,44 +61,6 @@ export default function FormCreateUser({
 
     setCompaniesOptions(updateCompaniesFields || null);
   }, [companies]);
-
-  const fetchUploadImage = async (file: File): Promise<string | null> => {
-    try {
-      const uniqueFileName = `${uuidv4()}-${file.name.replace(/\s+/g, "_")}`;
-      const formData = new FormData();
-      formData.append("file", file, uniqueFileName);
-      const result = await fetch("/api/upload-file", {
-        method: "POST",
-        body: formData,
-      });
-
-      if (!result.ok) {
-        console.error("File upload failed");
-        return null;
-      }
-
-      const { fileUrl } = await result.json();
-      return fileUrl;
-    } catch (error) {
-      console.error(error);
-      return null;
-    }
-  };
-
-  const createUserInContentful = async (infoUser: User) => {
-    try {
-      const res = await fetch("/api/users", {
-        method: "POST",
-        headers: {
-          "Content-type": "application/json",
-        },
-        body: JSON.stringify(infoUser),
-      });
-      console.log(res);
-    } catch (error) {
-      console.log("Error create user", error);
-    }
-  };
 
   const generatePassword = (length = 12) => {
     return randomBytes(length).toString("base64").slice(0, length);
