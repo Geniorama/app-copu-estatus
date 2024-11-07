@@ -11,9 +11,9 @@ import Swal from "sweetalert2";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCamera } from "@fortawesome/free-solid-svg-icons";
 import { v4 as uuidv4 } from "uuid";
-import { PhoneInput } from 'react-international-phone';
-import 'react-international-phone/style.css';
-import phoneInputStyles from './PhoneInput.module.css'
+import { PhoneInput } from "react-international-phone";
+import "react-international-phone/style.css";
+import phoneInputStyles from "./PhoneInput.module.css";
 
 const initialData: Company = {
   name: "",
@@ -36,7 +36,7 @@ interface FormCreateCompanyProps {
 export default function FormCreateCompany({
   onClose,
   companies,
-  onSubmit
+  onSubmit,
 }: FormCreateCompanyProps) {
   const [newCompany, setNewCompany] = useState<Company>(initialData);
   const [parentCompanies, setParentCompanies] = useState<
@@ -44,7 +44,7 @@ export default function FormCreateCompany({
   >(null);
   const [logoImage, setLogoImage] = useState<File | null>(null);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
-  const [uploadFileUrl, setUploadFileUrl] = useState<string | null>(null)
+  const [uploadFileUrl, setUploadFileUrl] = useState<string | null>(null);
   const logoRef = useRef<HTMLInputElement | null>(null);
 
   const handleLogoClick = () => {
@@ -60,20 +60,19 @@ export default function FormCreateCompany({
         },
         body: JSON.stringify(data),
       });
-  
+
       if (!result.ok) {
         const error = await result.text();
         console.error("Error al crear empresa:", error);
         return;
       }
-  
+
       const dataRes = await result.json();
-      return dataRes
+      return dataRes;
     } catch (error) {
       console.error("Fetch error:", error);
     }
   };
-  
 
   const fetchUploadLogo = async (file: File): Promise<string | null> => {
     try {
@@ -98,8 +97,7 @@ export default function FormCreateCompany({
       console.error(error);
       return null;
     }
-};
-
+  };
 
   useEffect(() => {
     if (companies) {
@@ -128,13 +126,13 @@ export default function FormCreateCompany({
   const handlePhoneChange = (phone: string) => {
     setNewCompany({
       ...newCompany,
-      phone
-    })
-  }
+      phone,
+    });
+  };
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-  
+
     Swal.fire({
       title: "¿Estás seguro?",
       text: "Estás a punto de crear una nueva compañía. ¿Deseas continuar?",
@@ -150,20 +148,23 @@ export default function FormCreateCompany({
         if (logoImage && !uploadFileUrl) {
           finalLogoUrl = await fetchUploadLogo(logoImage);
         }
-  
+
         if (!finalLogoUrl) {
           console.log("No hay logo disponible aún");
           return;
         }
-  
+
         // Procede a crear la compañía con la URL del logo
-        const newCompanyContentful = await fetchCreateCompany({ ...newCompany, logo: finalLogoUrl });
+        const newCompanyContentful = await fetchCreateCompany({
+          ...newCompany,
+          logo: finalLogoUrl,
+        });
 
         if (onSubmit && newCompanyContentful) {
-          console.log('newCompanyContentful', newCompanyContentful);
+          console.log("newCompanyContentful", newCompanyContentful);
           onSubmit(newCompanyContentful.sys.id);
         }
-  
+
         Swal.fire({
           title: "Compañía creada",
           text: "La compañía ha sido creada exitosamente",
@@ -177,8 +178,6 @@ export default function FormCreateCompany({
       }
     });
   };
-
-  
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -271,11 +270,11 @@ export default function FormCreateCompany({
           <Label htmlFor="companyPhone" mode="cp-dark">
             Teléfono *
           </Label>
-          <PhoneInput 
-           defaultCountry="co"
-           onChange={(phone) => handlePhoneChange(phone)}
-           value={newCompany.phone}
-           className={phoneInputStyles.customPhoneInput}
+          <PhoneInput
+            defaultCountry="co"
+            onChange={(phone) => handlePhoneChange(phone)}
+            value={newCompany.phone}
+            className={phoneInputStyles.customPhoneInput}
           />
           {/* <Input
             onChange={(e) => handleChange(e)}

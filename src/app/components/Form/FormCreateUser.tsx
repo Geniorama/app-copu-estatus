@@ -6,9 +6,12 @@ import Select from "@/app/utilities/ui/Select";
 import Button from "@/app/utilities/ui/Button";
 import type { CompanyResponse, User } from "@/app/types";
 import type { FormEvent, ChangeEvent } from "react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Swal from "sweetalert2";
 import { randomBytes } from "crypto";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faUser, faCamera } from "@fortawesome/free-solid-svg-icons";
+import { v4 as uuidv4 } from "uuid";
 
 const initialData: User = {
   id: "",
@@ -42,21 +45,44 @@ export default function FormCreateUser({
   const [companiesOptions, setCompaniesOptions] = useState<
     OptionSelect[] | null
   >(null);
+  const [imgProfile, setImgProfile] = useState<File | null>(null);
+  const [imgProfilePreview, setImgProfilePreview] = useState<string | null>(
+    null
+  );
+
+  const imageProfileRef = useRef<HTMLInputElement | null>(null)
 
   useEffect(() => {
     const updateCompaniesFields = companies?.map((company) => ({
       value: `${company.sys.id}`,
-      name: `${company.fields.name['en-US']}`,
+      name: `${company.fields.name["en-US"]}`,
     }));
 
     setCompaniesOptions(updateCompaniesFields || null);
   }, [companies]);
 
-  useEffect(() => {
-    if (user.auth0Id) {
-      console.log(user);
+  const fetchUploadImage = async (file: File): Promise<string | null> => {
+    try {
+      const uniqueFileName = `${uuidv4()}-${file.name.replace(/\s+/g, "_")}`;
+      const formData = new FormData();
+      formData.append("file", file, uniqueFileName);
+      const result = await fetch("/api/upload-file", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!result.ok) {
+        console.error("File upload failed");
+        return null;
+      }
+
+      const { fileUrl } = await result.json();
+      return fileUrl;
+    } catch (error) {
+      console.error(error);
+      return null;
     }
-  }, [user.auth0Id]);
+  };
 
   const createUserInContentful = async (infoUser: User) => {
     try {
@@ -82,22 +108,40 @@ export default function FormCreateUser({
       onClose();
     }
   };
+  const handleProfileClick = () => {
+    imageProfileRef.current?.click();
+  };
 
-  const handleChangeCompany = (e:ChangeEvent<HTMLSelectElement>) => {
-    const idCompany = e.target.value
+  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      console.log("Selected file:", file);
+      setImgProfile(file);
 
-    if(companies){
-      const filterCompany = companies.filter((company) => company.sys.id === idCompany)
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImgProfilePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleChangeCompany = (e: ChangeEvent<HTMLSelectElement>) => {
+    const idCompany = e.target.value;
+
+    if (companies) {
+      const filterCompany = companies.filter(
+        (company) => company.sys.id === idCompany
+      );
 
       setUser({
         ...user,
-        companies: filterCompany
-      })
+        companies: filterCompany,
+      });
 
-      console.log(user)
+      console.log(user);
     }
-    
-  }
+  };
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -129,8 +173,16 @@ export default function FormCreateUser({
             if (auth0User) {
               const updatedUser = { ...user, auth0Id: auth0User.auth0Id };
               setUser(updatedUser);
+              let fileProfileUrl = ''
 
-              await createUserInContentful(updatedUser);
+              if(imgProfile){
+                const res = await fetchUploadImage(imgProfile)
+                if(res){
+                  fileProfileUrl = res
+                }
+              }
+
+              await createUserInContentful({...updatedUser, imageProfile: fileProfileUrl});
 
               if (onSubmit) {
                 onSubmit(updatedUser);
@@ -172,11 +224,53 @@ export default function FormCreateUser({
     });
   };
 
+  const handleRemoveImage = () => {
+    setImgProfile(null);
+    setImgProfilePreview(null);
+    if(imageProfileRef.current){
+      imageProfileRef.current.value = ""
+    }
+  };
+
   return (
     <form
       onSubmit={(e) => handleSubmit(e)}
       className="w-full flex flex-col gap-3 bg-slate-100 p-8 rounded-lg"
     >
+      <div className="mb-3">
+        <div className="bg-slate-400 w-20 aspect-square rounded-full overflow-hidden mx-auto relative">
+          {imgProfilePreview ? (
+            <img
+              className="w-full h-full object-cover"
+              src={imgProfilePreview}
+              alt=""
+            />
+          ) : (
+            <div className="w-full h-full flex justify-center items-center text-4xl">
+              <FontAwesomeIcon icon={faUser} />
+            </div>
+          )}
+          <div onClick={handleProfileClick} className="absolute top-0 left-0 w-full h-full bg-black bg-opacity-25 text-[40px] flex justify-center items-center text-cp-primary opacity-0 transition hover:opacity-100 cursor-pointer">
+            <FontAwesomeIcon icon={faCamera} />
+          </div>
+        </div>
+        {imgProfilePreview && (
+          <span
+            onClick={handleRemoveImage}
+            className=" underline text-blue-600 text-xs cursor-pointer hover:opacity-70 text-center block mt-2"
+          >
+            Quitar imagen
+          </span>
+        )}
+        <input
+          ref={imageProfileRef}
+          className=" hidden"
+          type="file"
+          name=""
+          id=""
+          onChange={(e)=>handleFileChange(e)}
+        />
+      </div>
       <div className="flex gap-3">
         <div className="w-1/2">
           <Label htmlFor="fname" mode="cp-dark">

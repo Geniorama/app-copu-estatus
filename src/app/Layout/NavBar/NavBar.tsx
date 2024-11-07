@@ -27,7 +27,6 @@ export default function NavBar() {
       
       if (result.ok) {
         const data = await result.json();
-        console.log('origin data', data);
         const transformData: User = {
           ...data,
           fname: data.firstName,
@@ -74,7 +73,7 @@ export default function NavBar() {
         <div className="relative" ref={menuRef}>
           <Profile image={userInfo?.imageProfile} onClick={() => setOpenMenu(!openMenu)} />
           {openMenu && (
-            <nav className="absolute right-0 w-[200px] bg-slate-100 rounded-sm mt-2 shadow-md">
+            <nav className="absolute right-0 w-[200px] bg-slate-100 rounded-sm mt-2 shadow-md z-50">
               <ul className="text-cp-dark text-sm">
                 <li className="hover:bg-slate-200">
                   <Link className="block p-2 py-3" href="/dashboard/perfil">

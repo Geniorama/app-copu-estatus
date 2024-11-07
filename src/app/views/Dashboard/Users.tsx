@@ -19,6 +19,7 @@ import type { MouseEvent } from "react";
 import Spinner from "@/app/utilities/ui/Spinner";
 import { usePathname } from "next/navigation";
 import Switch from "@/app/utilities/ui/Switch";
+import BoxLogo from "@/app/utilities/ui/BoxLogo";
 
 export default function Users() {
   const [searchValue, setSearchValue] = useState("");
@@ -34,6 +35,7 @@ export default function Users() {
   const pathname = usePathname()
 
   const headsTable = [
+    "Foto",
     "Correo",
     "Nombres(s)",
     "Apellido(s)",
@@ -153,6 +155,7 @@ export default function Users() {
       const dataTable: TableDataProps = {
         heads: headsTable,
         rows: originalData.map((user: User) => [
+          <BoxLogo type="user" key={user.email} url={user.imageProfile || ''} />,
           user.email,
           user.fname,
           user.lname,
@@ -174,6 +177,7 @@ export default function Users() {
       const dataTable: TableDataProps = {
         heads: headsTable,
         rows: filteredRows.map((user: User) => [
+          <BoxLogo type="user" key={user.email} url={user.imageProfile || ''} />,
           user.email,
           user.fname,
           user.lname,
