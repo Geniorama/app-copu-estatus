@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from "uuid";
-import type { User } from "@/app/types";
+import type { User, Company } from "@/app/types";
 
 export const fetchUploadImage = async (file: File): Promise<string | null> => {
   try {
@@ -33,11 +33,34 @@ export const createUserInContentful = async (infoUser: User) => {
       },
       body: JSON.stringify(infoUser),
     });
-    
-    const dataResponse = await res.json()
 
-    return dataResponse
+    const dataResponse = await res.json();
+
+    return dataResponse;
   } catch (error) {
     console.log("Error create user", error);
+  }
+};
+
+export const createCompanyInContentful = async (data: Company) => {
+  try {
+    const result = await fetch("/api/companies", {
+      method: "POST",
+      headers: {
+        "Content-type": "application/json",
+      },
+      body: JSON.stringify(data),
+    });
+
+    if (!result.ok) {
+      const error = await result.text();
+      console.error("Error al crear empresa:", error);
+      return;
+    }
+
+    const dataRes = await result.json();
+    return dataRes;
+  } catch (error) {
+    console.error("Fetch error:", error);
   }
 };

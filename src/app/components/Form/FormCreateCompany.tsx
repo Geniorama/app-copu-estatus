@@ -10,10 +10,10 @@ import { useState, useEffect, useRef } from "react";
 import Swal from "sweetalert2";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCamera } from "@fortawesome/free-solid-svg-icons";
-import { v4 as uuidv4 } from "uuid";
 import { PhoneInput } from "react-international-phone";
 import "react-international-phone/style.css";
 import phoneInputStyles from "./PhoneInput.module.css";
+import { createCompanyInContentful, fetchUploadImage } from "@/app/utilities/helpers/fetchers";
 
 const initialData: Company = {
   name: "",
@@ -49,54 +49,6 @@ export default function FormCreateCompany({
 
   const handleLogoClick = () => {
     logoRef.current?.click();
-  };
-
-  const fetchCreateCompany = async (data: Company) => {
-    try {
-      const result = await fetch("/api/companies", {
-        method: "POST",
-        headers: {
-          "Content-type": "application/json",
-        },
-        body: JSON.stringify(data),
-      });
-
-      if (!result.ok) {
-        const error = await result.text();
-        console.error("Error al crear empresa:", error);
-        return;
-      }
-
-      const dataRes = await result.json();
-      return dataRes;
-    } catch (error) {
-      console.error("Fetch error:", error);
-    }
-  };
-
-  const fetchUploadLogo = async (file: File): Promise<string | null> => {
-    try {
-      const uniqueFileName = `${uuidv4()}-${file.name.replace(/\s+/g, "_")}`;
-      const formData = new FormData();
-      formData.append("file", file, uniqueFileName);
-      const result = await fetch("/api/upload-file", {
-        method: "POST",
-        body: formData,
-      });
-
-      if (!result.ok) {
-        console.error("File upload failed");
-        return null;
-      }
-
-      const { fileUrl } = await result.json();
-      console.log("Uploaded file URL:", fileUrl);
-      setUploadFileUrl(fileUrl);
-      return fileUrl;
-    } catch (error) {
-      console.error(error);
-      return null;
-    }
   };
 
   useEffect(() => {
@@ -146,7 +98,8 @@ export default function FormCreateCompany({
       if (result.isConfirmed) {
         let finalLogoUrl = uploadFileUrl;
         if (logoImage && !uploadFileUrl) {
-          finalLogoUrl = await fetchUploadLogo(logoImage);
+          finalLogoUrl = await fetchUploadImage(logoImage);
+          setUploadFileUrl(finalLogoUrl)
         }
 
         if (!finalLogoUrl) {
@@ -155,7 +108,7 @@ export default function FormCreateCompany({
         }
 
         // Procede a crear la compañía con la URL del logo
-        const newCompanyContentful = await fetchCreateCompany({
+        const newCompanyContentful = await createCompanyInContentful({
           ...newCompany,
           logo: finalLogoUrl,
         });

@@ -35,7 +35,7 @@ export default function Users() {
   const pathname = usePathname()
 
   const headsTable = [
-    "Foto",
+    "", //Foto perfil
     "Correo",
     "Nombres(s)",
     "Apellido(s)",
@@ -130,14 +130,6 @@ export default function Users() {
       const res = await fetch("/api/companies");
       if (res.ok) {
         const data = await res.json();
-
-        // const transformData:{id: string, name: string}[] = await data.map((company:{metadata: Metadata, sys: Sys, fields: Company}) => ({
-        //   id: company.sys.id,
-        //   name: typeof company.fields.name === "object" && company.fields.name
-        //     ? company.fields.name["en-US"]
-        //     : "N/A",
-        // }))
-
         setCompanies(data)
       }
     } catch (error) {
@@ -155,7 +147,7 @@ export default function Users() {
       const dataTable: TableDataProps = {
         heads: headsTable,
         rows: originalData.map((user: User) => [
-          <BoxLogo type="user" key={user.email} url={user.imageProfile || ''} />,
+          <BoxLogo alt={`${user.fname} ${user.lname}`} type="user" key={user.email} url={user.imageProfile || ''} />,
           user.email,
           user.fname,
           user.lname,
@@ -177,7 +169,7 @@ export default function Users() {
       const dataTable: TableDataProps = {
         heads: headsTable,
         rows: filteredRows.map((user: User) => [
-          <BoxLogo type="user" key={user.email} url={user.imageProfile || ''} />,
+          <BoxLogo alt={`${user.fname} ${user.lname}`} type="user" key={user.email} url={user.imageProfile || ''} />,
           user.email,
           user.fname,
           user.lname,
