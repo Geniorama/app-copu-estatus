@@ -20,6 +20,7 @@ import ListServices from "@/app/utilities/ui/ListServices";
 import type { Company } from "@/app/types";
 import Spinner from "@/app/utilities/ui/Spinner";
 import Switch from "@/app/utilities/ui/Switch";
+import type { MouseEvent } from "react";
 
 export default function Companies() {
   const [searchValue, setSearchValue] = useState("");
@@ -27,6 +28,7 @@ export default function Companies() {
   const { userData } = useSelector((state: RootState) => state.user);
   const [tableData, setTableData] = useState<TableDataProps | null>(null);
   const [companiesForm, setCompaniesForm] = useState<Company[] | null>(null);
+  const [editCompany, setEditCompany] = useState<Company | null>(null);
 
   const headsTable = [
     "Logo",
@@ -35,6 +37,7 @@ export default function Companies() {
     "Servicios activos",
     "Última modificación",
     "Estado",
+    "Acciones",
   ];
 
   const fetchServicesByCompany = useCallback(async (companyId: string) => {
@@ -60,24 +63,7 @@ export default function Companies() {
     if (!loading) {
       const dataTable: TableDataProps = {
         heads: headsTable,
-        rows: originalData.map((company: Company) => [
-          <BoxLogo key={company.id} url={company.logo || ""} />,
-          company.name,
-          company.linkWhatsApp ? (
-            <LinkCP
-              rel="noopener noreferrer"
-              target="_blank"
-              href={company.linkWhatsApp}
-            >
-              {company.linkWhatsApp}
-            </LinkCP>
-          ) : (
-            <span className="text-slate-400">No existe link del grupo</span>
-          ),
-          <ListServices key={company.id} services={company.services || null} />,
-          company.updatedAt,
-          <Switch key={company.id} active={true} />,
-        ]),
+        rows: rowsTable(originalData),
       };
       setCompaniesForm(originalData);
 
@@ -93,24 +79,7 @@ export default function Companies() {
 
     const dataTable: TableDataProps = {
       heads: headsTable,
-      rows: filteredData.map((company: Company) => [
-        <BoxLogo key={company.id} url={company.logo || ""} />,
-        company.name,
-        company.linkWhatsApp ? (
-          <LinkCP
-            rel="noopener noreferrer"
-            target="_blank"
-            href={company.linkWhatsApp}
-          >
-            {company.linkWhatsApp}
-          </LinkCP>
-        ) : (
-          <span className="text-slate-400">No existe link del grupo</span>
-        ),
-        <ListServices key={company.id} services={company.services} />,
-        company.updatedAt,
-        <Switch key={company.id} active={true} />,
-      ]),
+      rows: rowsTable(filteredData),
     };
 
     setTableData(filteredData.length > 0 ? dataTable : null);
@@ -122,6 +91,52 @@ export default function Companies() {
 
   const handleClearSearch = () => {
     setSearchValue("");
+  };
+
+  const handleEditCompany = (
+    e: MouseEvent<HTMLAnchorElement, globalThis.MouseEvent>,
+    companyId?: string
+  ) => {
+    e.preventDefault();
+
+    if (companyId) {
+      const filterCompany = originalData.find(
+        (company) => company.id === companyId
+      );
+      if (filterCompany) {
+        setEditCompany(filterCompany);
+        setOpenModal(true);
+      }
+    }
+  };
+
+  const rowsTable = (data: Company[]) => {
+    const filteredData = data.map((company: Company) => [
+      <BoxLogo key={company.id} url={company.logo || ""} />,
+      company.name,
+      company.linkWhatsApp ? (
+        <LinkCP
+          rel="noopener noreferrer"
+          target="_blank"
+          href={company.linkWhatsApp}
+        >
+          {company.linkWhatsApp}
+        </LinkCP>
+      ) : (
+        <span className="text-slate-400">No existe link del grupo</span>
+      ),
+      <ListServices key={company.id} services={company.services} />,
+      company.updatedAt,
+      <Switch key={company.id} active={true} />,
+      <LinkCP
+        onClick={(e) => handleEditCompany(e, company.id)}
+        key={company.id}
+      >
+        Editar
+      </LinkCP>,
+    ]);
+
+    return filteredData;
   };
 
   if (loading) {
@@ -140,16 +155,23 @@ export default function Companies() {
   }
 
   const handleCreateCompany = (idCompany: string) => {
-    console.log('New company id', idCompany)
-  }
+    console.log("New company id", idCompany);
+  };
+
+  const handleCloseModal = () => {
+    setOpenModal(false);
+    setEditCompany(null);
+  };
 
   return (
     <div>
-      <Modal open={openModal} onClose={() => setOpenModal(false)}>
+      <Modal open={openModal} onClose={handleCloseModal}>
         <FormCreateCompany
           companies={companiesForm}
           onClose={() => setOpenModal(false)}
           onSubmit={handleCreateCompany}
+          currentCompany={editCompany}
+          action={editCompany ? "edit" : "create"}
         />
       </Modal>
 
@@ -157,7 +179,13 @@ export default function Companies() {
         <TitleSection title="Compañías" />
       </div>
       <div className="flex gap-3 items-center justify-between">
-        <Button onClick={() => setOpenModal(true)} mode="cp-green">
+        <Button
+          onClick={() => {
+            setEditCompany(null);
+            setOpenModal(true);
+          }}
+          mode="cp-green"
+        >
           <span className="mr-3">Nueva compañía</span>
           <FontAwesomeIcon icon={faPlus} />
         </Button>

@@ -37,6 +37,7 @@ interface FormCreateCompanyProps {
   onClose?: () => void;
   onSubmit?: (userInfo: User) => void;
   currentUser?: User | null;
+  action?: 'create' | 'edit'
 }
 interface OptionSelect {
   name: string;
@@ -47,6 +48,7 @@ export default function FormCreateUser({
   onClose,
   onSubmit,
   currentUser,
+  action = 'create'
 }: FormCreateCompanyProps) {
   const [user, setUser] = useState<User>(initialData);
   const [companiesOptions, setCompaniesOptions] = useState<
@@ -179,9 +181,7 @@ export default function FormCreateUser({
 
     Swal.fire({
       title: "¿Estás seguro?",
-      text: user.auth0Id
-        ? "Estás a punto de editar al usuario. ¿Deseas continuar?"
-        : "Estás a punto de crear un nuevo usuario. ¿Deseas continuar?",
+      text: "Estás a punto de crear un nuevo usuario. ¿Deseas continuar?",
       icon: "warning",
       showCancelButton: true,
       confirmButtonColor: "#3085d6",
@@ -282,7 +282,7 @@ export default function FormCreateUser({
 
   return (
     <form
-      onSubmit={user.auth0Id ? handleSubmitUpdateUser : handleSubmitCreateUser}
+      onSubmit={action === 'edit' ? handleSubmitUpdateUser : handleSubmitCreateUser}
       className="w-full flex flex-col gap-3 bg-slate-100 p-8 rounded-lg"
     >
       <div className="mb-3">
@@ -374,14 +374,6 @@ export default function FormCreateUser({
              onChange={(phone) => handleChangePhone(phone)}
              defaultCountry="co"
           />
-          {/* <Input
-            onChange={handleChange}
-            name="phone"
-            id="phone"
-            mode="cp-dark"
-            required
-            value={user?.phone || ""}
-          /> */}
         </div>
       </div>
 
@@ -441,7 +433,7 @@ export default function FormCreateUser({
           Cancelar
         </Button>
         <Button type="submit" mode="cp-green">
-          {user.auth0Id ? "Actualizar usuario" : "Crear usuario"}
+          {action === 'edit' ? "Actualizar usuario" : "Crear usuario"}
         </Button>
       </div>
     </form>

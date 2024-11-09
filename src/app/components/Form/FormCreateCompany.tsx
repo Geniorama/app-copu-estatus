@@ -28,16 +28,20 @@ const initialData: Company = {
 
 interface FormCreateCompanyProps {
   onClose: () => void;
+  currentCompany?: Company | null;
   companies?: Company[] | null;
   onSubmit?: (idCompany: string) => void;
+  action?: 'create' | 'edit'
 }
 
 export default function FormCreateCompany({
   onClose,
   companies,
   onSubmit,
+  action = 'create',
+  currentCompany
 }: FormCreateCompanyProps) {
-  const [newCompany, setNewCompany] = useState<Company>(initialData);
+  const [company, setCompany] = useState<Company>(initialData);
   const [parentCompanies, setParentCompanies] = useState<
     { value: string; name: string }[] | null
   >(null);
@@ -50,6 +54,15 @@ export default function FormCreateCompany({
     logoRef.current?.click();
   };
 
+  const handleRemoveImage = () => {
+    setLogoImage(null);
+    setCompany({ ...company, logo: "" }); // Eliminar el nombre de la imagen en el estado
+    setLogoPreview(null); 
+    if(logoRef.current){
+      logoRef.current.value = ""
+    }
+  };
+
   useEffect(() => {
     if (companies) {
       const dataForSelect = companies.map((company) => ({
@@ -59,6 +72,25 @@ export default function FormCreateCompany({
       setParentCompanies(dataForSelect as { value: string; name: string }[]);
     }
   }, [companies]);
+
+  useEffect(() => {
+    if(currentCompany){
+      setCompany(currentCompany)
+      if(currentCompany.logo){
+        setLogoPreview(currentCompany.logo)
+      }
+    } else {
+      setCompany(initialData)
+      handleRemoveImage()
+    }
+  },[currentCompany])
+
+  useEffect(() => {
+    if(action === 'create'){
+      setCompany(initialData)
+      handleRemoveImage()
+    }
+  },[action])
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -75,13 +107,13 @@ export default function FormCreateCompany({
   };
 
   const handlePhoneChange = (phone: string) => {
-    setNewCompany({
-      ...newCompany,
+    setCompany({
+      ...company,
       phone,
     });
   };
 
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmitCreateCompany = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     Swal.fire({
@@ -108,7 +140,7 @@ export default function FormCreateCompany({
 
         // Procede a crear la compañía con la URL del logo
         const newCompanyContentful = await createCompanyInContentful({
-          ...newCompany,
+          ...company,
           logo: finalLogoUrl,
         });
 
@@ -133,21 +165,23 @@ export default function FormCreateCompany({
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    setNewCompany({
-      ...newCompany,
+    setCompany({
+      ...company,
       [e.target.name]: value,
     });
   };
 
-  const handleRemoveImage = () => {
-    setLogoImage(null);
-    setNewCompany({ ...newCompany, logo: "" }); // Eliminar el nombre de la imagen en el estado
-    setLogoPreview(null); // Limpiar la previsualización
-  };
+  
+
+  const handleClose = () => {
+    setCompany(initialData)
+    handleRemoveImage()
+    onClose && onClose()
+  }
 
   return (
     <form
-      onSubmit={(e) => handleSubmit(e)}
+      onSubmit={(e) => handleSubmitCreateCompany(e)}
       className="w-full flex flex-col gap-3 bg-slate-100 p-8 rounded-lg"
     >
       <div>
@@ -200,6 +234,7 @@ export default function FormCreateCompany({
             id="companyName"
             mode="cp-dark"
             required
+            value={company.name}
           />
         </div>
         <div className="w-1/2">
@@ -213,6 +248,7 @@ export default function FormCreateCompany({
             mode="cp-dark"
             required
             type="text"
+            value={company.address}
           />
         </div>
       </div>
@@ -225,17 +261,8 @@ export default function FormCreateCompany({
           <PhoneInput
             defaultCountry="co"
             onChange={(phone) => handlePhoneChange(phone)}
-            value={newCompany.phone}
+            value={company.phone}
           />
-          {/* <Input
-            onChange={(e) => handleChange(e)}
-            name="phone"
-            placeholder="Ej: +573001234567"
-            id="companyPhone"
-            mode="cp-dark"
-            required
-            type="tel"
-          /> */}
         </div>
 
         <div className="w-1/2">
@@ -248,6 +275,7 @@ export default function FormCreateCompany({
             id="linkWp"
             mode="cp-dark"
             type="text"
+            value={company.linkWhatsApp}
           />
         </div>
       </div>
@@ -263,6 +291,7 @@ export default function FormCreateCompany({
             id="nit"
             mode="cp-dark"
             required
+            value={company.nit}
           />
         </div>
         <div className="w-1/2">
@@ -276,6 +305,7 @@ export default function FormCreateCompany({
             mode="cp-dark"
             required
             type="text"
+            value={company.businessName}
           />
         </div>
       </div>
@@ -288,7 +318,7 @@ export default function FormCreateCompany({
           mode="cp-dark"
           name="superior"
           id="parentConpany"
-          options={parentCompanies || []}
+          options={parentCompanies ? [...parentCompanies, {name: 'Sin superior', value: ''}] : []}
           defaultOptionText="Selecciona una opción"
         />
       </div>
@@ -303,18 +333,19 @@ export default function FormCreateCompany({
           id="linkDrive"
           mode="cp-dark"
           type="text"
+          value={company.driveLink}
         />
       </div>
 
       <div className="flex gap-3 items-center justify-end mt-3">
         <div>
-          <Button onClick={onClose} type="button" mode="cp-dark">
+          <Button onClick={handleClose} type="button" mode="cp-light">
             Cerrar
           </Button>
         </div>
         <div>
           <Button mode="cp-green" type="submit">
-            Crear compañía
+          {action === 'edit' ? "Actualizar compañía" : "Crear compañía"}
           </Button>
         </div>
       </div>

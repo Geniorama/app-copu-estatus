@@ -24,8 +24,8 @@ import {
   getAllUsers,
   updatedUserInContentful,
 } from "@/app/utilities/helpers/fetchers";
-import { ToastContainer, toast } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import useExportCSV from "@/app/hooks/useExportCSV";
 
 export default function Users() {
@@ -38,7 +38,6 @@ export default function Users() {
   const [loading, setLoading] = useState(true);
   const [editUser, setEditUser] = useState<User | null>(null);
   const notify = (message: string) => toast(message);
-  
 
   const { currentUser } = useSelector((state: RootState) => state.user);
   const currentUserId = currentUser?.user.sub;
@@ -54,7 +53,11 @@ export default function Users() {
     "Acciones",
   ];
 
-  const exportToCSV = useExportCSV(originalData as Record<string, string | number>[], ["email", "fname", "lname", "role", "status"], `usuarios-${new Date().toISOString()}`);
+  const exportToCSV = useExportCSV(
+    originalData as Record<string, string | number>[],
+    ["email", "fname", "lname", "role", "status"],
+    `usuarios-${new Date().toISOString()}`
+  );
 
   const handleEdit = (userId?: string) => {
     if (!userId) {
@@ -70,16 +73,14 @@ export default function Users() {
 
   const handleSwitch = async (userId?: string) => {
     if (userId) {
-      const filterUser = originalData.find((user) => user.auth0Id === userId)
-      if(filterUser){
+      const filterUser = originalData.find((user) => user.auth0Id === userId);
+      if (filterUser) {
         const updatedUser = {
           ...filterUser,
-          status: !filterUser.status
-        }
-        const res = await updatedUserInContentful(updatedUser)
-        console.log(updatedUser)
-        console.log(res)
-        notify('Usuario actualizado')
+          status: !filterUser.status,
+        };
+        await updatedUserInContentful(updatedUser);
+        notify("Usuario actualizado");
       }
     }
   };
@@ -90,18 +91,6 @@ export default function Users() {
   ) => {
     e.preventDefault();
     handleEdit(userId);
-  };
-
-  const editButton = (userId?: string) => {
-    return (
-      <a
-        href="#"
-        className="cursor-pointer text-cp-primary hover:underline"
-        onClick={(e) => handleClick(e, userId)}
-      >
-        Editar
-      </a>
-    );
   };
 
   const rowsTable = (data: User[]) => {
@@ -121,7 +110,9 @@ export default function Users() {
         active={user.status || false}
         key={user.id}
       />,
-      editButton(user.auth0Id),
+      <LinkCP key={user.auth0Id} onClick={(e) => handleClick(e, user.auth0Id)}>
+        Editar
+      </LinkCP>,
     ]);
 
     return filteredData;
@@ -166,7 +157,7 @@ export default function Users() {
 
         const dataTable: TableDataProps = {
           heads: headsTable,
-          rows: rowsTable(filteredData)
+          rows: rowsTable(filteredData),
         };
 
         setTableData(dataTable);
@@ -196,7 +187,7 @@ export default function Users() {
 
       const dataTable: TableDataProps = {
         heads: headsTable,
-        rows: rowsTable(filteredRows)
+        rows: rowsTable(filteredRows),
       };
       setTableData(dataTable);
     }
@@ -242,12 +233,16 @@ export default function Users() {
 
   return (
     <div>
-      <ToastContainer toastStyle={{ fontFamily: 'inherit' }} progressClassName={'custom-progress-bar'} />
+      <ToastContainer
+        toastStyle={{ fontFamily: "inherit" }}
+        progressClassName={"custom-progress-bar"}
+      />
       <Modal open={openModal} onClose={handleCloseModal}>
         <FormCreateUser
           onSubmit={editUser ? handleEditedUser : handleCreateUser}
           onClose={() => setOpenModal(false)}
           currentUser={editUser}
+          action={editUser ? 'edit' : 'create'}
         />
       </Modal>
       <div className="mb-5">
@@ -266,7 +261,15 @@ export default function Users() {
         </Button>
 
         <div className="flex gap-6 items-center">
-          <LinkCP href="#" onClick={(e) => { e.preventDefault(); exportToCSV(); }}>Exportar CSV</LinkCP>
+          <LinkCP
+            href="#"
+            onClick={(e) => {
+              e.preventDefault();
+              exportToCSV();
+            }}
+          >
+            Exportar CSV
+          </LinkCP>
           <Search
             onReset={() => setSearchValue("")}
             onChange={handleChange}
