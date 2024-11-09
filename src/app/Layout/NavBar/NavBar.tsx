@@ -14,7 +14,6 @@ import { getUserByAuth0Id } from "@/app/utilities/helpers/fetchers";
 
 export default function NavBar() {
   const [openMenu, setOpenMenu] = useState(false);
-  const [userInfo, setUserInfo] = useState<User | null>(null);
   const pathname = usePathname();
   const menuRef = useRef<HTMLDivElement>(null);
   const dispatch = useDispatch();
@@ -31,8 +30,6 @@ export default function NavBar() {
         const fetchUser = async () => {
           const response = await getUserByAuth0Id(currentUser.user.sub);
           if (response) {
-            console.log(response);
-
             const transformData:User = {
               id: '',
               fname: response.firstName['en-US'],
@@ -45,10 +42,7 @@ export default function NavBar() {
               companies: response.company['en-US'],
               companiesId: response.company['en-US'].map((company:any) => (company.sys.id))
             }
-
-            console.log(transformData)
             dispatch(setUserData(transformData));
-            setUserInfo(transformData);
           }
         };
 

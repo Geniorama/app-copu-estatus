@@ -1,5 +1,4 @@
 import { NextRequest } from "next/server";
-import contentfulClient from "@/app/lib/contentful";
 import { getContentfulEnvironment } from "@/app/lib/contentfulManagement";
 import type { User } from "@/app/types";
 
@@ -104,14 +103,14 @@ export async function PATCH(request: NextRequest) {
       entry.fields.linkWhatsApp["en-US"] = updatedUserData.linkWhatsApp;
     }
 
-    if (updatedUserData.companies) {
+    if (updatedUserData.companiesId) {
       entry.fields.company = entry.fields.company || {};
-      entry.fields.company["en-US"] = updatedUserData.companies.map(
+      entry.fields.company["en-US"] = updatedUserData.companiesId.map(
         (company) => ({
           sys: {
             type: "Link",
             linkType: "Entry",
-            id: company.sys.id,
+            id: company,
           },
         })
       );
