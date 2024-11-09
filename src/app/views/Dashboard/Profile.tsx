@@ -11,16 +11,22 @@ import { RootState } from "@/app/store";
 
 export default function Profile() {
   const [user, setUser] = useState<User | null>(null);
-  const { userData } = useSelector((state: RootState) => state.user);
+  const { userData, currentUser } = useSelector(
+    (state: RootState) => state.user
+  );
 
   const imageProfileRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
-    if (userData) {
-      setUser(userData);
-      console.log(userData)
+    if (userData && currentUser) {
+      const userDataWithAuth0Id = {
+        ...userData,
+        auth0Id: currentUser.user.sub,
+      };
+
+      setUser(userDataWithAuth0Id);
     }
-  }, [userData]);
+  }, [userData, currentUser]);
 
   return (
     <>
@@ -45,22 +51,31 @@ export default function Profile() {
               <FontAwesomeIcon icon={faCamera} />
             </div>
           </div>
-          <input ref={imageProfileRef} className=" hidden" type="file" name="" id="" />
+          <input
+            ref={imageProfileRef}
+            className=" hidden"
+            type="file"
+            name=""
+            id=""
+          />
         </div>
 
-        <div className="text-center mt-5">
-          <p>
+        <div className="text-center mt-2">
+          <p className="text-2xl">
             {user?.fname} {user?.lname}
           </p>
-          <p>{user?.email}</p>
-          <p>{user?.phone}</p>
-          <a
-            href="#"
-            target="blank"
-            className="text-cp-primary underline hover:text-cp-primary-hover transition"
-          >
-            Cambiar contraseña
-          </a>
+          <p>{user?.position}</p>
+          <div className="text-sm mt-3">
+            <p>{user?.email}</p>
+            <p>{user?.phone}</p>
+            <a
+              href="#"
+              target="blank"
+              className="text-cp-primary underline hover:text-cp-primary-hover transition"
+            >
+              Cambiar contraseña
+            </a>
+          </div>
         </div>
 
         <hr className="w-full border-slate-500 my-7" />

@@ -20,6 +20,12 @@ import Spinner from "@/app/utilities/ui/Spinner";
 import { usePathname } from "next/navigation";
 import Switch from "@/app/utilities/ui/Switch";
 import BoxLogo from "@/app/utilities/ui/BoxLogo";
+import {
+  getAllUsers,
+  updatedUserInContentful,
+} from "@/app/utilities/helpers/fetchers";
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 export default function Users() {
   const [searchValue, setSearchValue] = useState("");
@@ -27,8 +33,10 @@ export default function Users() {
   const [tableData, setTableData] = useState<TableDataProps | null>(null);
   const [originalData, setOriginalData] = useState<User[]>([]);
   const [userCreated, setUserCreated] = useState<User | null>(null);
+  const [userEdited, setUserEdited] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [editUser, setEditUser] = useState<User | null>(null);
+  const notify = (message: string) => toast(message);
 
   const { currentUser } = useSelector((state: RootState) => state.user);
   const currentUserId = currentUser?.user.sub;
@@ -54,10 +62,22 @@ export default function Users() {
     if (userInfo?.auth0Id) {
       setEditUser(userInfo);
     }
-    console.log(userInfo);
   };
-  const handleSwitch = (userId?: string) => {
-    console.log("switch", userId);
+
+  const handleSwitch = async (userId?: string) => {
+    if (userId) {
+      const filterUser = originalData.find((user) => user.auth0Id === userId)
+      if(filterUser){
+        const updatedUser = {
+          ...filterUser,
+          status: !filterUser.status
+        }
+        const res = await updatedUserInContentful(updatedUser)
+        console.log(updatedUser)
+        console.log(res)
+        notify('Usuario actualizado')
+      }
+    }
   };
 
   const handleClick = (
@@ -80,13 +100,35 @@ export default function Users() {
     );
   };
 
-  const getAllUsers = async () => {
-    try {
-      const fetchUsers = await fetch("/api/users");
-      if (fetchUsers.ok) {
-        const res = await fetchUsers.json();
-        const transformData: User[] = res.map((user: Entry) => {
+  const rowsTable = (data: User[]) => {
+    const filteredData = data.map((user: User) => [
+      <BoxLogo
+        alt={`${user.fname} ${user.lname}`}
+        type="user"
+        key={user.email}
+        url={user.imageProfile || ""}
+      />,
+      user.email,
+      user.fname,
+      user.lname,
+      user.role,
+      <Switch
+        onClick={() => handleSwitch(user.auth0Id)}
+        active={user.status || false}
+        key={user.id}
+      />,
+      editButton(user.auth0Id),
+    ]);
 
+    return filteredData;
+  };
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      const res = await getAllUsers();
+
+      if (res) {
+        const transformData: User[] = res.map((user: Entry) => {
           return {
             id: user.sys.id,
             fname:
@@ -105,8 +147,12 @@ export default function Users() {
               (user.fields.status as { "en-US": string })?.["en-US"] || null,
             auth0Id:
               (user.fields.auth0Id as { "en-US": string })?.["en-US"] || null,
-            companiesId: (user.fields.company as { "en-US": any[] })?.["en-US"].map((company) => (company.sys.id)) || null,
-            position: (user.fields.position as { "en-US": string })?.["en-US"] || null,
+            companiesId:
+              (user.fields.company as { "en-US": Entry[] })?.["en-US"].map(
+                (company) => company.sys.id
+              ) || null,
+            position:
+              (user.fields.position as { "en-US": string })?.["en-US"] || null,
           };
         });
 
@@ -116,55 +162,23 @@ export default function Users() {
 
         const dataTable: TableDataProps = {
           heads: headsTable,
-          rows: filteredData.map((user: User) => [
-            user.email,
-            user.fname,
-            user.lname,
-            user.role,
-            <Switch
-              onClick={() => handleSwitch(user.id)}
-              active={user.status || false}
-              key={user.id}
-            />,
-            editButton(user.auth0Id),
-          ]),
+          rows: rowsTable(filteredData)
         };
 
         setTableData(dataTable);
         setOriginalData(filteredData);
         setLoading(false);
       }
-    } catch (error) {
-      console.log(error);
-    }
-  };
+    };
 
-  useEffect(() => {
-    getAllUsers();
-  }, [pathname]);
+    fetchUsers();
+  }, [pathname, userCreated, userEdited]);
 
   useEffect(() => {
     if (searchValue.trim() === "") {
       const dataTable: TableDataProps = {
         heads: headsTable,
-        rows: originalData.map((user: User) => [
-          <BoxLogo
-            alt={`${user.fname} ${user.lname}`}
-            type="user"
-            key={user.email}
-            url={user.imageProfile || ""}
-          />,
-          user.email,
-          user.fname,
-          user.lname,
-          user.role,
-          <Switch
-            onClick={() => handleSwitch(user.id)}
-            active={user.status || false}
-            key={user.id}
-          />,
-          editButton(user.auth0Id),
-        ]),
+        rows: rowsTable(originalData),
       };
       setTableData(dataTable);
     } else {
@@ -178,33 +192,17 @@ export default function Users() {
 
       const dataTable: TableDataProps = {
         heads: headsTable,
-        rows: filteredRows.map((user: User) => [
-          <BoxLogo
-            alt={`${user.fname} ${user.lname}`}
-            type="user"
-            key={user.email}
-            url={user.imageProfile || ""}
-          />,
-          user.email,
-          user.fname,
-          user.lname,
-          user.role,
-          <Switch
-            onClick={() => handleSwitch(user.id)}
-            active={user.status || false}
-            key={user.id}
-          />,
-          editButton(user.auth0Id),
-        ]),
+        rows: rowsTable(filteredRows)
       };
       setTableData(dataTable);
     }
   }, [searchValue, originalData]);
 
-  useEffect(() => {
-    setLoading(true);
-    getAllUsers();
-  }, [userCreated]);
+  // useEffect(() => {
+  //   setLoading(true);
+  //   getAllUsers();
+  //   setLoading(false);
+  // }, [userCreated, userEdited]);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     setSearchValue(e.target.value);
@@ -212,7 +210,10 @@ export default function Users() {
 
   const handleCreateUser = (user: User) => {
     setUserCreated(user);
-    console.log("user created", user);
+  };
+
+  const handleEditedUser = (user: User) => {
+    setUserEdited(user);
   };
 
   if (loading) {
@@ -237,9 +238,10 @@ export default function Users() {
 
   return (
     <div>
+      <ToastContainer toastStyle={{ fontFamily: 'inherit' }} progressClassName={'custom-progress-bar'} />
       <Modal open={openModal} onClose={handleCloseModal}>
         <FormCreateUser
-          onSubmit={handleCreateUser}
+          onSubmit={editUser ? handleEditedUser : handleCreateUser}
           onClose={() => setOpenModal(false)}
           currentUser={editUser}
         />
@@ -261,7 +263,11 @@ export default function Users() {
 
         <div className="flex gap-6 items-center">
           <LinkCP href="#">Exportar CSV</LinkCP>
-          <Search onChange={handleChange} value={searchValue} />
+          <Search
+            onReset={() => setSearchValue("")}
+            onChange={handleChange}
+            value={searchValue}
+          />
         </div>
       </div>
 

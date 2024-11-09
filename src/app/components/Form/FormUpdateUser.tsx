@@ -7,6 +7,7 @@ import type { User } from "@/app/types";
 import type { FormEvent, ChangeEvent } from "react";
 import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
+import { updatedUserInContentful } from "@/app/utilities/helpers/fetchers";
 
 interface FormCreateCompanyProps {
   onClose?: () => void;
@@ -50,38 +51,29 @@ export default function FormUpdateUser({
       cancelButtonText: "Cancelar",
     }).then(async (result) => {
       if (result.isConfirmed && user) {
-        try {
-          const response = await fetch(`/api/users`, {
-            method: "PATCH",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(user),
-          });
+        const response = await updatedUserInContentful(user as User);
 
-          if (!response.ok) {
-            throw new Error("Error al actualizar el usuario");
-          }
+        const updatedUser = await response;
 
-          const updatedUser = await response.json();
-          console.log(updatedUser)
+        if (updatedUser) {
           Swal.fire({
             title: "Usuario actualizado",
             text: "La información se ha actualizado exitosamente",
             icon: "success",
             confirmButtonText: "OK",
           }).then(() => {
+            setIsChanged(false)
             if (onClose) {
               onClose();
             }
           });
-        } catch (error) {
+        } else {
           Swal.fire({
             title: "Error",
             text: "No se pudo actualizar la información del usuario",
             icon: "error",
           });
-          console.error("Error al actualizar el usuario:", error);
+          console.error("Error al actualizar el usuario:");
         }
       } else {
         console.log("Actualización de usuario cancelada");

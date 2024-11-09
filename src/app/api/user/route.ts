@@ -103,6 +103,12 @@ export async function PATCH(request: NextRequest) {
       entry.fields.linkWhatsApp["en-US"] = updatedUserData.linkWhatsApp;
     }
 
+    if (typeof updatedUserData.status === "boolean") {
+      entry.fields.status = entry.fields.status || {};
+      entry.fields.status["en-US"] = updatedUserData.status;
+      console.log("Valor de status actualizado:", entry.fields.status["en-US"]);
+    }
+
     if (updatedUserData.companiesId) {
       entry.fields.company = entry.fields.company || {};
       entry.fields.company["en-US"] = updatedUserData.companiesId.map(
@@ -117,12 +123,13 @@ export async function PATCH(request: NextRequest) {
     }
 
     // Actualizar la entrada en Contentful
-    await entry.update();
+    const updatedEntry = await entry.update();
+    await updatedEntry.publish();
 
     return new Response(
       JSON.stringify({ message: "Usuario actualizado exitosamente" }),
       {
-        status: 200,
+        status: 200
       }
     );
   } catch (error) {

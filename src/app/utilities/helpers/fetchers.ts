@@ -52,13 +52,18 @@ export const updatedUserInContentful = async (infoUser: User) => {
       body: JSON.stringify(infoUser),
     });
 
-    const dataResponse = await res.json();
+    if (!res.ok) {
+      throw new Error(`Error en la actualización del usuario: ${res.statusText}`);
+    }
 
+    const dataResponse = await res.json();
     return dataResponse;
   } catch (error) {
-    console.log("Error create user", error);
+    console.log("Error al actualizar el usuario:", error);
+    throw error; // Lanza el error para que sea manejado en el bloque catch del componente
   }
 };
+
 
 export const createCompanyInContentful = async (data: Company) => {
   try {
@@ -140,3 +145,16 @@ export const getCompaniesByIds = async (companiesIds: string[]) => {
   }
 };
 
+export const getAllUsers = async () => {
+  try {
+    const fetchUsers = await fetch("/api/users");
+    if (fetchUsers.ok) {
+      const res = await fetchUsers.json();
+      return res
+    } else {
+      console.log('Error fetch all users')
+    }
+  } catch (error) {
+    console.log(error);
+  }
+};
