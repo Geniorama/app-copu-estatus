@@ -26,6 +26,7 @@ import {
 } from "@/app/utilities/helpers/fetchers";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import useExportCSV from "@/app/hooks/useExportCSV";
 
 export default function Users() {
   const [searchValue, setSearchValue] = useState("");
@@ -37,6 +38,7 @@ export default function Users() {
   const [loading, setLoading] = useState(true);
   const [editUser, setEditUser] = useState<User | null>(null);
   const notify = (message: string) => toast(message);
+  
 
   const { currentUser } = useSelector((state: RootState) => state.user);
   const currentUserId = currentUser?.user.sub;
@@ -51,6 +53,8 @@ export default function Users() {
     "Estado",
     "Acciones",
   ];
+
+  const exportToCSV = useExportCSV(originalData as Record<string, string | number>[], ["email", "fname", "lname", "role", "status"], `usuarios-${new Date().toISOString()}`);
 
   const handleEdit = (userId?: string) => {
     if (!userId) {
@@ -262,7 +266,7 @@ export default function Users() {
         </Button>
 
         <div className="flex gap-6 items-center">
-          <LinkCP href="#">Exportar CSV</LinkCP>
+          <LinkCP href="#" onClick={(e) => { e.preventDefault(); exportToCSV(); }}>Exportar CSV</LinkCP>
           <Search
             onReset={() => setSearchValue("")}
             onChange={handleChange}

@@ -86,7 +86,7 @@ export interface User{
   imageProfile?: string;
   linkWhatsApp?: string | null;
   status?: boolean;
-  companiesId?: string[]
+  companiesId?: string[];
 }
 export interface FilterDataProps {
   company?: string | null;

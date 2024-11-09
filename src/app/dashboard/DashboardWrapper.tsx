@@ -21,8 +21,6 @@ const DashboardClientWrapper = ({ user, userRole }: DashboardClientWrapperProps)
     }
   }, [dispatch, user, userRole]);
 
-  console.log('user role', userRole)
-
   // Renderiza el contenido adecuado según el rol
   if (userRole === "admin") {
     return <DashboardHome />;

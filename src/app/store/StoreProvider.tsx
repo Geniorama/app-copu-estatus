@@ -4,6 +4,7 @@ import { Provider } from 'react-redux'
 import { PersistGate } from 'redux-persist/integration/react'
 import { makeStore, AppStore, persistor } from '.'
 import type { Persistor } from 'redux-persist'
+import IconLoad from '@/app/img/copu-load.gif'
 
 export default function StoreProvider({
   children
@@ -20,10 +21,20 @@ export default function StoreProvider({
     persistorRef.current = persistor(storeRef.current)
   }
 
+  const loadBox = () => {
+    return(
+      <div className='w-screen h-screen flex justify-center items-center'>
+        <div className='w-32'>
+          <img className='w-full' src={IconLoad.src} alt="" />
+        </div>
+      </div>
+    )
+  }
+
   return (
     <Provider store={storeRef.current}>
       <PersistGate 
-        loading={<div>Loading...</div>}  // Componente de carga simple
+        loading={loadBox()}  // Componente de carga simple
         persistor={persistorRef.current!}
       >
         {children}
