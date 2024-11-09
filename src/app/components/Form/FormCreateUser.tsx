@@ -33,13 +33,11 @@ const initialData: User = {
   linkWhatsApp: null,
   auth0Id: "",
 };
-
 interface FormCreateCompanyProps {
   onClose?: () => void;
   onSubmit?: (userInfo: User) => void;
   currentUser?: User | null;
 }
-
 interface OptionSelect {
   name: string;
   value: string;
@@ -68,18 +66,22 @@ export default function FormCreateUser({
       } else {
         const companies = await getAllCompanies();
         if (companies) {
-          const options = companies.map((company: CompanyResponse) => ({
-            value: company.sys.id,
-            name: company.fields.name["en-US"],
-          }));
+          const options = companies
+            .map((company: CompanyResponse) => ({
+              value: company.sys.id,
+              name: company.fields.name["en-US"],
+            }))
+            .sort((a:OptionSelect, b:OptionSelect) => a.name.localeCompare(b.name));
+  
           setCompaniesOptions(options);
-          localStorage.setItem("companiesOptions", JSON.stringify(options)); // Guarda en localStorage
+          localStorage.setItem("companiesOptions", JSON.stringify(options));
         }
       }
     };
-
+  
     getStoredCompanies();
   }, []);
+  
 
   useEffect(() => {
     if (currentUser) {
@@ -263,18 +265,16 @@ export default function FormCreateUser({
     const hasId = user.companiesId?.find((company) => company === companyId);
     
     if (hasId) {
-      console.log('Ya está la empresa');
       const filterCompaniesId = user.companiesId?.filter((companyFilter) => companyFilter !== companyId);
       setUser({
         ...user,
-        companiesId: filterCompaniesId, // Usamos el array filtrado
+        companiesId: filterCompaniesId,
       });
     } else {
-      console.log('No está la empresa');
-      const addCompaniesId = [...(user.companiesId || []), companyId]; // Creamos una nueva copia con el ID añadido
+      const addCompaniesId = [...(user.companiesId || []), companyId]; 
       setUser({
         ...user,
-        companiesId: addCompaniesId, // Establecemos el nuevo array con el ID añadido
+        companiesId: addCompaniesId,
       });
     }
   };
