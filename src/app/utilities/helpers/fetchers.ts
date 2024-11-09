@@ -64,3 +64,15 @@ export const createCompanyInContentful = async (data: Company) => {
     console.error("Fetch error:", error);
   }
 };
+
+export const getAllCompanies = async () => {
+  try {
+    const res = await fetch("/api/companies");
+    if (res.ok) {
+      const data = await res.json();
+      return data
+    }
+  } catch (error) {
+    console.log("Error data companies", error);
+  }
+};

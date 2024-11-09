@@ -9,7 +9,7 @@ import Modal from "@/app/components/Modal/Modal";
 import FormCreateUser from "@/app/components/Form/FormCreateUser";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
-import type { CompanyResponse, TableDataProps, User } from "@/app/types";
+import type { TableDataProps, User } from "@/app/types";
 import type { ChangeEvent } from "react";
 import TitleSection from "@/app/utilities/ui/TitleSection";
 import type { Entry } from "contentful";
@@ -26,13 +26,13 @@ export default function Users() {
   const [openModal, setOpenModal] = useState(false);
   const [tableData, setTableData] = useState<TableDataProps | null>(null);
   const [originalData, setOriginalData] = useState<User[]>([]);
-  const [companies, setCompanies] = useState<CompanyResponse[] | null>(null);
   const [userCreated, setUserCreated] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [editUser, setEditUser] = useState<User | null>(null);
 
   const { currentUser } = useSelector((state: RootState) => state.user);
   const currentUserId = currentUser?.user.sub;
-  const pathname = usePathname()
+  const pathname = usePathname();
 
   const headsTable = [
     "", //Foto perfil
@@ -51,11 +51,14 @@ export default function Users() {
 
     const userInfo = originalData.find((user) => user.auth0Id === userId);
     setOpenModal(true);
+    if (userInfo?.auth0Id) {
+      setEditUser(userInfo);
+    }
     console.log(userInfo);
   };
   const handleSwitch = (userId?: string) => {
-    console.log('switch', userId)
-  }
+    console.log("switch", userId);
+  };
 
   const handleClick = (
     e: MouseEvent<HTMLAnchorElement, globalThis.MouseEvent>,
@@ -82,23 +85,30 @@ export default function Users() {
       const fetchUsers = await fetch("/api/users");
       if (fetchUsers.ok) {
         const res = await fetchUsers.json();
-        const transformData: User[] = res.map((user: Entry) => ({
-          id: user.sys.id,
-          fname:
-            (user.fields.firstName as { "en-US": string })?.["en-US"] || null,
-          lname:
-            (user.fields.lastName as { "en-US": string })?.["en-US"] || null,
-          email: (user.fields.email as { "en-US": string })?.["en-US"] || null,
-          role: (user.fields.role as { "en-US": string })?.["en-US"] || null,
-          phone: (user.fields.phone as { "en-US": string })?.["en-US"] || null,
-          imageProfile:
-            (user.fields.imageProfile as { "en-US": string })?.["en-US"] ||
-            null,
-          status:
-            (user.fields.status as { "en-US": string })?.["en-US"] || null,
-          auth0Id:
-            (user.fields.auth0Id as { "en-US": string })?.["en-US"] || null,
-        }));
+        const transformData: User[] = res.map((user: Entry) => {
+
+          return {
+            id: user.sys.id,
+            fname:
+              (user.fields.firstName as { "en-US": string })?.["en-US"] || null,
+            lname:
+              (user.fields.lastName as { "en-US": string })?.["en-US"] || null,
+            email:
+              (user.fields.email as { "en-US": string })?.["en-US"] || null,
+            role: (user.fields.role as { "en-US": string })?.["en-US"] || null,
+            phone:
+              (user.fields.phone as { "en-US": string })?.["en-US"] || null,
+            imageProfile:
+              (user.fields.imageProfile as { "en-US": string })?.["en-US"] ||
+              null,
+            status:
+              (user.fields.status as { "en-US": string })?.["en-US"] || null,
+            auth0Id:
+              (user.fields.auth0Id as { "en-US": string })?.["en-US"] || null,
+            companiesId: (user.fields.company as { "en-US": any[] })?.["en-US"].map((company) => (company.sys.id)) || null,
+            position: (user.fields.position as { "en-US": string })?.["en-US"] || null,
+          };
+        });
 
         const filteredData = transformData.filter(
           (user) => user.auth0Id !== currentUserId
@@ -111,35 +121,26 @@ export default function Users() {
             user.fname,
             user.lname,
             user.role,
-            <Switch onClick={() => handleSwitch(user.id)} active={user.status || false} key={user.id} />,
+            <Switch
+              onClick={() => handleSwitch(user.id)}
+              active={user.status || false}
+              key={user.id}
+            />,
             editButton(user.auth0Id),
           ]),
         };
 
         setTableData(dataTable);
         setOriginalData(filteredData);
-        setLoading(false)
+        setLoading(false);
       }
     } catch (error) {
       console.log(error);
     }
   };
 
-  const getAllCompanies = async () => {
-    try {
-      const res = await fetch("/api/companies");
-      if (res.ok) {
-        const data = await res.json();
-        setCompanies(data)
-      }
-    } catch (error) {
-      console.log("Error data companies", error);
-    }
-  };
-
   useEffect(() => {
     getAllUsers();
-    getAllCompanies();
   }, [pathname]);
 
   useEffect(() => {
@@ -147,12 +148,21 @@ export default function Users() {
       const dataTable: TableDataProps = {
         heads: headsTable,
         rows: originalData.map((user: User) => [
-          <BoxLogo alt={`${user.fname} ${user.lname}`} type="user" key={user.email} url={user.imageProfile || ''} />,
+          <BoxLogo
+            alt={`${user.fname} ${user.lname}`}
+            type="user"
+            key={user.email}
+            url={user.imageProfile || ""}
+          />,
           user.email,
           user.fname,
           user.lname,
           user.role,
-          <Switch onClick={() => handleSwitch(user.id)} active={user.status || false} key={user.id} />,
+          <Switch
+            onClick={() => handleSwitch(user.id)}
+            active={user.status || false}
+            key={user.id}
+          />,
           editButton(user.auth0Id),
         ]),
       };
@@ -169,12 +179,22 @@ export default function Users() {
       const dataTable: TableDataProps = {
         heads: headsTable,
         rows: filteredRows.map((user: User) => [
-          <BoxLogo alt={`${user.fname} ${user.lname}`} type="user" key={user.email} url={user.imageProfile || ''} />,
+          <BoxLogo
+            alt={`${user.fname} ${user.lname}`}
+            type="user"
+            key={user.email}
+            url={user.imageProfile || ""}
+          />,
           user.email,
           user.fname,
           user.lname,
           user.role,
-          <Switch onClick={() => handleSwitch(user.id)} active={user.status || false} key={user.id} />,
+          <Switch
+            onClick={() => handleSwitch(user.id)}
+            active={user.status || false}
+            key={user.id}
+          />,
+          editButton(user.auth0Id),
         ]),
       };
       setTableData(dataTable);
@@ -182,7 +202,7 @@ export default function Users() {
   }, [searchValue, originalData]);
 
   useEffect(() => {
-    setLoading(true)
+    setLoading(true);
     getAllUsers();
   }, [userCreated]);
 
@@ -194,8 +214,6 @@ export default function Users() {
     setUserCreated(user);
     console.log("user created", user);
   };
-
-  console.log(companies)
 
   if (loading) {
     return (
@@ -212,20 +230,31 @@ export default function Users() {
     );
   }
 
+  const handleCloseModal = () => {
+    setOpenModal(false);
+    setEditUser(null);
+  };
+
   return (
     <div>
-      <Modal open={openModal} onClose={() => setOpenModal(false)}>
+      <Modal open={openModal} onClose={handleCloseModal}>
         <FormCreateUser
           onSubmit={handleCreateUser}
           onClose={() => setOpenModal(false)}
-          companies={companies}
+          currentUser={editUser}
         />
       </Modal>
       <div className="mb-5">
         <TitleSection title="Usuarios" />
       </div>
       <div className="flex gap-3 items-center justify-between">
-        <Button onClick={() => setOpenModal(true)} mode="cp-green">
+        <Button
+          onClick={() => {
+            setEditUser(null);
+            setOpenModal(true);
+          }}
+          mode="cp-green"
+        >
           <span className="mr-3">Nuevo usuario</span>
           <FontAwesomeIcon icon={faPlus} />
         </Button>

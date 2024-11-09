@@ -11,8 +11,11 @@ import Swal from "sweetalert2";
 import { randomBytes } from "crypto";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUser, faCamera } from "@fortawesome/free-solid-svg-icons";
-import { fetchUploadImage, createUserInContentful } from "@/app/utilities/helpers/fetchers";
-
+import {
+  fetchUploadImage,
+  createUserInContentful,
+  getAllCompanies,
+} from "@/app/utilities/helpers/fetchers";
 
 const initialData: User = {
   id: "",
@@ -27,11 +30,13 @@ const initialData: User = {
   linkWhatsApp: null,
   auth0Id: "",
 };
+
 interface FormCreateCompanyProps {
   onClose?: () => void;
   onSubmit?: (userInfo: User) => void;
-  companies?: CompanyResponse[] | null;
+  currentUser?: User | null;
 }
+
 interface OptionSelect {
   name: string;
   value: string;
@@ -40,7 +45,7 @@ interface OptionSelect {
 export default function FormCreateUser({
   onClose,
   onSubmit,
-  companies,
+  currentUser,
 }: FormCreateCompanyProps) {
   const [user, setUser] = useState<User>(initialData);
   const [companiesOptions, setCompaniesOptions] = useState<
@@ -50,27 +55,54 @@ export default function FormCreateUser({
   const [imgProfilePreview, setImgProfilePreview] = useState<string | null>(
     null
   );
-
-  const imageProfileRef = useRef<HTMLInputElement | null>(null)
+  const imageProfileRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
-    const updateCompaniesFields = companies?.map((company) => ({
-      value: `${company.sys.id}`,
-      name: `${company.fields.name["en-US"]}`,
-    }));
+    const getStoredCompanies = async () => {
+      const storedCompanies = localStorage.getItem("companiesOptions");
+      if (storedCompanies) {
+        setCompaniesOptions(JSON.parse(storedCompanies));
+      } else {
+        const companies = await getAllCompanies();
+        if (companies) {
+          const options = companies.map((company: CompanyResponse) => ({
+            value: company.sys.id,
+            name: company.fields.name["en-US"],
+          }));
+          setCompaniesOptions(options);
+          localStorage.setItem("companiesOptions", JSON.stringify(options)); // Guarda en localStorage
+        }
+      }
+    };
 
-    setCompaniesOptions(updateCompaniesFields || null);
-  }, [companies]);
+    getStoredCompanies();
+  }, []);
+
+  useEffect(() => {
+    if (currentUser) {
+      setUser(currentUser);
+      if (currentUser.imageProfile) {
+        setImgProfilePreview(currentUser.imageProfile);
+      }
+    } else {
+      setUser(initialData);
+    }
+  }, [currentUser]);
 
   const generatePassword = (length = 12) => {
     return randomBytes(length).toString("base64").slice(0, length);
   };
 
   const handleClose = () => {
-    if (onClose) {
-      onClose();
+    setUser(initialData);
+    setImgProfile(null);
+    setImgProfilePreview(null);
+    if (imageProfileRef.current) {
+      imageProfileRef.current.value = "";
     }
+    onClose && onClose();
   };
+
   const handleProfileClick = () => {
     imageProfileRef.current?.click();
   };
@@ -78,7 +110,6 @@ export default function FormCreateUser({
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
-      console.log("Selected file:", file);
       setImgProfile(file);
 
       const reader = new FileReader();
@@ -89,31 +120,15 @@ export default function FormCreateUser({
     }
   };
 
-  const handleChangeCompany = (e: ChangeEvent<HTMLSelectElement>) => {
-    const idCompany = e.target.value;
-
-    if (companies) {
-      const filterCompany = companies.filter(
-        (company) => company.sys.id === idCompany
-      );
-
-      setUser({
-        ...user,
-        companies: filterCompany,
-      });
-
-      console.log(user);
-    }
-  };
-
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
     const password = generatePassword();
 
     Swal.fire({
       title: "¿Estás seguro?",
-      text: "Estás a punto de crear un nuevo usuario. ¿Deseas continuar?",
+      text: user.auth0Id
+        ? "Estás a punto de editar al usuario. ¿Deseas continuar?"
+        : "Estás a punto de crear un nuevo usuario. ¿Deseas continuar?",
       icon: "warning",
       showCancelButton: true,
       confirmButtonColor: "#3085d6",
@@ -133,35 +148,28 @@ export default function FormCreateUser({
 
           if (response.ok) {
             const auth0User = await response.json();
-            if (auth0User) {
-              const updatedUser = { ...user, auth0Id: auth0User.auth0Id };
-              setUser(updatedUser);
-              let fileProfileUrl = ''
+            const updatedUser = { ...user, auth0Id: auth0User.auth0Id };
 
-              if(imgProfile){
-                const res = await fetchUploadImage(imgProfile)
-                if(res){
-                  fileProfileUrl = res
-                }
+            let fileProfileUrl = "";
+            if (imgProfile) {
+              const res = await fetchUploadImage(imgProfile);
+              if (res) {
+                fileProfileUrl = res;
               }
-
-              await createUserInContentful({...updatedUser, imageProfile: fileProfileUrl});
-
-              if (onSubmit) {
-                onSubmit(updatedUser);
-              }
-
-              Swal.fire({
-                title: "Usuario creado",
-                text: "El usuario ha sido creado exitosamente",
-                icon: "success",
-                confirmButtonText: "OK",
-              }).then(() => {
-                handleClose();
-              });
-            } else {
-              console.log("No se encuentra el id");
             }
+
+            await createUserInContentful({
+              ...updatedUser,
+              imageProfile: fileProfileUrl,
+            });
+            onSubmit && onSubmit(updatedUser);
+
+            Swal.fire({
+              title: "Usuario creado",
+              text: "El usuario ha sido creado exitosamente",
+              icon: "success",
+              confirmButtonText: "OK",
+            }).then(handleClose);
           } else {
             console.error(
               "Error al crear usuario en Auth0",
@@ -171,8 +179,6 @@ export default function FormCreateUser({
         } catch (error) {
           console.error("Error al conectar con la API de Auth0", error);
         }
-      } else {
-        console.log("Creación de usuario cancelada");
       }
     });
   };
@@ -180,24 +186,45 @@ export default function FormCreateUser({
   const handleChange = (
     e: ChangeEvent<HTMLInputElement> | ChangeEvent<HTMLSelectElement>
   ) => {
-    const value = e.target.value;
-    setUser({
-      ...user,
-      [e.target.name]: value,
-    });
+    const { name, value } = e.target;
+    setUser((prevUser) => ({
+      ...prevUser,
+      [name]: value,
+    }));
   };
 
   const handleRemoveImage = () => {
     setImgProfile(null);
     setImgProfilePreview(null);
-    if(imageProfileRef.current){
-      imageProfileRef.current.value = ""
+    if (imageProfileRef.current) {
+      imageProfileRef.current.value = "";
     }
   };
+  
+  const handleClickCompanyOption = (companyId: string) => {
+    const hasId = user.companiesId?.find((company) => company === companyId);
+    
+    if (hasId) {
+      console.log('Ya está la empresa');
+      const filterCompaniesId = user.companiesId?.filter((companyFilter) => companyFilter !== companyId);
+      setUser({
+        ...user,
+        companiesId: filterCompaniesId, // Usamos el array filtrado
+      });
+    } else {
+      console.log('No está la empresa');
+      const addCompaniesId = [...(user.companiesId || []), companyId]; // Creamos una nueva copia con el ID añadido
+      setUser({
+        ...user,
+        companiesId: addCompaniesId, // Establecemos el nuevo array con el ID añadido
+      });
+    }
+  };
+  
 
   return (
     <form
-      onSubmit={(e) => handleSubmit(e)}
+      onSubmit={handleSubmit}
       className="w-full flex flex-col gap-3 bg-slate-100 p-8 rounded-lg"
     >
       <div className="mb-3">
@@ -206,45 +233,48 @@ export default function FormCreateUser({
             <img
               className="w-full h-full object-cover"
               src={imgProfilePreview}
-              alt=""
+              alt="Perfil"
             />
           ) : (
             <div className="w-full h-full flex justify-center items-center text-4xl">
               <FontAwesomeIcon icon={faUser} />
             </div>
           )}
-          <div onClick={handleProfileClick} className="absolute top-0 left-0 w-full h-full bg-black bg-opacity-25 text-[40px] flex justify-center items-center text-cp-primary opacity-0 transition hover:opacity-100 cursor-pointer">
+          <div
+            onClick={handleProfileClick}
+            className="absolute top-0 left-0 w-full h-full bg-black bg-opacity-25 text-[40px] flex justify-center items-center text-cp-primary opacity-0 transition hover:opacity-100 cursor-pointer"
+          >
             <FontAwesomeIcon icon={faCamera} />
           </div>
         </div>
         {imgProfilePreview && (
           <span
             onClick={handleRemoveImage}
-            className=" underline text-blue-600 text-xs cursor-pointer hover:opacity-70 text-center block mt-2"
+            className="underline text-blue-600 text-xs cursor-pointer hover:opacity-70 text-center block mt-2"
           >
             Quitar imagen
           </span>
         )}
         <input
           ref={imageProfileRef}
-          className=" hidden"
+          className="hidden"
           type="file"
-          name=""
-          id=""
-          onChange={(e)=>handleFileChange(e)}
+          onChange={handleFileChange}
         />
       </div>
+
       <div className="flex gap-3">
         <div className="w-1/2">
           <Label htmlFor="fname" mode="cp-dark">
             Nombre(s) *
           </Label>
           <Input
-            onChange={(e) => handleChange(e)}
+            onChange={handleChange}
             name="fname"
             id="fname"
             mode="cp-dark"
             required
+            value={user?.fname || ""}
           />
         </div>
         <div className="w-1/2">
@@ -252,12 +282,12 @@ export default function FormCreateUser({
             Apellido(s) *
           </Label>
           <Input
-            onChange={(e) => handleChange(e)}
+            onChange={handleChange}
             name="lname"
             id="lname"
             mode="cp-dark"
             required
-            type="text"
+            value={user?.lname || ""}
           />
         </div>
       </div>
@@ -268,26 +298,26 @@ export default function FormCreateUser({
             Email *
           </Label>
           <Input
-            onChange={(e) => handleChange(e)}
+            onChange={handleChange}
             name="email"
             id="email"
             mode="cp-dark"
             required
             type="email"
+            value={user?.email || ""}
           />
         </div>
-
         <div className="w-1/2">
           <Label htmlFor="phone" mode="cp-dark">
             Teléfono *
           </Label>
           <Input
-            required
-            onChange={(e) => handleChange(e)}
+            onChange={handleChange}
             name="phone"
             id="phone"
             mode="cp-dark"
-            type="text"
+            required
+            value={user?.phone || ""}
           />
         </div>
       </div>
@@ -298,12 +328,12 @@ export default function FormCreateUser({
             Rol *
           </Label>
           <Select
-            required
-            onChange={(e) => handleChange(e)}
-            defaultValue={initialData.role}
-            mode="cp-dark"
+            onChange={handleChange}
             name="role"
             id="role"
+            mode="cp-dark"
+            required
+            value={user?.role || "cliente"}
             options={[
               { name: "Admin", value: "admin" },
               { name: "Cliente", value: "cliente" },
@@ -316,40 +346,40 @@ export default function FormCreateUser({
             Cargo *
           </Label>
           <Input
-            onChange={(e) => handleChange(e)}
+            onChange={handleChange}
             name="position"
             id="position"
             mode="cp-dark"
-            type="text"
+            value={user?.position || ""}
           />
         </div>
       </div>
 
-      <div>
-        <Label htmlFor="linkDrive" mode="cp-dark">
-          Compañía(s) *
-        </Label>
-        <Select
-          required={user.role === "cliente"}
-          mode="cp-dark"
-          disabled={!companies}
-          onChange={(e) => handleChangeCompany(e)}
-          options={companiesOptions || [{ name: "", value: "" }]}
-          defaultOptionText="Selecciona una opción"
-        />
-      </div>
+      {companiesOptions && (
+        <div>
+          <Label htmlFor="company" mode="cp-dark">
+            Compañía(s) *
+          </Label>
+          <div className="border-2 border-slate-400 rounded-md px-2">
+            <ul className="max-h-28 overflow-y-scroll">
+              {companiesOptions.map((option) => (
+                <li onClick={() => handleClickCompanyOption(option.value)} className="flex items-center gap-2 py-1 text-cp-dark" key={option.value}>
+                  <span className={`inline-block w-4 h-4 border-2 rounded-full ${user.companiesId?.find((companyId) => companyId === option.value) ? 'bg-cp-primary border-cp-primary': 'border-slate-400'}`}></span>
+                  <span>{option.name}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      )}
 
-      <div className="flex gap-3 items-center justify-end mt-3">
-        <div>
-          <Button onClick={onClose} type="button" mode="cp-dark">
-            Cerrar
-          </Button>
-        </div>
-        <div>
-          <Button mode="cp-green" type="submit">
-            Crear usuario
-          </Button>
-        </div>
+      <div className="flex gap-3 justify-end">
+        <Button onClick={handleClose} mode="cp-light">
+          Cancelar
+        </Button>
+        <Button type="submit" mode="cp-green">
+          {user.auth0Id ? "Actualizar usuario" : "Crear usuario"}
+        </Button>
       </div>
     </form>
   );
