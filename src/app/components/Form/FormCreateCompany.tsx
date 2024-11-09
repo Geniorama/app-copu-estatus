@@ -12,7 +12,6 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCamera } from "@fortawesome/free-solid-svg-icons";
 import { PhoneInput } from "react-international-phone";
 import "react-international-phone/style.css";
-import phoneInputStyles from "./PhoneInput.module.css";
 import { createCompanyInContentful, fetchUploadImage } from "@/app/utilities/helpers/fetchers";
 
 const initialData: Company = {
@@ -227,7 +226,6 @@ export default function FormCreateCompany({
             defaultCountry="co"
             onChange={(phone) => handlePhoneChange(phone)}
             value={newCompany.phone}
-            className={phoneInputStyles.customPhoneInput}
           />
           {/* <Input
             onChange={(e) => handleChange(e)}

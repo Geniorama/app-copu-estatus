@@ -33,7 +33,8 @@ export interface Company {
   superior?: {metadata:Metadata, sys:Sys, fields:Company}[] | null;
   driveLink?: string;
   updatedAt?: string | null;
-  services?: Service[]
+  services?: Service[];
+  status?: boolean;
 }
 
 export interface Service {
@@ -144,5 +145,8 @@ export interface CompanyResponse {
     superior?: {
       "en-US": string;
     };
+    status?: {
+      "en-US": string;
+    }
   };
 }

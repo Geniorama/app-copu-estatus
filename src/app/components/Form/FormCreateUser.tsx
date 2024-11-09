@@ -17,6 +17,8 @@ import {
   updatedUserInContentful,
   getAllCompanies,
 } from "@/app/utilities/helpers/fetchers";
+import { PhoneInput } from "react-international-phone";
+import "react-international-phone/style.css";
 
 const initialData: User = {
   id: "",
@@ -242,6 +244,13 @@ export default function FormCreateUser({
     }));
   };
 
+  const handleChangePhone = (phone: string) => {
+    setUser((prevUser) => ({
+      ...prevUser,
+      phone
+    }))
+  }
+
   const handleRemoveImage = () => {
     setImgProfile(null);
     setImgProfilePreview(null);
@@ -360,14 +369,19 @@ export default function FormCreateUser({
           <Label htmlFor="phone" mode="cp-dark">
             Teléfono *
           </Label>
-          <Input
+          <PhoneInput 
+             value={user?.phone || ""}
+             onChange={(phone) => handleChangePhone(phone)}
+             defaultCountry="co"
+          />
+          {/* <Input
             onChange={handleChange}
             name="phone"
             id="phone"
             mode="cp-dark"
             required
             value={user?.phone || ""}
-          />
+          /> */}
         </div>
       </div>
 

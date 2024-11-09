@@ -19,6 +19,17 @@ html, body{
   background: #1DF180 !important;
 }
 
+.react-international-phone-input{
+  height: 45px !important;
+  background: transparent !important;
+  font-size: 15px !important;
+  flex-grow: 1 !important;
+}
+
+.react-international-phone-country-selector button{
+  height: 45px !important;
+}
+
 @layer base {
   /* Fuente Thin */
   @font-face {
