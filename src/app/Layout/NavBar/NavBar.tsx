@@ -10,6 +10,7 @@ import type { User } from "@/app/types";
 import useLogout from "@/app/hooks/useLogout";
 import { useDispatch } from "react-redux";
 import { setUserData } from "@/app/store/features/userSlice";
+import { getUserByAuth0Id } from "@/app/utilities/helpers/fetchers";
 
 export default function NavBar() {
   const [openMenu, setOpenMenu] = useState(false);
@@ -18,35 +19,43 @@ export default function NavBar() {
   const menuRef = useRef<HTMLDivElement>(null);
   const dispatch = useDispatch();
 
-  const { userData, currentUser } = useSelector((state: RootState) => state.user);
+  const { currentUser, userData } = useSelector(
+    (state: RootState) => state.user
+  );
   const handleLogout = useLogout();
 
-  const fetchUser = useCallback(async () => {
+  useEffect(() => {
     if (currentUser) {
-      const result = await fetch(`/api/user?auth0Id=${currentUser.user.sub}`);
-      
-      if (result.ok) {
-        const data = await result.json();
-        const transformData: User = {
-          ...data,
-          fname: data.firstName,
-          lname: data.lastName,
-          companies: data.company || [],
+      const auth0Id = currentUser.user.sub;
+      if (auth0Id) {
+        const fetchUser = async () => {
+          const response = await getUserByAuth0Id(currentUser.user.sub);
+          if (response) {
+            console.log(response);
+
+            const transformData:User = {
+              id: '',
+              fname: response.firstName['en-US'],
+              lname: response.lastName['en-US'],
+              position: response.position['en-US'],
+              email: response.email['en-US'],
+              phone: response.phone['en-US'],
+              role: response.role['en-US'],
+              imageProfile: response.imageProfile['en-US'],
+              companies: response.company['en-US'],
+              companiesId: response.company['en-US'].map((company:any) => (company.sys.id))
+            }
+
+            console.log(transformData)
+            dispatch(setUserData(transformData));
+            setUserInfo(transformData);
+          }
         };
-        dispatch(setUserData(transformData));
+
+        fetchUser();
       }
     }
   }, [currentUser, dispatch]);
-
-  useEffect(() => {
-    fetchUser();
-  }, [fetchUser]);
-
-  useEffect(() => {
-    if (userData) {
-      setUserInfo(userData);
-    }
-  }, [userData]);
 
   const handleClickOutside = useCallback((event: Event) => {
     if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
@@ -69,9 +78,12 @@ export default function NavBar() {
     <div className="p-3 flex justify-between items-center border-b-slate-700 border border-black">
       <h1 className="text-md font-bold">Copu Estatus</h1>
       <div className="flex items-center gap-3">
-        <span className="text-sm">{userInfo?.fname}</span>
+        <span className="text-sm">{userData?.fname}</span>
         <div className="relative" ref={menuRef}>
-          <Profile image={userInfo?.imageProfile} onClick={() => setOpenMenu(!openMenu)} />
+          <Profile
+            image={userData?.imageProfile}
+            onClick={() => setOpenMenu(!openMenu)}
+          />
           {openMenu && (
             <nav className="absolute right-0 w-[200px] bg-slate-100 rounded-sm mt-2 shadow-md z-50">
               <ul className="text-cp-dark text-sm">
@@ -82,7 +94,11 @@ export default function NavBar() {
                 </li>
                 <hr />
                 <li className="hover:bg-slate-200">
-                  <Link href={'#'} className="block p-2 py-3" onClick={(e) => handleLogout(e)}>
+                  <Link
+                    href={"#"}
+                    className="block p-2 py-3"
+                    onClick={(e) => handleLogout(e)}
+                  >
                     Cerrar sesión
                   </Link>
                 </li>

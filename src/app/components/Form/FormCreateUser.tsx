@@ -14,6 +14,7 @@ import { faUser, faCamera } from "@fortawesome/free-solid-svg-icons";
 import {
   fetchUploadImage,
   createUserInContentful,
+  updatedUserInContentful,
   getAllCompanies,
 } from "@/app/utilities/helpers/fetchers";
 
@@ -86,8 +87,13 @@ export default function FormCreateUser({
       }
     } else {
       setUser(initialData);
+      setImgProfilePreview(null);
+      setImgProfile(null)
+      if(imageProfileRef.current){
+        imageProfileRef.current.value=""
+      }
     }
-  }, [currentUser]);
+  }, [currentUser, imageProfileRef]);
 
   const generatePassword = (length = 12) => {
     return randomBytes(length).toString("base64").slice(0, length);
@@ -120,7 +126,50 @@ export default function FormCreateUser({
     }
   };
 
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmitUpdateUser = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    Swal.fire({
+      title: "¿Estás seguro?",
+      text: "Estás a punto de editar al usuario. ¿Deseas continuar?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Sí, actualizar usuario",
+      cancelButtonText: "Cancelar",
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+            let fileProfileUrl = "";
+            if (imgProfile) {
+              const res = await fetchUploadImage(imgProfile);
+              if (res) {
+                fileProfileUrl = res;
+                console.log('Profile image', fileProfileUrl)
+              }
+            }
+
+            await updatedUserInContentful({
+              ...user,
+              imageProfile: fileProfileUrl
+            })
+
+            onSubmit && onSubmit(user);
+
+            Swal.fire({
+              title: "Usuario actualizado",
+              text: "El usuario ha sido actualizado exitosamente",
+              icon: "success",
+              confirmButtonText: "OK",
+            }).then(handleClose);
+        } catch (error) {
+          console.error("Error al actualizar en contentful", error);
+        }
+      }
+    });
+  };
+
+  const handleSubmitCreateUser = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const password = generatePassword();
 
@@ -224,7 +273,7 @@ export default function FormCreateUser({
 
   return (
     <form
-      onSubmit={handleSubmit}
+      onSubmit={user.auth0Id ? handleSubmitUpdateUser : handleSubmitCreateUser}
       className="w-full flex flex-col gap-3 bg-slate-100 p-8 rounded-lg"
     >
       <div className="mb-3">
@@ -360,10 +409,10 @@ export default function FormCreateUser({
           <Label htmlFor="company" mode="cp-dark">
             Compañía(s) *
           </Label>
-          <div className="border-2 border-slate-400 rounded-md px-2">
-            <ul className="max-h-28 overflow-y-scroll">
+          <div className="border-2 border-slate-400 rounded-md">
+            <ul className="max-h-32 overflow-y-scroll custom-scroll">
               {companiesOptions.map((option) => (
-                <li onClick={() => handleClickCompanyOption(option.value)} className="flex items-center gap-2 py-1 text-cp-dark" key={option.value}>
+                <li onClick={() => handleClickCompanyOption(option.value)} className="flex text-sm items-center gap-2 p-2 hover:bg-slate-200 text-cp-dark cursor-pointer" key={option.value}>
                   <span className={`inline-block w-4 h-4 border-2 rounded-full ${user.companiesId?.find((companyId) => companyId === option.value) ? 'bg-cp-primary border-cp-primary': 'border-slate-400'}`}></span>
                   <span>{option.name}</span>
                 </li>

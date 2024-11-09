@@ -9,7 +9,7 @@ export function Button({ children, mode, ...props }: ButtonProps) {
       : mode === "cp-dark"
         ? "bg-cp-dark text-cp-light hover:bg-white hover:text-cp-dark border-2 border-cp-dark hover:border-white"
         : mode === "cp-light"
-          ? "bg-cp-light text-cp-dark hover:bg-cp-dark border-solid border border-cp-dark" : '';
+          ? "bg-cp-light text-cp-dark hover:bg-cp-dark hover:text-slate-100 border-solid border border-cp-dark" : '';
 
   return (
     <button

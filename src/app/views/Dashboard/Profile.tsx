@@ -18,6 +18,7 @@ export default function Profile() {
   useEffect(() => {
     if (userData) {
       setUser(userData);
+      console.log(userData)
     }
   }, [userData]);
 

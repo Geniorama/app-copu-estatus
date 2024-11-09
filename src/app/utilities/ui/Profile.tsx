@@ -3,7 +3,7 @@ import { faUser } from "@fortawesome/free-solid-svg-icons";
 
 interface ProfileProps {
   onClick?: () => void;
-  image?: string
+  image?: string | null
 }
 
 export function Profile({ onClick, image }: ProfileProps) {

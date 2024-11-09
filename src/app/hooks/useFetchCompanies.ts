@@ -1,5 +1,13 @@
 import { useState, useEffect } from "react";
-import { Company, User, Metadata, Sys, Service, CompanyResponse } from "@/app/types";
+import {
+  Company,
+  User,
+  Metadata,
+  Sys,
+  Service,
+  CompanyResponse,
+} from "@/app/types";
+import { getCompaniesByIds } from "../utilities/helpers/fetchers";
 
 export const useFetchCompanies = (
   userData: User | undefined,
@@ -38,8 +46,14 @@ export const useFetchCompanies = (
               },
             }));
           }
-        } else if (userData && userData.companies) {
-          companies = userData.companies;
+        } else if (userData && userData.companiesId) {
+          const fetchCompanies = async () => {
+            const data = await getCompaniesByIds(userData.companiesId as string[]);
+            console.log(data)
+            companies = data;
+          };
+
+          await fetchCompanies();
         }
 
         if (companies) {
@@ -51,17 +65,20 @@ export const useFetchCompanies = (
                 fields: Company;
               }) => {
                 const dateUpdatedAt = new Date(company.sys.updatedAt);
-                const formattedDate = dateUpdatedAt.toLocaleDateString("es-ES", {
-                  day: "2-digit",
-                  month: "short",
-                  year: "numeric",
-                });
+                const formattedDate = dateUpdatedAt.toLocaleDateString(
+                  "es-ES",
+                  {
+                    day: "2-digit",
+                    month: "short",
+                    year: "numeric",
+                  }
+                );
 
                 const services = await fetchServicesByCompany(company.sys.id);
 
                 return {
                   id: company.sys.id,
-                  logo: company.fields.logo || '',
+                  logo: company.fields.logo || "",
                   name: company.fields.name,
                   address: company.fields.address,
                   phone: company.fields.phone,
