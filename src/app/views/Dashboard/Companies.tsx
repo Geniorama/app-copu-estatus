@@ -28,7 +28,8 @@ export default function Companies() {
   const { userData } = useSelector((state: RootState) => state.user);
   const [tableData, setTableData] = useState<TableDataProps | null>(null);
   const [companiesForm, setCompaniesForm] = useState<Company[] | null>(null);
-  const [editCompany, setEditCompany] = useState<Company | null>(null);
+  const [editCompany, setEditCompany] = useState<Company | null>(null)
+  const [success, setSuccess] = useState(false)
 
   const headsTable = [
     "Logo",
@@ -51,7 +52,7 @@ export default function Companies() {
       console.error("Error fetching services by company:", error);
       return [];
     }
-  }, []);
+  }, [success]);
 
   const { originalData, loading } = useFetchCompanies(
     userData,
@@ -59,11 +60,13 @@ export default function Companies() {
     true
   );
 
+  
+
   useEffect(() => {
     if (!loading) {
       const dataTable: TableDataProps = {
         heads: headsTable,
-        rows: rowsTable(originalData),
+        rows: rowsTable(originalData)
       };
       setCompaniesForm(originalData);
 
@@ -79,7 +82,7 @@ export default function Companies() {
 
     const dataTable: TableDataProps = {
       heads: headsTable,
-      rows: rowsTable(filteredData),
+      rows: rowsTable(filteredData)
     };
 
     setTableData(filteredData.length > 0 ? dataTable : null);
@@ -93,22 +96,17 @@ export default function Companies() {
     setSearchValue("");
   };
 
-  const handleEditCompany = (
-    e: MouseEvent<HTMLAnchorElement, globalThis.MouseEvent>,
-    companyId?: string
-  ) => {
-    e.preventDefault();
-
-    if (companyId) {
-      const filterCompany = originalData.find(
-        (company) => company.id === companyId
-      );
-      if (filterCompany) {
-        setEditCompany(filterCompany);
-        setOpenModal(true);
+  const handleEditCompany = (e:MouseEvent<HTMLAnchorElement, globalThis.MouseEvent>, companyId?:string) => {
+    e.preventDefault()
+    
+    if(companyId){
+      const filterCompany = originalData.find((company) => company.id === companyId)
+      if(filterCompany){
+        setEditCompany(filterCompany)
+        setOpenModal(true)
       }
     }
-  };
+  }
 
   const rowsTable = (data: Company[]) => {
     const filteredData = data.map((company: Company) => [
@@ -128,15 +126,12 @@ export default function Companies() {
       <ListServices key={company.id} services={company.services} />,
       company.updatedAt,
       <Switch key={company.id} active={true} />,
-      <LinkCP
-        onClick={(e) => handleEditCompany(e, company.id)}
-        key={company.id}
-      >
+      <LinkCP onClick={(e) => handleEditCompany(e, company.id)} key={company.id}>
         Editar
-      </LinkCP>,
+      </LinkCP>
     ]);
 
-    return filteredData;
+    return filteredData
   };
 
   if (loading) {
@@ -156,12 +151,22 @@ export default function Companies() {
 
   const handleCreateCompany = (idCompany: string) => {
     console.log("New company id", idCompany);
+    if(idCompany){
+      setSuccess(true)
+    }
   };
+  
+  const onSubmitEditCompany = (idCompany: string) => {
+    console.log("New company id", idCompany);
+    if(idCompany){
+      setSuccess(true)
+    }
+  }
 
   const handleCloseModal = () => {
-    setOpenModal(false);
-    setEditCompany(null);
-  };
+    setOpenModal(false)
+    setEditCompany(null)
+  }
 
   return (
     <div>
@@ -169,9 +174,9 @@ export default function Companies() {
         <FormCreateCompany
           companies={companiesForm}
           onClose={() => setOpenModal(false)}
-          onSubmit={handleCreateCompany}
+          onSubmit={editCompany ? onSubmitEditCompany : handleCreateCompany}
           currentCompany={editCompany}
-          action={editCompany ? "edit" : "create"}
+          action={editCompany ? 'edit': 'create'}
         />
       </Modal>
 
@@ -179,13 +184,7 @@ export default function Companies() {
         <TitleSection title="Compañías" />
       </div>
       <div className="flex gap-3 items-center justify-between">
-        <Button
-          onClick={() => {
-            setEditCompany(null);
-            setOpenModal(true);
-          }}
-          mode="cp-green"
-        >
+        <Button onClick={() => { setEditCompany(null); setOpenModal(true);}} mode="cp-green">
           <span className="mr-3">Nueva compañía</span>
           <FontAwesomeIcon icon={faPlus} />
         </Button>

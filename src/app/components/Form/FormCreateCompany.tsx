@@ -12,7 +12,10 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCamera } from "@fortawesome/free-solid-svg-icons";
 import { PhoneInput } from "react-international-phone";
 import "react-international-phone/style.css";
-import { createCompanyInContentful, fetchUploadImage } from "@/app/utilities/helpers/fetchers";
+import {
+  createCompanyInContentful,
+  fetchUploadImage,
+} from "@/app/utilities/helpers/fetchers";
 
 const initialData: Company = {
   name: "",
@@ -31,15 +34,15 @@ interface FormCreateCompanyProps {
   currentCompany?: Company | null;
   companies?: Company[] | null;
   onSubmit?: (idCompany: string) => void;
-  action?: 'create' | 'edit'
+  action?: "create" | "edit";
 }
 
 export default function FormCreateCompany({
   onClose,
   companies,
   onSubmit,
-  action = 'create',
-  currentCompany
+  action = "create",
+  currentCompany,
 }: FormCreateCompanyProps) {
   const [company, setCompany] = useState<Company>(initialData);
   const [parentCompanies, setParentCompanies] = useState<
@@ -57,9 +60,9 @@ export default function FormCreateCompany({
   const handleRemoveImage = () => {
     setLogoImage(null);
     setCompany({ ...company, logo: "" }); // Eliminar el nombre de la imagen en el estado
-    setLogoPreview(null); 
-    if(logoRef.current){
-      logoRef.current.value = ""
+    setLogoPreview(null);
+    if (logoRef.current) {
+      logoRef.current.value = "";
     }
   };
 
@@ -74,23 +77,27 @@ export default function FormCreateCompany({
   }, [companies]);
 
   useEffect(() => {
-    if(currentCompany){
-      setCompany(currentCompany)
-      if(currentCompany.logo){
-        setLogoPreview(currentCompany.logo)
+    if (currentCompany) {
+      setCompany(currentCompany);
+      if (currentCompany.logo) {
+        setLogoPreview(currentCompany.logo);
       }
     } else {
-      setCompany(initialData)
-      handleRemoveImage()
+      setCompany(initialData);
+      handleRemoveImage();
     }
-  },[currentCompany])
+  }, [currentCompany]);
 
   useEffect(() => {
-    if(action === 'create'){
-      setCompany(initialData)
-      handleRemoveImage()
+    console.log(company);
+  }, [company]);
+
+  useEffect(() => {
+    if (action === "create") {
+      setCompany(initialData);
+      handleRemoveImage();
     }
-  },[action])
+  }, [action]);
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -113,9 +120,74 @@ export default function FormCreateCompany({
     });
   };
 
+  const handleSubmitUpdateCompany = async (e: FormEvent<HTMLFormElement>) => {
+    console.log('editar')
+    e.preventDefault();
+    Swal.fire({
+      title: "¿Estás seguro?",
+      text: "Estás a punto de actualizar una compañía. ¿Deseas continuar?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Sí, actualizar compañía",
+      cancelButtonText: "Cancelar",
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          let finalLogoUrl = "";
+          if (logoImage && !uploadFileUrl) {
+            const res = await fetchUploadImage(logoImage);
+            if(res){
+              finalLogoUrl = res
+              setUploadFileUrl(finalLogoUrl);
+            }
+          }
+          if (!finalLogoUrl) {
+            console.log("No hay logo disponible aún");
+          }
+
+          const bodyCompany = ({
+            ...company,
+            logoImage: finalLogoUrl
+          })
+          console.log("Edit company", bodyCompany);
+
+          const fetchUpdate = await fetch('/api/companies',{
+            method: 'PUT',
+            headers: {
+              'Content-type':'application/json'
+            },
+            body: JSON.stringify(bodyCompany)
+          })
+
+          if(fetchUpdate.ok){
+            const response = await fetchUpdate.json()
+            console.log(response)
+          }
+
+          if(onSubmit && company.id){
+            onSubmit(company.id)
+          }
+
+          Swal.fire({
+            title: "Compañía actualizada",
+            text: "La compañía ha sido actualizada exitosamente",
+            icon: "success",
+            confirmButtonText: "OK",
+          }).then(() => {
+            onClose();
+          });
+        } catch (error) {}
+      } else {
+        console.log("actualización de compañía cancelada");
+      }
+    });
+  };
+
   const handleSubmitCreateCompany = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-
+    console.log('crear')
     Swal.fire({
       title: "¿Estás seguro?",
       text: "Estás a punto de crear una nueva compañía. ¿Deseas continuar?",
@@ -130,7 +202,7 @@ export default function FormCreateCompany({
         let finalLogoUrl = uploadFileUrl;
         if (logoImage && !uploadFileUrl) {
           finalLogoUrl = await fetchUploadImage(logoImage);
-          setUploadFileUrl(finalLogoUrl)
+          setUploadFileUrl(finalLogoUrl);
         }
 
         if (!finalLogoUrl) {
@@ -171,17 +243,19 @@ export default function FormCreateCompany({
     });
   };
 
-  
-
   const handleClose = () => {
-    setCompany(initialData)
-    handleRemoveImage()
-    onClose && onClose()
-  }
+    setCompany(initialData);
+    handleRemoveImage();
+    onClose && onClose();
+  };
 
   return (
     <form
-      onSubmit={(e) => handleSubmitCreateCompany(e)}
+      onSubmit={
+        action === "edit"
+          ? handleSubmitUpdateCompany
+          : handleSubmitCreateCompany
+      }
       className="w-full flex flex-col gap-3 bg-slate-100 p-8 rounded-lg"
     >
       <div>
@@ -318,8 +392,13 @@ export default function FormCreateCompany({
           mode="cp-dark"
           name="superior"
           id="parentConpany"
-          options={parentCompanies ? [...parentCompanies, {name: 'Sin superior', value: ''}] : []}
+          options={
+            parentCompanies
+              ? [...parentCompanies, { name: "Sin superior", value: "" }]
+              : []
+          }
           defaultOptionText="Selecciona una opción"
+          value={company.superior?.sys.id || ""}
         />
       </div>
 
@@ -345,7 +424,7 @@ export default function FormCreateCompany({
         </div>
         <div>
           <Button mode="cp-green" type="submit">
-          {action === 'edit' ? "Actualizar compañía" : "Crear compañía"}
+            {action === "edit" ? "Actualizar compañía" : "Crear compañía"}
           </Button>
         </div>
       </div>

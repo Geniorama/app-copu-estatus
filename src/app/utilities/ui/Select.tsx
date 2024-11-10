@@ -21,7 +21,7 @@ export function Select({ options, defaultOptionText = 'Selecciona una opción', 
       className={`text-md min-h-11 block bg-transparent w-full rounded-md outline-none border-2 focus-visible:border-cp-primary py-2 px-4 ${classMode}`}
       {...props}
     >
-      <option value={''} className={`${classOptions}`} disabled>{defaultOptionText}</option>
+      <option className={`${classOptions}`} disabled>{defaultOptionText}</option>
       {options.map(option => <option key={option.value} className={`${classOptions}`} value={option.value} selected>{option.name}</option>)}
 
     </select>

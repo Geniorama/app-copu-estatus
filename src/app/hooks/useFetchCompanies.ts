@@ -33,6 +33,7 @@ export const useFetchCompanies = (
         const data = await response.json();
 
         if (data) {
+          console.log(data);
           companies = data.map((company: CompanyResponse) => ({
             ...company,
             fields: {
@@ -56,7 +57,11 @@ export const useFetchCompanies = (
       if (companies) {
         const transformDataForCompany = await Promise.all(
           companies.map(
-            async (company: { metadata: Metadata; sys: Sys; fields: Company }) => {
+            async (company: {
+              metadata: Metadata;
+              sys: Sys;
+              fields: Company;
+            }) => {
               const dateUpdatedAt = new Date(company.sys.updatedAt);
               const formattedDate = dateUpdatedAt.toLocaleDateString("es-ES", {
                 day: "2-digit",

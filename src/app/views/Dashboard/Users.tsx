@@ -193,12 +193,6 @@ export default function Users() {
     }
   }, [searchValue, originalData]);
 
-  // useEffect(() => {
-  //   setLoading(true);
-  //   getAllUsers();
-  //   setLoading(false);
-  // }, [userCreated, userEdited]);
-
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     setSearchValue(e.target.value);
   };

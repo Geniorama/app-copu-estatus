@@ -30,7 +30,8 @@ export interface Company {
   linkWhatsApp?: string;
   nit?: string;
   businessName?: string;
-  superior?: {metadata:Metadata, sys:Sys, fields:Company}[] | null;
+  superior?: {metadata:Metadata, sys:Sys, fields:Company} | null;
+  superiorId?: string | null;
   driveLink?: string;
   updatedAt?: string | null;
   services?: Service[];
