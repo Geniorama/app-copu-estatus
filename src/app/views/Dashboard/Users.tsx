@@ -53,11 +53,7 @@ export default function Users() {
     "Acciones",
   ];
 
-  const exportToCSV = useExportCSV(
-    originalData as Record<string, string | number>[],
-    ["email", "fname", "lname", "role", "status"],
-    `usuarios-${new Date().toISOString()}`
-  );
+  const exportToCSV = useExportCSV(originalData, ["email", "fname", "lname", "role", "status"], `usuarios-${new Date().toISOString()}`);
 
   const handleEdit = (userId?: string) => {
     if (!userId) {

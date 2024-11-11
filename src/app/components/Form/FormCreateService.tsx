@@ -143,7 +143,7 @@ export default function FormCreateService({ onClose }: FormCreateServiceProps) {
           </div>
         </div>
         <div className="mt-2 text-right">
-          <button type="button" className=" bg-slate-600 text-sm px-2 py-1 rounded-md">Agregar servicio</button>
+          <button type="button" className=" bg-slate-600 text-sm px-2 py-1 rounded-md">Agregar</button>
         </div>
       </div>
       <div className="flex gap-3">

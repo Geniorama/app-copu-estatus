@@ -24,6 +24,7 @@ import type { MouseEvent } from "react";
 import { updateCompany } from "@/app/utilities/helpers/fetchers";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import useExportCSV from "@/app/hooks/useExportCSV";
 
 export default function Companies() {
   const [searchValue, setSearchValue] = useState("");
@@ -90,6 +91,9 @@ export default function Companies() {
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     setSearchValue(e.target.value);
   };
+
+  console.log('original data', originalData)
+  const exportToCSV = useExportCSV(originalData, ["name", "linkWhatsApp", "nit", "phone", "status"], `companies-${new Date().toISOString()}`)
 
   const handleClearSearch = () => {
     setSearchValue("");
@@ -209,7 +213,7 @@ export default function Companies() {
         </Button>
 
         <div className="flex gap-6 items-center">
-          <LinkCP href="#">Exportar CSV</LinkCP>
+          <LinkCP onClick={exportToCSV} href="#">Exportar CSV</LinkCP>
           <Search
             onReset={handleClearSearch}
             onChange={handleChange}
