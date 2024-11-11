@@ -67,40 +67,40 @@ export async function PATCH(request: NextRequest) {
 
     const entry = response.items[0];
 
-    // Asegurarse de que cada campo esté definido antes de modificarlo
-    if (updatedUserData.fname) {
-      entry.fields.firstName = entry.fields.firstName || {}; // Asegura que exista el objeto
-      entry.fields.firstName["en-US"] = updatedUserData.fname;
+    // Asegurarse de que cada campo esté definido antes de modificarlo, permitiendo valores vacíos o null
+    if (updatedUserData.fname !== undefined) {
+      entry.fields.firstName = entry.fields.firstName || {};
+      entry.fields.firstName["en-US"] = updatedUserData.fname || null;
     }
 
-    if (updatedUserData.lname) {
+    if (updatedUserData.lname !== undefined) {
       entry.fields.lastName = entry.fields.lastName || {};
-      entry.fields.lastName["en-US"] = updatedUserData.lname;
+      entry.fields.lastName["en-US"] = updatedUserData.lname || null;
     }
 
-    if (updatedUserData.phone) {
+    if (updatedUserData.phone !== undefined) {
       entry.fields.phone = entry.fields.phone || {};
-      entry.fields.phone["en-US"] = updatedUserData.phone;
+      entry.fields.phone["en-US"] = updatedUserData.phone || null;
     }
 
-    if (updatedUserData.role) {
+    if (updatedUserData.role !== undefined) {
       entry.fields.role = entry.fields.role || {};
-      entry.fields.role["en-US"] = updatedUserData.role;
+      entry.fields.role["en-US"] = updatedUserData.role || null;
     }
 
-    if (updatedUserData.imageProfile) {
+    if (updatedUserData.imageProfile !== undefined) {
       entry.fields.imageProfile = entry.fields.imageProfile || {};
-      entry.fields.imageProfile["en-US"] = updatedUserData.imageProfile;
+      entry.fields.imageProfile["en-US"] = updatedUserData.imageProfile || null;
     }
 
-    if (updatedUserData.position) {
+    if (updatedUserData.position !== undefined) {
       entry.fields.position = entry.fields.position || {};
-      entry.fields.position["en-US"] = updatedUserData.position;
+      entry.fields.position["en-US"] = updatedUserData.position || null;
     }
 
-    if (updatedUserData.linkWhatsApp) {
+    if (updatedUserData.linkWhatsApp !== undefined) {
       entry.fields.linkWhatsApp = entry.fields.linkWhatsApp || {};
-      entry.fields.linkWhatsApp["en-US"] = updatedUserData.linkWhatsApp;
+      entry.fields.linkWhatsApp["en-US"] = updatedUserData.linkWhatsApp || null;
     }
 
     if (typeof updatedUserData.status === "boolean") {
@@ -109,17 +109,17 @@ export async function PATCH(request: NextRequest) {
       console.log("Valor de status actualizado:", entry.fields.status["en-US"]);
     }
 
-    if (updatedUserData.companiesId) {
+    if (updatedUserData.companiesId !== undefined) {
       entry.fields.company = entry.fields.company || {};
-      entry.fields.company["en-US"] = updatedUserData.companiesId.map(
-        (company) => ({
-          sys: {
-            type: "Link",
-            linkType: "Entry",
-            id: company,
-          },
-        })
-      );
+      entry.fields.company["en-US"] = updatedUserData.companiesId
+        ? updatedUserData.companiesId.map((company) => ({
+            sys: {
+              type: "Link",
+              linkType: "Entry",
+              id: company,
+            },
+          }))
+        : null;
     }
 
     // Actualizar la entrada en Contentful
@@ -129,7 +129,7 @@ export async function PATCH(request: NextRequest) {
     return new Response(
       JSON.stringify({ message: "Usuario actualizado exitosamente" }),
       {
-        status: 200
+        status: 200,
       }
     );
   } catch (error) {
@@ -140,3 +140,4 @@ export async function PATCH(request: NextRequest) {
     );
   }
 }
+

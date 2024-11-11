@@ -21,15 +21,18 @@ import type { Company } from "@/app/types";
 import Spinner from "@/app/utilities/ui/Spinner";
 import Switch from "@/app/utilities/ui/Switch";
 import type { MouseEvent } from "react";
+import { updateCompany } from "@/app/utilities/helpers/fetchers";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 export default function Companies() {
   const [searchValue, setSearchValue] = useState("");
   const [openModal, setOpenModal] = useState(false);
   const { userData } = useSelector((state: RootState) => state.user);
   const [tableData, setTableData] = useState<TableDataProps | null>(null);
-  const [companiesForm, setCompaniesForm] = useState<Company[] | null>(null);
   const [editCompany, setEditCompany] = useState<Company | null>(null)
   const [success, setSuccess] = useState(false)
+  const notify = (message: string) => toast(message);
 
   const headsTable = [
     "Logo",
@@ -60,17 +63,13 @@ export default function Companies() {
     true
   );
 
-  
-
   useEffect(() => {
     if (!loading) {
       const dataTable: TableDataProps = {
         heads: headsTable,
         rows: rowsTable(originalData)
       };
-      setCompaniesForm(originalData);
-
-      // Set table data or null if no companies found
+      
       setTableData(originalData.length > 0 ? dataTable : null);
     }
   }, [loading, originalData]);
@@ -108,6 +107,23 @@ export default function Companies() {
     }
   }
 
+  const handleSwitch = async (companyId?: string) => {
+    if (companyId) {
+      const filterCompany = originalData.find((company) => company.id === companyId);
+      console.log(filterCompany)
+      if (filterCompany) {
+        const updatedCompany = {
+          id: filterCompany.id,
+          status: !filterCompany.status,
+        };
+        console.log(updatedCompany)
+        const response = await updateCompany(updatedCompany);
+        console.log(response)
+        notify("Compañía actualizada");
+      }
+    }
+  };
+
   const rowsTable = (data: Company[]) => {
     const filteredData = data.map((company: Company) => [
       <BoxLogo key={company.id} url={company.logo || ""} />,
@@ -125,7 +141,7 @@ export default function Companies() {
       ),
       <ListServices key={company.id} services={company.services} />,
       company.updatedAt,
-      <Switch key={company.id} active={true} />,
+      <Switch onClick={() => handleSwitch(company.id)} key={company.id} active={company.status || false} />,
       <LinkCP onClick={(e) => handleEditCompany(e, company.id)} key={company.id}>
         Editar
       </LinkCP>
@@ -133,21 +149,6 @@ export default function Companies() {
 
     return filteredData
   };
-
-  if (loading) {
-    return (
-      <div>
-        <div className="mb-5">
-          <TitleSection title="Compañías" />
-        </div>
-        <div className="w-full h-[70vh] flex justify-center items-center">
-          <span className="text-8xl">
-            <Spinner />
-          </span>
-        </div>
-      </div>
-    );
-  }
 
   const handleCreateCompany = (idCompany: string) => {
     console.log("New company id", idCompany);
@@ -168,11 +169,29 @@ export default function Companies() {
     setEditCompany(null)
   }
 
+  if (loading) {
+    return (
+      <div>
+        <div className="mb-5">
+          <TitleSection title="Compañías" />
+        </div>
+        <div className="w-full h-[70vh] flex justify-center items-center">
+          <span className="text-8xl">
+            <Spinner />
+          </span>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div>
+      <ToastContainer
+        toastStyle={{ fontFamily: "inherit" }}
+        progressClassName={"custom-progress-bar"}
+      />
       <Modal open={openModal} onClose={handleCloseModal}>
         <FormCreateCompany
-          companies={companiesForm}
           onClose={() => setOpenModal(false)}
           onSubmit={editCompany ? onSubmitEditCompany : handleCreateCompany}
           currentCompany={editCompany}

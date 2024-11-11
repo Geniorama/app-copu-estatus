@@ -8,6 +8,7 @@ export async function GET() {
 
     const entries = await environment.getEntries({
       content_type: "company",
+      "sys.publishedAt[exists]": true,
     });
 
     const items = entries.items;
@@ -60,6 +61,15 @@ export async function POST(request: NextRequest) {
         driveLink: {
           "en-US": company.driveLink || undefined,
         },
+        superior: {
+          "en-US": {
+            sys: {
+              type: "Link",
+              linkType: "Entry",
+              id: company.superiorId,
+            },
+          },
+        },
       },
     });
 
@@ -75,7 +85,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
-export async function PUT(request: NextRequest) {
+export async function PATCH(request: NextRequest) {
   try {
     const environment = await getContentfulEnvironment();
     const updateCompany = await request.json();
@@ -90,7 +100,8 @@ export async function PUT(request: NextRequest) {
       phone,
       address,
       nit,
-      superior
+      superiorId,
+      driveLink,
     } = updateCompany;
 
     if (!id) {
@@ -99,49 +110,58 @@ export async function PUT(request: NextRequest) {
 
     const entry = await environment.getEntry(id);
 
-    // Actualiza los campos que vienen en la solicitud
-    if (name) {
+    // Actualiza los campos, permitiendo valores vacíos o null
+    if (name !== undefined) {
       entry.fields.name = entry.fields.name || {};
-      entry.fields.name["en-US"] = name;
+      entry.fields.name["en-US"] = name || null;
     }
-    if (businessName) {
+    if (businessName !== undefined) {
       entry.fields.businessName = entry.fields.businessName || {};
-      entry.fields.businessName["en-US"] = businessName;
+      entry.fields.businessName["en-US"] = businessName || null;
     }
-    if (linkWhatsApp) {
+    if (linkWhatsApp !== undefined) {
       entry.fields.whatsappLink = entry.fields.whatsappLink || {};
-      entry.fields.whatsappLink["en-US"] = linkWhatsApp;
+      entry.fields.whatsappLink["en-US"] = linkWhatsApp || null;
     }
-    if (logo) {
+    if (logo !== undefined) {
       entry.fields.logo = entry.fields.logo || {};
-      entry.fields.logo["en-US"] = logo;
+      entry.fields.logo["en-US"] = logo || null;
     }
-
     if (typeof status === "boolean") {
       entry.fields.status = entry.fields.status || {};
       entry.fields.status["en-US"] = status;
     }
-    
-    if (email) {
+    if (email !== undefined) {
       entry.fields.email = entry.fields.email || {};
-      entry.fields.email["en-US"] = email;
+      entry.fields.email["en-US"] = email || null;
     }
-
-    if (phone) {
+    if (phone !== undefined) {
       entry.fields.phone = entry.fields.phone || {};
-      entry.fields.phone["en-US"] = phone;
+      entry.fields.phone["en-US"] = phone || null;
     }
-    if (address) {
+    if (address !== undefined) {
       entry.fields.address = entry.fields.address || {};
-      entry.fields.address["en-US"] = address;
+      entry.fields.address["en-US"] = address || null;
     }
-    if (nit) {
+    if (nit !== undefined) {
       entry.fields.nit = entry.fields.nit || {};
-      entry.fields.nit["en-US"] = nit;
+      entry.fields.nit["en-US"] = nit || null;
     }
-    if (superior) {
+    if (driveLink !== undefined) {
+      entry.fields.driveLink = entry.fields.driveLink || {};
+      entry.fields.driveLink["en-US"] = driveLink || null;
+    }
+    if (superiorId !== undefined) {
       entry.fields.superior = entry.fields.superior || {};
-      entry.fields.superior["en-US"] = superior;
+      entry.fields.superior["en-US"] = superiorId
+        ? {
+            sys: {
+              type: "Link",
+              linkType: "Entry",
+              id: superiorId,
+            },
+          }
+        : null;
     }
 
     // Guardar la entrada actualizada y publicarla
@@ -157,7 +177,6 @@ export async function PUT(request: NextRequest) {
     );
   }
 }
-
 
 export async function DELETE(request: NextRequest) {
   try {

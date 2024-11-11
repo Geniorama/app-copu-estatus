@@ -144,10 +144,15 @@ export interface CompanyResponse {
       "en-US": string;
     };
     superior?: {
-      "en-US": string;
+      "en-US": {metadata:Metadata, sys:Sys, fields:Company} | null;
     };
     status?: {
-      "en-US": string;
+      "en-US": boolean;
     }
   };
+}
+
+export interface OptionSelect {
+  value: string;
+  name: string;
 }

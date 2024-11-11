@@ -158,3 +158,22 @@ export const getAllUsers = async () => {
     console.log(error);
   }
 };
+
+export const updateCompany = async(data: Company) =>{
+  try {
+    const fetchUpdate = await fetch('/api/companies',{
+      method: 'PATCH',
+      headers: {
+        'Content-type':'application/json'
+      },
+      body: JSON.stringify(data)
+    })
+    
+    if(fetchUpdate.ok){
+      const response = await fetchUpdate.json()
+      return response
+    }
+  } catch (error) {
+    console.log(error);
+  }
+}

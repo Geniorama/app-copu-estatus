@@ -46,6 +46,8 @@ export const useFetchCompanies = (
               businessName: company.fields.businessName?.["en-US"],
               driveLink: company.fields.driveLink?.["en-US"],
               superior: company.fields.superior?.["en-US"],
+              status: company.fields.status?.["en-US"],
+              superiorId: company.fields.superior?.["en-US"]?.sys?.id || null
             },
           }));
         }
@@ -82,8 +84,10 @@ export const useFetchCompanies = (
                 businessName: company.fields.businessName,
                 driveLink: company.fields.driveLink,
                 superior: company.fields.superior,
+                superiorId: company.fields.superior?.sys.id || null,
                 updatedAt: `${formattedDate}`,
                 services,
+                status: company.fields.status
               };
             }
           )

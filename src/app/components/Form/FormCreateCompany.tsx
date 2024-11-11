@@ -16,6 +16,11 @@ import {
   createCompanyInContentful,
   fetchUploadImage,
 } from "@/app/utilities/helpers/fetchers";
+import { updateCompany } from "@/app/utilities/helpers/fetchers";
+// import { useCompaniesOptions } from "@/app/hooks/useCompaniesOptions";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState, AppDispatch } from "@/app/store";
+import { fetchCompaniesOptions } from "@/app/store/features/companiesSlice";
 
 const initialData: Company = {
   name: "",
@@ -32,26 +37,23 @@ const initialData: Company = {
 interface FormCreateCompanyProps {
   onClose: () => void;
   currentCompany?: Company | null;
-  companies?: Company[] | null;
   onSubmit?: (idCompany: string) => void;
   action?: "create" | "edit";
 }
 
 export default function FormCreateCompany({
   onClose,
-  companies,
   onSubmit,
   action = "create",
   currentCompany,
 }: FormCreateCompanyProps) {
   const [company, setCompany] = useState<Company>(initialData);
-  const [parentCompanies, setParentCompanies] = useState<
-    { value: string; name: string }[] | null
-  >(null);
   const [logoImage, setLogoImage] = useState<File | null>(null);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const [uploadFileUrl, setUploadFileUrl] = useState<string | null>(null);
   const logoRef = useRef<HTMLInputElement | null>(null);
+  const dispatch = useDispatch<AppDispatch>()
+  const { options } = useSelector((state: RootState) => state.companies);
 
   const handleLogoClick = () => {
     logoRef.current?.click();
@@ -59,7 +61,7 @@ export default function FormCreateCompany({
 
   const handleRemoveImage = () => {
     setLogoImage(null);
-    setCompany({ ...company, logo: "" }); // Eliminar el nombre de la imagen en el estado
+    setCompany({ ...company, logo: "" });
     setLogoPreview(null);
     if (logoRef.current) {
       logoRef.current.value = "";
@@ -67,14 +69,8 @@ export default function FormCreateCompany({
   };
 
   useEffect(() => {
-    if (companies) {
-      const dataForSelect = companies.map((company) => ({
-        name: company.name,
-        value: company.id,
-      }));
-      setParentCompanies(dataForSelect as { value: string; name: string }[]);
-    }
-  }, [companies]);
+    dispatch(fetchCompaniesOptions());
+  }, [dispatch]);
 
   useEffect(() => {
     if (currentCompany) {
@@ -89,10 +85,6 @@ export default function FormCreateCompany({
   }, [currentCompany]);
 
   useEffect(() => {
-    console.log(company);
-  }, [company]);
-
-  useEffect(() => {
     if (action === "create") {
       setCompany(initialData);
       handleRemoveImage();
@@ -102,7 +94,6 @@ export default function FormCreateCompany({
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
-      console.log("Selected file:", file);
       setLogoImage(file);
 
       const reader = new FileReader();
@@ -121,7 +112,6 @@ export default function FormCreateCompany({
   };
 
   const handleSubmitUpdateCompany = async (e: FormEvent<HTMLFormElement>) => {
-    console.log('editar')
     e.preventDefault();
     Swal.fire({
       title: "¿Estás seguro?",
@@ -143,28 +133,13 @@ export default function FormCreateCompany({
               setUploadFileUrl(finalLogoUrl);
             }
           }
-          if (!finalLogoUrl) {
-            console.log("No hay logo disponible aún");
-          }
 
           const bodyCompany = ({
             ...company,
             logoImage: finalLogoUrl
           })
-          console.log("Edit company", bodyCompany);
 
-          const fetchUpdate = await fetch('/api/companies',{
-            method: 'PUT',
-            headers: {
-              'Content-type':'application/json'
-            },
-            body: JSON.stringify(bodyCompany)
-          })
-
-          if(fetchUpdate.ok){
-            const response = await fetchUpdate.json()
-            console.log(response)
-          }
+          await updateCompany(bodyCompany)
 
           if(onSubmit && company.id){
             onSubmit(company.id)
@@ -187,7 +162,6 @@ export default function FormCreateCompany({
 
   const handleSubmitCreateCompany = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log('crear')
     Swal.fire({
       title: "¿Estás seguro?",
       text: "Estás a punto de crear una nueva compañía. ¿Deseas continuar?",
@@ -199,25 +173,21 @@ export default function FormCreateCompany({
       cancelButtonText: "Cancelar",
     }).then(async (result) => {
       if (result.isConfirmed) {
-        let finalLogoUrl = uploadFileUrl;
+        let finalLogoUrl = "";
         if (logoImage && !uploadFileUrl) {
-          finalLogoUrl = await fetchUploadImage(logoImage);
-          setUploadFileUrl(finalLogoUrl);
+          const fetchLogo = await fetchUploadImage(logoImage);
+          if(fetchLogo){
+            finalLogoUrl = fetchLogo
+            setUploadFileUrl(finalLogoUrl);
+          }
         }
 
-        if (!finalLogoUrl) {
-          console.log("No hay logo disponible aún");
-          return;
-        }
-
-        // Procede a crear la compañía con la URL del logo
         const newCompanyContentful = await createCompanyInContentful({
           ...company,
           logo: finalLogoUrl,
         });
 
         if (onSubmit && newCompanyContentful) {
-          console.log("newCompanyContentful", newCompanyContentful);
           onSubmit(newCompanyContentful.sys.id);
         }
 
@@ -235,7 +205,7 @@ export default function FormCreateCompany({
     });
   };
 
-  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: ChangeEvent<HTMLInputElement> | ChangeEvent<HTMLSelectElement>) => {
     const value = e.target.value;
     setCompany({
       ...company,
@@ -248,6 +218,15 @@ export default function FormCreateCompany({
     handleRemoveImage();
     onClose && onClose();
   };
+
+  const filterCompaniesOptions = () => {
+    if(company.id){
+      const companiesOptions = options.filter((option) => option.value !== company.id)
+      return companiesOptions
+    } else {
+      return options
+    }
+  }
 
   return (
     <form
@@ -390,15 +369,16 @@ export default function FormCreateCompany({
         </Label>
         <Select
           mode="cp-dark"
-          name="superior"
+          name="superiorId"
           id="parentConpany"
+          onChange={(e) => handleChange(e)}
           options={
-            parentCompanies
-              ? [...parentCompanies, { name: "Sin superior", value: "" }]
+            options
+              ? [...filterCompaniesOptions(), { name: "Sin superior", value: "" }]
               : []
           }
           defaultOptionText="Selecciona una opción"
-          value={company.superior?.sys.id || ""}
+          value={company.superiorId || ""}
         />
       </div>
 

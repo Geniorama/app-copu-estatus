@@ -4,7 +4,7 @@ import Input from "@/app/utilities/ui/Input";
 import Label from "@/app/utilities/ui/Label";
 import Select from "@/app/utilities/ui/Select";
 import Button from "@/app/utilities/ui/Button";
-import type { CompanyResponse, User } from "@/app/types";
+import type { User } from "@/app/types";
 import type { FormEvent, ChangeEvent } from "react";
 import { useState, useEffect, useRef } from "react";
 import Swal from "sweetalert2";
@@ -15,10 +15,12 @@ import {
   fetchUploadImage,
   createUserInContentful,
   updatedUserInContentful,
-  getAllCompanies,
 } from "@/app/utilities/helpers/fetchers";
 import { PhoneInput } from "react-international-phone";
 import "react-international-phone/style.css";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState, AppDispatch } from "@/app/store";
+import { fetchCompaniesOptions } from "@/app/store/features/companiesSlice";
 
 const initialData: User = {
   id: "",
@@ -39,10 +41,6 @@ interface FormCreateCompanyProps {
   currentUser?: User | null;
   action?: 'create' | 'edit'
 }
-interface OptionSelect {
-  name: string;
-  value: string;
-}
 
 export default function FormCreateUser({
   onClose,
@@ -51,39 +49,17 @@ export default function FormCreateUser({
   action = 'create'
 }: FormCreateCompanyProps) {
   const [user, setUser] = useState<User>(initialData);
-  const [companiesOptions, setCompaniesOptions] = useState<
-    OptionSelect[] | null
-  >(null);
   const [imgProfile, setImgProfile] = useState<File | null>(null);
   const [imgProfilePreview, setImgProfilePreview] = useState<string | null>(
     null
   );
   const imageProfileRef = useRef<HTMLInputElement | null>(null);
+  const dispatch = useDispatch<AppDispatch>()
+  const { options } = useSelector((state: RootState) => state.companies)
 
   useEffect(() => {
-    const getStoredCompanies = async () => {
-      const storedCompanies = localStorage.getItem("companiesOptions");
-      if (storedCompanies) {
-        setCompaniesOptions(JSON.parse(storedCompanies));
-      } else {
-        const companies = await getAllCompanies();
-        if (companies) {
-          const options = companies
-            .map((company: CompanyResponse) => ({
-              value: company.sys.id,
-              name: company.fields.name["en-US"],
-            }))
-            .sort((a:OptionSelect, b:OptionSelect) => a.name.localeCompare(b.name));
-  
-          setCompaniesOptions(options);
-          localStorage.setItem("companiesOptions", JSON.stringify(options));
-        }
-      }
-    };
-  
-    getStoredCompanies();
-  }, []);
-  
+    dispatch(fetchCompaniesOptions())
+  },[])
 
   useEffect(() => {
     if (currentUser) {
@@ -410,14 +386,14 @@ export default function FormCreateUser({
         </div>
       </div>
 
-      {companiesOptions && (
+      {options && (
         <div>
           <Label htmlFor="company" mode="cp-dark">
             Compañía(s) *
           </Label>
           <div className="border-2 border-slate-400 rounded-md">
             <ul className="max-h-32 overflow-y-scroll custom-scroll">
-              {companiesOptions.map((option) => (
+              {options.map((option) => (
                 <li onClick={() => handleClickCompanyOption(option.value)} className="flex text-sm items-center gap-2 p-2 hover:bg-slate-200 text-cp-dark cursor-pointer" key={option.value}>
                   <span className={`inline-block w-4 h-4 border-2 rounded-full ${user.companiesId?.find((companyId) => companyId === option.value) ? 'bg-cp-primary border-cp-primary': 'border-slate-400'}`}></span>
                   <span>{option.name}</span>
