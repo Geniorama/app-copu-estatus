@@ -42,11 +42,10 @@ export interface Service {
   id?: string;
   name: string;
   description?: string;
-  features?: FeatureService[] | null;
-  startDate: Date;
-  endDate: Date;
-  company: {metadata:Metadata, sys:Sys, fields:Company}[] | null;
-  plan: string;
+  startDate?: string | null;
+  endDate?:  string | null;
+  company?: {metadata:Metadata, sys:Sys, fields:Company}[] | null;
+  plan?: 'anual' | 'mensual' | 'personalizado' | null;
 }
 
 export interface Content {
@@ -71,7 +70,7 @@ export interface UserAuth0 {
 
 export interface TableDataProps {
   heads: string[];
-  rows: ReactNode[][] | string[][];
+  rows: (string | null | undefined | ReactNode)[][]
 }
 
 export interface User{

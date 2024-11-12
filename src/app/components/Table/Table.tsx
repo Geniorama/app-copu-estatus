@@ -1,13 +1,16 @@
-import { ReactNode } from "react";
+import { TableDataProps } from "@/app/types";
 
 interface TableProps {
-  data: {
-    heads: string[];
-    rows: ReactNode[][] | string[][];
-  };
+  data: TableDataProps;
 }
 
 export default function Table({ data }: TableProps) {
+  if(!data){
+    console.log('falta la data')
+    return
+  }
+
+
   return (
     <table className="w-full mt-4 text-slate-300">
       <thead className="text-slate-200 bg-gray-950">
@@ -20,7 +23,7 @@ export default function Table({ data }: TableProps) {
         </tr>
       </thead>
       <tbody>
-        {data.rows.map((row, i) => (
+        {data?.rows?.map((row, i) => (
           <tr
             key={i}
             className={`${

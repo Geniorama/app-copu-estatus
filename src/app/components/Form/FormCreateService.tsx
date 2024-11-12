@@ -9,17 +9,7 @@ import type { Service } from "@/app/types";
 import type { FormEvent, ChangeEvent } from "react";
 import { useState } from "react";
 import Swal from "sweetalert2";
-
-const optionsSelect = [
-  {
-    name: "Option 1",
-    value: "option-1",
-  },
-  {
-    name: "Option 2",
-    value: "option-2",
-  },
-];
+import { useCompaniesOptions } from "@/app/hooks/useCompaniesOptions";
 
 const optionsPlan = [
   {
@@ -31,32 +21,21 @@ const optionsPlan = [
     value: "semestral",
   },
   {
+    name: "Mensual",
+    value: "mensual",
+  },
+  {
     name: "Personalizado",
     value: "personalizado",
   },
 ];
 
-const optionServices = [
-  {
-    name: "Service 1",
-    value: "service-1"
-  },
-  {
-    name: "Service 2",
-    value: "service-2"
-  },
-  {
-    name: "Service 3",
-    value: "service-3"
-  }
-]
-
 const initialData: Service = {
   name: "",
   description: "",
-  startDate: new Date(),
-  endDate: new Date(),
-  plan: "",
+  startDate: `${new Date()}`,
+  endDate: `${new Date()}`,
+  plan: null,
   company: null,
 };
 
@@ -66,8 +45,7 @@ interface FormCreateServiceProps {
 
 export default function FormCreateService({ onClose }: FormCreateServiceProps) {
   const [company, setCompany] = useState<Service>(initialData);
-  const [parentCompanies] =
-    useState<{ value: string; name: string }[]>(optionsSelect);
+  const {companiesOptions} = useCompaniesOptions()
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -132,20 +110,6 @@ export default function FormCreateService({ onClose }: FormCreateServiceProps) {
         <Textarea id="description" mode="cp-dark" name="description" />
       </div>
 
-      <div>
-        <h2 className=" text-cp-dark font-bold">Características / Servicios</h2>
-        <div className="flex gap-3">
-          <div className="w-4/5">
-            <Select mode="cp-dark" options={optionServices} />
-          </div>
-          <div className="w-1/5">
-            <Input min={0} placeholder="Cant" mode="cp-dark" type="number" />
-          </div>
-        </div>
-        <div className="mt-2 text-right">
-          <button type="button" className=" bg-slate-600 text-sm px-2 py-1 rounded-md">Agregar</button>
-        </div>
-      </div>
       <div className="flex gap-3">
         <div className="w-1/2">
           <Label htmlFor="startDate" mode="cp-dark">
@@ -181,18 +145,23 @@ export default function FormCreateService({ onClose }: FormCreateServiceProps) {
           <Label htmlFor="nit" mode="cp-dark">
             Plan *
           </Label>
-          <Select mode="cp-dark" options={optionsPlan} />
+          <Select 
+            mode="cp-dark" 
+            options={optionsPlan} 
+            required
+          />
         </div>
         <div className="w-1/2">
           <Label htmlFor="parentConpany" mode="cp-dark">
-            Compañía
+            Compañía *
           </Label>
           <Select
             mode="cp-dark"
             name="superior"
             id="parentConpany"
-            options={parentCompanies}
+            options={companiesOptions}
             defaultOptionText="Selecciona una opción"
+            required
           />
         </div>
       </div>
@@ -205,7 +174,7 @@ export default function FormCreateService({ onClose }: FormCreateServiceProps) {
         </div>
         <div>
           <Button mode="cp-green" type="submit">
-            Crear compañía
+            Crear servicio
           </Button>
         </div>
       </div>

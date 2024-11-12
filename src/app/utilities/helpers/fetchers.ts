@@ -177,3 +177,17 @@ export const updateCompany = async(data: Company) =>{
     console.log(error);
   }
 }
+
+export const getAllServices = async() => {
+  try {
+    const res = await fetch('/api/services')
+    if(res.ok){
+      const data = await res.json()
+      return data
+    } else {
+      console.log('Error fetch all services')
+    }
+  } catch (error) {
+    console.log(error);
+  }
+}

@@ -10,9 +10,7 @@ export default function Switch({active, onClick}:SwitchProps) {
 
   const toggleState = () => {
     setIsActive(!isActive)
-    if(onClick){
-        onClick()
-    }
+    onClick && onClick()
   }
 
   return (
