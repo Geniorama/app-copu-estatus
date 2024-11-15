@@ -57,9 +57,9 @@ export interface SocialListsProps {
   title?: string,
   link?: string,
   statistics?: {
-      scope?: string,
-      impressions?: string,
-      interactions?: string
+      scope?: number,
+      impressions?: number,
+      interactions?: number
   }
 }
 
@@ -67,7 +67,7 @@ export interface Content {
   id: string;
   type?: string;
   headline?: string;
-  pubDate?: Date;
+  pubDate?: string | null;
   service?: Service;
   socialMediaInfo?: SocialListsProps[];
 }
