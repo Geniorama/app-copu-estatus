@@ -5,11 +5,11 @@ import { redirect } from "next/navigation";
 import { withPageAuthRequired } from "@auth0/nextjs-auth0";
 
 async function ServicesPage() {
-  const userRoleUri = process.env.NEXT_PUBLIC_ROLE_URL;
+  const userRoleUri = `${process.env.NEXT_PUBLIC_ROLE_URL}`;
   const session = await getSession();
 
   if (!session) {
-   return redirect("/api/auth/login");
+    redirect("/api/auth/login");
   }
 
   const { user } = session;
@@ -17,13 +17,17 @@ async function ServicesPage() {
   if (!userRoleUri) {
     throw new Error('NEXT_PUBLIC_ROLE_URL is not defined');
   }
+
   const userRole = user[userRoleUri];
 
-  if(userRole === 'admin'){
-    return <Services />;
+  switch (userRole) {
+    case "admin":
+      return <Services />;
+    case "cliente":
+      return <ServicesClient />;
+    default:
+      return <ServicesClient />;
   }
-
-  return <ServicesClient />;
 }
 
 export default withPageAuthRequired(ServicesPage)

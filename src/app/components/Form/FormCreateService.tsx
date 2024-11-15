@@ -7,9 +7,10 @@ import Select from "@/app/utilities/ui/Select";
 import Button from "@/app/utilities/ui/Button";
 import type { Service } from "@/app/types";
 import type { FormEvent, ChangeEvent } from "react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Swal from "sweetalert2";
 import { useCompaniesOptions } from "@/app/hooks/useCompaniesOptions";
+import { updateService, createService } from "@/app/utilities/helpers/fetchers";
 
 const optionsPlan = [
   {
@@ -30,24 +31,72 @@ const optionsPlan = [
   },
 ];
 
+
 const initialData: Service = {
   name: "",
   description: "",
-  startDate: `${new Date()}`,
-  endDate: `${new Date()}`,
+  startDate: "",
+  endDate: "",
   plan: null,
-  company: null,
+  companyId: "",
+  status: true,
 };
 
 interface FormCreateServiceProps {
+  onSubmit?: (serviceId?: string) => void;
   onClose: () => void;
+  currentService?: Service | null;
+  action?: 'create' | 'edit';
 }
 
-export default function FormCreateService({ onClose }: FormCreateServiceProps) {
-  const [company, setCompany] = useState<Service>(initialData);
+export default function FormCreateService({ onClose, currentService, action, onSubmit }: FormCreateServiceProps) {
+  const [service, setService] = useState<Service>(initialData);
   const {companiesOptions} = useCompaniesOptions()
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+  useEffect(() => {
+    if(currentService){
+      setService(currentService)
+    }
+  },[currentService])
+
+  const handleSubmitEdit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    Swal.fire({
+      title: "¿Estás seguro?",
+      text: "Estás a punto de actualizar un nuevo servicio. ¿Deseas continuar?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Sí, actualizar servicio",
+      cancelButtonText: "Cancelar",
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        try {
+          const res = await updateService(service)
+
+          if(res){
+            onSubmit && onSubmit(service.id)
+            Swal.fire({
+              title: "Servicio actualizado",
+              text: "El servicio ha sido actualizado exitosamente",
+              icon: "success",
+              confirmButtonText: "OK",
+            }).then(() => {
+              onClose();
+            });
+          }
+        } catch (error) {
+          console.log(error)
+        }
+      } else {
+        console.log("Actualización de servicio cancelada");
+      }
+    });
+  };
+
+  const handleSubmitCreate = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     Swal.fire({
@@ -59,35 +108,51 @@ export default function FormCreateService({ onClose }: FormCreateServiceProps) {
       cancelButtonColor: "#d33",
       confirmButtonText: "Sí, crear servicio",
       cancelButtonText: "Cancelar",
-    }).then((result) => {
+    }).then( async (result) => {
       if (result.isConfirmed) {
-        console.log("service for send", company);
+        try {
+          const res = await createService(service)
 
-        Swal.fire({
-          title: "Servicio creado",
-          text: "El servicio ha sido creado exitosamente",
-          icon: "success",
-          confirmButtonText: "OK",
-        }).then(() => {
-          onClose();
-        });
+          if(res){
+            onSubmit && onSubmit(service.id)
+
+            Swal.fire({
+              title: "Servicio creado",
+              text: "El servicio ha sido creado exitosamente",
+              icon: "success",
+              confirmButtonText: "OK",
+            }).then(() => {
+              onClose();
+            });
+          }
+        } catch (error) {
+          console.log(error);
+        }
       } else {
         console.log("Creación de servicio cancelada");
       }
     });
   };
 
-  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: ChangeEvent<HTMLInputElement> | ChangeEvent<HTMLSelectElement> | ChangeEvent<HTMLTextAreaElement>) => {
     const value = e.target.value;
-    setCompany({
-      ...company,
+    setService({
+      ...service,
       [e.target.name]: value,
     });
   };
 
+  const handleChangeCompany = (e: ChangeEvent<HTMLSelectElement>) => {
+    const value = e.target.value;
+    setService({
+      ...service,
+      companyId: value
+    });
+  }
+
   return (
     <form
-      onSubmit={(e) => handleSubmit(e)}
+      onSubmit={(e) => action === 'edit' ? handleSubmitEdit(e) : handleSubmitCreate(e)}
       className="w-full flex flex-col gap-3 bg-slate-100 p-8 rounded-lg"
     >
       <div className="w-full">
@@ -100,6 +165,7 @@ export default function FormCreateService({ onClose }: FormCreateServiceProps) {
           id="name"
           mode="cp-dark"
           required
+          value={service.name}
         />
       </div>
 
@@ -107,7 +173,13 @@ export default function FormCreateService({ onClose }: FormCreateServiceProps) {
         <Label htmlFor="description" mode="cp-dark">
           Descripción
         </Label>
-        <Textarea id="description" mode="cp-dark" name="description" />
+        <Textarea 
+          id="description" 
+          mode="cp-dark" 
+          name="description" 
+          value={service.description}
+          onChange={(e) => handleChange(e)}
+        />
       </div>
 
       <div className="flex gap-3">
@@ -123,6 +195,7 @@ export default function FormCreateService({ onClose }: FormCreateServiceProps) {
             mode="cp-dark"
             required
             type="date"
+            value={service.startDate || ''}
           />
         </div>
 
@@ -136,6 +209,7 @@ export default function FormCreateService({ onClose }: FormCreateServiceProps) {
             id="endDate"
             mode="cp-dark"
             type="date"
+            value={service.endDate || ''}
           />
         </div>
       </div>
@@ -149,6 +223,9 @@ export default function FormCreateService({ onClose }: FormCreateServiceProps) {
             mode="cp-dark" 
             options={optionsPlan} 
             required
+            name="plan"
+            value={(service.plan)?.toLocaleLowerCase() || ''}
+            onChange={(e) => handleChange(e)}
           />
         </div>
         <div className="w-1/2">
@@ -157,11 +234,13 @@ export default function FormCreateService({ onClose }: FormCreateServiceProps) {
           </Label>
           <Select
             mode="cp-dark"
-            name="superior"
-            id="parentConpany"
+            name="company"
+            id="company"
             options={companiesOptions}
             defaultOptionText="Selecciona una opción"
             required
+            value={service.companyId || ''}
+            onChange={(e) => handleChangeCompany(e)}
           />
         </div>
       </div>
@@ -174,7 +253,7 @@ export default function FormCreateService({ onClose }: FormCreateServiceProps) {
         </div>
         <div>
           <Button mode="cp-green" type="submit">
-            Crear servicio
+            {action === 'edit' ? 'Actualizar servicio': 'Crear servicio'}
           </Button>
         </div>
       </div>

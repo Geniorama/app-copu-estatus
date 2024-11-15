@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from "uuid";
-import type { User, Company } from "@/app/types";
+import type { User, Company, Service } from "@/app/types";
 
 export const fetchUploadImage = async (file: File): Promise<string | null> => {
   try {
@@ -53,7 +53,9 @@ export const updatedUserInContentful = async (infoUser: User) => {
     });
 
     if (!res.ok) {
-      throw new Error(`Error en la actualización del usuario: ${res.statusText}`);
+      throw new Error(
+        `Error en la actualización del usuario: ${res.statusText}`
+      );
     }
 
     const dataResponse = await res.json();
@@ -63,7 +65,6 @@ export const updatedUserInContentful = async (infoUser: User) => {
     throw error; // Lanza el error para que sea manejado en el bloque catch del componente
   }
 };
-
 
 export const createCompanyInContentful = async (data: Company) => {
   try {
@@ -124,10 +125,10 @@ export const getCompaniesByIds = async (companiesIds: string[]) => {
   }
 
   try {
-    const response = await fetch('/api/getCompaniesByIds', {
-      method: 'POST',
+    const response = await fetch("/api/getCompaniesByIds", {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({ ids: companiesIds }),
     });
@@ -150,44 +151,87 @@ export const getAllUsers = async () => {
     const fetchUsers = await fetch("/api/users");
     if (fetchUsers.ok) {
       const res = await fetchUsers.json();
-      return res
+      return res;
     } else {
-      console.log('Error fetch all users')
+      console.log("Error fetch all users");
     }
   } catch (error) {
     console.log(error);
   }
 };
 
-export const updateCompany = async(data: Company) =>{
+export const updateCompany = async (data: Company) => {
   try {
-    const fetchUpdate = await fetch('/api/companies',{
-      method: 'PATCH',
+    const fetchUpdate = await fetch("/api/companies", {
+      method: "PATCH",
       headers: {
-        'Content-type':'application/json'
+        "Content-type": "application/json",
       },
-      body: JSON.stringify(data)
-    })
-    
-    if(fetchUpdate.ok){
-      const response = await fetchUpdate.json()
-      return response
-    }
-  } catch (error) {
-    console.log(error);
-  }
-}
+      body: JSON.stringify(data),
+    });
 
-export const getAllServices = async() => {
-  try {
-    const res = await fetch('/api/services')
-    if(res.ok){
-      const data = await res.json()
-      return data
-    } else {
-      console.log('Error fetch all services')
+    if (fetchUpdate.ok) {
+      const response = await fetchUpdate.json();
+      return response;
     }
   } catch (error) {
     console.log(error);
   }
-}
+};
+
+export const getAllServices = async () => {
+  try {
+    const res = await fetch("/api/services");
+    if (res.ok) {
+      const data = await res.json();
+      return data;
+    } else {
+      console.log("Error fetch all services");
+    }
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const updateService = async (service: Service) => {
+  try {
+    const res = await fetch("/api/services", {
+      method: "PATCH",
+      headers: {
+        "Content-type": "application/json",
+      },
+      body: JSON.stringify(service),
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      return data;
+    } else {
+      console.log("Error fetch update service");
+    }
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+
+export const createService = async (service: Service) => {
+  try {
+    const res = await fetch("/api/services", {
+      method: "POST",
+      headers: {
+        "Content-type": "application/json",
+      },
+      body: JSON.stringify(service),
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      return data;
+    } else {
+      console.log("Error fetch update service");
+    }
+  } catch (error) {
+    console.log(error);
+  }
+};

@@ -151,6 +151,7 @@ export default function Users() {
           (user) => user.auth0Id !== currentUserId
         );
 
+        console.log(filteredData)
         const dataTable: TableDataProps = {
           heads: headsTable,
           rows: rowsTable(filteredData),

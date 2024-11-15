@@ -1,3 +1,4 @@
+import { Entry } from "contentful-management";
 import { ReactNode } from "react";
 
 // Representa los datos del sistema de un recurso en Contentful
@@ -44,8 +45,11 @@ export interface Service {
   description?: string;
   startDate?: string | null;
   endDate?:  string | null;
-  company?: {metadata:Metadata, sys:Sys, fields:Company}[] | null;
+  company?: Entry | null;
+  companyId?: string | null;
+  companyName?: string | null;
   plan?: 'anual' | 'mensual' | 'personalizado' | null;
+  status?: boolean;
 }
 
 export interface Content {
@@ -70,7 +74,7 @@ export interface UserAuth0 {
 
 export interface TableDataProps {
   heads: string[];
-  rows: (string | null | undefined | ReactNode)[][]
+  rows: (string | ReactNode | Promise<void> | null | undefined)[][]
 }
 
 export interface User{

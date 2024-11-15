@@ -5,7 +5,7 @@ interface TableProps {
 }
 
 export default function Table({ data }: TableProps) {
-  if(!data){
+  if(!data || !data.rows){
     console.log('falta la data')
     return
   }
@@ -23,7 +23,7 @@ export default function Table({ data }: TableProps) {
         </tr>
       </thead>
       <tbody>
-        {data?.rows?.map((row, i) => (
+        {data.rows.map((row, i) => (
           <tr
             key={i}
             className={`${
