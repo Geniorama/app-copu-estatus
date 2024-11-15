@@ -52,13 +52,24 @@ export interface Service {
   status?: boolean;
 }
 
+export interface SocialListsProps {
+  id: string,
+  title?: string,
+  link?: string,
+  statistics?: {
+      scope?: string,
+      impressions?: string,
+      interactions?: string
+  }
+}
+
 export interface Content {
   id: string;
-  type: string;
-  headline: string;
-  pubDate: Date;
-  service: Service;
-  socialMediaInfo: JSON;
+  type?: string;
+  headline?: string;
+  pubDate?: Date;
+  service?: Service;
+  socialMediaInfo?: SocialListsProps[];
 }
 
 export interface UserAuth0 {

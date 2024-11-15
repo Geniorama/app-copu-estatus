@@ -6,13 +6,13 @@ import Table from "@/app/components/Table/Table";
 import Search from "@/app/utilities/ui/Search";
 import LinkCP from "@/app/utilities/ui/LinkCP";
 import Modal from "@/app/components/Modal/Modal";
-import FormCreateService from "@/app/components/Form/FormCreateService";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import type { TableDataProps } from "@/app/types";
 import type { ChangeEvent } from "react";
 import TitleSection from "@/app/utilities/ui/TitleSection";
 import FilterContentBar from "../FilterContentBar";
+import FormCreateContent from "@/app/components/Form/FormCreateContent";
 
 const initialData: TableDataProps = {
   heads: [
@@ -136,7 +136,7 @@ export default function Contents() {
   return (
     <div>
       <Modal open={openModal} onClose={() => setOpenModal(false)}>
-        <FormCreateService onClose={() => setOpenModal(false)} />
+        <FormCreateContent />
       </Modal>
       <div className="mb-5">
         <TitleSection title="Contenidos" />
@@ -155,6 +155,7 @@ export default function Contents() {
           <span className="text-8xl">190</span>
         </div>
       </div>
+      
       <div className="flex gap-3 items-center justify-between">
         <Button onClick={() => setOpenModal(true)} mode="cp-green">
           <span className="mr-3">Nuevo contenido</span>

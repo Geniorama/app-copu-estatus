@@ -119,7 +119,7 @@ export default function FormUpdateUser({
       </div>
 
       <div className="flex gap-3">
-        <div className="w-1/2">
+        <div className="w-1/3">
           <Label htmlFor="email">Email *</Label>
           <Input
             readOnly
@@ -132,7 +132,7 @@ export default function FormUpdateUser({
           />
         </div>
 
-        <div className="w-1/2">
+        <div className="w-1/3">
           <Label htmlFor="phone">Teléfono *</Label>
           <Input
             onChange={handleChange}
@@ -140,6 +140,17 @@ export default function FormUpdateUser({
             id="phone"
             type="text"
             value={user?.phone || ""}
+          />
+        </div>
+
+        <div className="w-1/3">
+          <Label htmlFor="phone">Cargo *</Label>
+          <Input
+            onChange={handleChange}
+            name="position"
+            id="position"
+            type="text"
+            value={user?.position || ""}
           />
         </div>
       </div>

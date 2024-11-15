@@ -2,12 +2,11 @@ import { useState, useEffect, useCallback } from "react";
 import {
   Company,
   User,
-  Metadata,
-  Sys,
   Service,
   CompanyResponse,
 } from "@/app/types";
 import { getCompaniesByIds } from "../utilities/helpers/fetchers";
+import { Entry } from "contentful-management";
 
 export const useFetchCompanies = (
   userData: User | undefined,
@@ -59,11 +58,7 @@ export const useFetchCompanies = (
       if (companies) {
         const transformDataForCompany = await Promise.all(
           companies.map(
-            async (company: {
-              metadata: Metadata;
-              sys: Sys;
-              fields: Company;
-            }) => {
+            async (company: Entry) => {
               const dateUpdatedAt = new Date(company.sys.updatedAt);
               const formattedDate = dateUpdatedAt.toLocaleDateString("es-ES", {
                 day: "2-digit",
@@ -79,7 +74,7 @@ export const useFetchCompanies = (
                 name: company.fields.name,
                 address: company.fields.address,
                 phone: company.fields.phone,
-                linkWhatsApp: company.fields.linkWhatsApp,
+                linkWhatsApp: company.fields.whatsappLink,
                 nit: company.fields.nit,
                 businessName: company.fields.businessName,
                 driveLink: company.fields.driveLink,

@@ -19,7 +19,7 @@ const headsTable = [
   "Nombre empresa",
   "Grupo Whatsapp",
   "Servicios activos",
-  "Última modificación",
+  "Última modificación"
 ];
 
 export default function DashboardHome() {
@@ -52,7 +52,6 @@ export default function DashboardHome() {
       const filteredData = originalData.filter((company) =>
         company?.name?.toLowerCase().includes(searchValue.toLowerCase())
       );
-
       const dataTable: TableDataProps = {
         heads: headsTable,
         rows: filteredData.map((company: Company) => [

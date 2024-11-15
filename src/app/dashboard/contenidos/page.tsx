@@ -4,6 +4,7 @@ import { getSession, withPageAuthRequired } from "@auth0/nextjs-auth0"
 import { redirect } from "next/navigation"
 
 async function ContentsPage() {
+  const userRoleUri = `${process.env.NEXT_PUBLIC_ROLE_URL}`;
   const session = await getSession();
 
   if (!session) {
@@ -11,7 +12,6 @@ async function ContentsPage() {
   }
 
   const { user } = session;
-  const userRoleUri = "https://localhost:3000/roles";
   const userRole = user[userRoleUri];
 
   switch (userRole) {
