@@ -11,6 +11,7 @@ import useLogout from "@/app/hooks/useLogout";
 import { useDispatch } from "react-redux";
 import { setUserData } from "@/app/store/features/userSlice";
 import { getUserByAuth0Id } from "@/app/utilities/helpers/fetchers";
+import { Entry } from "contentful-management";
 
 export default function NavBar() {
   const [openMenu, setOpenMenu] = useState(false);
@@ -40,7 +41,7 @@ export default function NavBar() {
               role: response.role['en-US'],
               imageProfile: response.imageProfile['en-US'],
               companies: response.company['en-US'],
-              companiesId: response.company['en-US'].map((company:any) => (company.sys.id))
+              companiesId: response.company['en-US'].map((company: Entry) => (company.sys.id))
             }
             dispatch(setUserData(transformData));
           }

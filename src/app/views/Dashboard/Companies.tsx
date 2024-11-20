@@ -92,7 +92,7 @@ export default function Companies() {
     setSearchValue(e.target.value);
   };
 
-  const exportToCSV = useExportCSV(originalData, ["name", "linkWhatsApp", "nit", "phone", "status"], `companies-${new Date().toISOString()}`)
+  const exportToCSV = useExportCSV(originalData as Record<string, string | number>[], ["name", "linkWhatsApp", "nit", "phone", "status"], `companies-${new Date().toISOString()}`)
 
   const handleClearSearch = () => {
     setSearchValue("");

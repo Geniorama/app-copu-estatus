@@ -24,6 +24,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useFetchServices } from "@/app/hooks/useFetchServices";
 import type { ServiceOptionsProps } from "../FilterContentBar";
 import type { FilterDataProps } from "@/app/types";
+import useExportCSV from "@/app/hooks/useExportCSV";
 
 const headsTable = [
   "ID",
@@ -262,6 +263,8 @@ export default function Contents() {
     setFilteredData(filtered);
   }, [searchValue, originalData]);
 
+  const exportToCSV = useExportCSV(originalData as Record<string, string | number>[], ["id", "headline", "type", "publicationDate", "serviceId"], `contents-${new Date().toISOString()}`)
+
   if (loading) {
     return (
       <div>
@@ -334,7 +337,7 @@ export default function Contents() {
         </Button>
 
         <div className="flex gap-6 items-center">
-          <LinkCP href="#">Exportar CSV</LinkCP>
+          <LinkCP onClick={exportToCSV} href="#">Exportar CSV</LinkCP>
           <Search onChange={handleChange} value={searchValue} />
         </div>
       </div>

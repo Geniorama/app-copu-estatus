@@ -87,16 +87,16 @@ export interface UserAuth0 {
 
 export interface TableDataProps {
   heads: string[];
-  rows: (string | ReactNode | Promise<void> | null | undefined)[][]
+  rows: (string | ReactNode)[][]
 }
 
 export interface User{
-  id: string;
-  fname: string;
-  lname: string;
-  email: string;
-  phone: string;
-  role: 'admin' | 'cliente';
+  id?: string;
+  fname?: string;
+  lname?: string;
+  email?: string;
+  phone?: string;
+  role?: 'admin' | 'cliente';
   position?: string;
   companies?: CompanyResponse[] | null;
   auth0Id?: string;

@@ -53,7 +53,7 @@ export default function Users() {
     "Acciones",
   ];
 
-  const exportToCSV = useExportCSV(originalData, ["email", "fname", "lname", "role", "status"], `usuarios-${new Date().toISOString()}`);
+  const exportToCSV = useExportCSV(originalData as Record<string, string | number>[], ["email", "fname", "lname", "role", "status"], `usuarios-${new Date().toISOString()}`);
 
   const handleEdit = (userId?: string) => {
     if (!userId) {
@@ -176,9 +176,9 @@ export default function Users() {
     } else {
       const filteredRows = originalData.filter(
         (user) =>
-          user.email.toLowerCase().includes(searchValue.toLowerCase()) ||
-          user.fname.toLowerCase().includes(searchValue.toLowerCase()) ||
-          user.lname.toLowerCase().includes(searchValue.toLowerCase()) ||
+          user.email?.toLowerCase().includes(searchValue.toLowerCase()) ||
+          user.fname?.toLowerCase().includes(searchValue.toLowerCase()) ||
+          user.lname?.toLowerCase().includes(searchValue.toLowerCase()) ||
           user.role?.toLowerCase().includes(searchValue.toLowerCase())
       );
 
