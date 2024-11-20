@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from "uuid";
-import type { User, Company, Service } from "@/app/types";
+import type { User, Company, Service, Content } from "@/app/types";
 
 export const fetchUploadImage = async (file: File): Promise<string | null> => {
   try {
@@ -230,6 +230,41 @@ export const createService = async (service: Service) => {
       return data;
     } else {
       console.log("Error fetch update service");
+    }
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const createContent = async (content: Content) => {
+  try {
+    const res = await fetch("/api/content", {
+      method: "POST",
+      headers: {
+        "Content-type": "application/json",
+      },
+      body: JSON.stringify(content),
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      return data;
+    } else {
+      console.log("Error fetch create content");
+    }
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const getAllContents = async () => {
+  try {
+    const res = await fetch("/api/content");
+    if (res.ok) {
+      const data = await res.json();
+      return data;
+    } else {
+      console.log("Error fetch all services");
     }
   } catch (error) {
     console.log(error);

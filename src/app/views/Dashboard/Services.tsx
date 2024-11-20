@@ -19,6 +19,7 @@ import Spinner from "@/app/utilities/ui/Spinner";
 import { updateService } from "@/app/utilities/helpers/fetchers";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { formattedDate } from "@/app/utilities/helpers/formatters";
 
 const headsTable = [
   "Nombre servicio",
@@ -68,19 +69,7 @@ export default function Services() {
       setServiceForEdit(service);
       setOpenModal(true);
     }
-  };
-
-  const formattedDate = (date?: string | null) => {
-    if (date) {
-      const toFormatDate = new Date(date);
-      const day = String(toFormatDate.getUTCDate()).padStart(2, '0');
-      const month = toFormatDate.toLocaleString("es-ES", { month: "short", timeZone: "UTC" });
-      const year = toFormatDate.getUTCFullYear();
-  
-      return `${day} ${month} ${year}`;
-    }
-  };
-  
+  };  
 
   const rowsTable = (data: Service[]) => {
     const filteredData = data.map((service) => [

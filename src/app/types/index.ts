@@ -24,7 +24,7 @@ export interface Metadata {
 
 export interface Company {
   id?: string;
-  logo?: string;
+  logo?: string | null;
   name?: string;
   address?: string;
   phone?: string;
@@ -64,12 +64,14 @@ export interface SocialListsProps {
 }
 
 export interface Content {
-  id: string;
+  id?: string;
   type?: string;
   headline?: string;
-  pubDate?: string | null;
+  publicationDate?: string | null;
   service?: Service;
+  serviceId?: string;
   socialMediaInfo?: SocialListsProps[];
+  createdBy?: string;
 }
 
 export interface UserAuth0 {
@@ -98,15 +100,15 @@ export interface User{
   position?: string;
   companies?: CompanyResponse[] | null;
   auth0Id?: string;
-  imageProfile?: string;
+  imageProfile?: string | null;
   linkWhatsApp?: string | null;
   status?: boolean;
   companiesId?: string[];
 }
 export interface FilterDataProps {
   company?: string | null;
-  startDate?: string;
-  endDate?: string;
+  service?: string | null;
+  publicationDate?: string;
 }
 
 export interface CompanyContentful {

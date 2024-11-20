@@ -3,40 +3,70 @@ import Input from "../utilities/ui/Input";
 import Select from "../utilities/ui/Select";
 import { useState, useEffect } from "react";
 import type { ChangeEvent, FormEvent } from "react";
-import type { FilterDataProps } from "../types";
+import type { FilterDataProps, OptionSelect } from "../types";
+import { formattedDate } from "../utilities/helpers/formatters";
+
+export interface ServiceOptionsProps extends OptionSelect {
+  companyId?: string;
+}
 
 interface FilterContentBarProps {
-  companies: { value: string; name: string }[];
+  companies: OptionSelect[];
+  services?: ServiceOptionsProps[] | null;
   onFilter: (data: FilterDataProps) => void;
   onCleanForm?: () => void;
 }
 
 const initialData: FilterDataProps = {
   company: "",
-  startDate: "",
-  endDate: "",
+  service: "",
+  publicationDate: "",
 };
 
 export default function FilterContentBar({
   companies,
+  services,
   onFilter,
   onCleanForm,
 }: FilterContentBarProps) {
   const [selectedValues, setSelectedValues] = useState(initialData);
   const [disabledButton, setDisabledButton] = useState(true);
   const [showTags, setShowTags] = useState(false);
+  const [servicesByCompany, setServicesByCompany] = useState<OptionSelect[]>(
+    []
+  );
 
   useEffect(() => {
     if (
-      selectedValues.company ||
-      selectedValues.endDate ||
-      selectedValues.startDate
+      selectedValues.publicationDate ||
+      selectedValues.service
     ) {
       setDisabledButton(false);
     } else {
       setDisabledButton(true);
     }
   }, [selectedValues]);
+
+  useEffect(() => {
+    if (services) {
+      const options = services.map((service) => ({
+        value: service.value,
+        name: service.name,
+      }));
+
+      setServicesByCompany(options);
+    }
+  }, [services]);
+
+  useEffect(() => {
+    console.log(selectedValues.company)
+    if (services && selectedValues.company) {
+      const filterOptions = services.filter(
+        (service) => service.companyId === selectedValues.company
+      );
+      setServicesByCompany(filterOptions);
+    }
+  }, [services, selectedValues.company]);
 
   const handleChange = (
     e: ChangeEvent<HTMLSelectElement> | ChangeEvent<HTMLInputElement>
@@ -49,18 +79,18 @@ export default function FilterContentBar({
       [name]: value,
     });
 
-    setShowTags(false)
+    setShowTags(false);
   };
 
   const handleFilter = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     onFilter(selectedValues);
-    setShowTags(true)
+    setShowTags(true);
   };
 
   const handleCleanForm = () => {
     setSelectedValues(initialData);
-    setShowTags(false)
+    setShowTags(false);
     if (onCleanForm) {
       onCleanForm();
     }
@@ -89,31 +119,31 @@ export default function FilterContentBar({
             />
           </div>
           <div>
-            <Label mode="cp-light" htmlFor="startDate">
-              Fecha Inicio
+            <Label mode="cp-light" htmlFor="compny">
+              Servicio
             </Label>
-            <Input
-              type="date"
-              mode="cp-light"
-              id="startDate"
-              value={selectedValues.startDate}
+            <Select
+              id="service"
+              options={servicesByCompany}
+              value={selectedValues.service || ""}
               onChange={(e) => handleChange(e)}
-              name="startDate"
-              placeholder="Fecha inicio"
+              defaultOptionText="Todos los servicios"
+              name="service"
+              mode="cp-light"
             />
           </div>
           <div>
-            <Label mode="cp-light" htmlFor="endDate">
-              Fecha Fin
+            <Label mode="cp-light" htmlFor="startDate">
+              Fecha Publicación
             </Label>
             <Input
               type="date"
               mode="cp-light"
-              id="endDate"
-              value={selectedValues.endDate}
+              id="publicationDate"
+              value={selectedValues.publicationDate}
               onChange={(e) => handleChange(e)}
-              name="endDate"
-              placeholder="Fecha fin"
+              name="publicationDate"
+              placeholder="Fecha inicio"
             />
           </div>
           <div className=" flex gap-3">
@@ -124,15 +154,6 @@ export default function FilterContentBar({
             >
               Aplicar
             </button>
-
-            {!disabledButton && (
-              <button
-                onClick={handleCleanForm}
-                className="underline hover:text-white"
-              >
-                Limpiar
-              </button>
-            )}
           </div>
         </form>
       </div>
@@ -152,17 +173,38 @@ export default function FilterContentBar({
             </span>
           )}
 
-          {selectedValues.startDate && (
+          {selectedValues.service && (
             <span className="bg-slate-300 rounded-sm inline-block px-2 py-1 text-cp-dark text-xs">
-              <b>Fecha inicio:</b> {selectedValues.startDate}
+              <b>Servicio:</b>{" "}
+              {
+                servicesByCompany.find(
+                  (service) => service.value === selectedValues.service
+                )?.name
+              }
             </span>
           )}
 
-          {selectedValues.endDate && (
+          {selectedValues.publicationDate && (
+            <span className="bg-slate-300 rounded-sm inline-block px-2 py-1 text-cp-dark text-xs">
+              <b>Fecha publicación:</b>{" "}
+              {formattedDate(selectedValues.publicationDate)}
+            </span>
+          )}
+
+          {!disabledButton && (
+            <button
+              onClick={handleCleanForm}
+              className="underline text-red-600 hover:text-white text-xs ml-3"
+            >
+              Limpiar
+            </button>
+          )}
+
+          {/* {selectedValues.endDate && (
             <span className="bg-slate-300 rounded-sm inline-block px-2 py-1 text-cp-dark text-xs">
               <b>Fecha fin:</b> {selectedValues.endDate}
             </span>
-          )}
+          )} */}
         </div>
       )}
     </>

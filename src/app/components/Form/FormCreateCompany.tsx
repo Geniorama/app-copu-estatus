@@ -20,7 +20,7 @@ import { updateCompany } from "@/app/utilities/helpers/fetchers";
 // import { useCompaniesOptions } from "@/app/hooks/useCompaniesOptions";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState, AppDispatch } from "@/app/store";
-import { fetchCompaniesOptions } from "@/app/store/features/companiesSlice";
+import { fetchCompaniesOptions, addCompanyOption } from "@/app/store/features/companiesSlice";
 
 const initialData: Company = {
   name: "",
@@ -125,18 +125,24 @@ export default function FormCreateCompany({
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          let finalLogoUrl = "";
-          if (logoImage && !uploadFileUrl) {
+          let finalLogoUrl = logoPreview;
+          if (logoImage) {
             const res = await fetchUploadImage(logoImage);
             if(res){
               finalLogoUrl = res
-              setUploadFileUrl(finalLogoUrl);
+              setLogoPreview(res);
+            } else {
+              console.log('No se detectó logo')
             }
+          }
+
+          if(!logoPreview && !logoImage){
+            finalLogoUrl=""
           }
 
           const bodyCompany = ({
             ...company,
-            logoImage: finalLogoUrl
+            logo: finalLogoUrl
           })
 
           await updateCompany(bodyCompany)
@@ -188,6 +194,10 @@ export default function FormCreateCompany({
         });
 
         if (onSubmit && newCompanyContentful) {
+          dispatch(addCompanyOption({
+            value:  newCompanyContentful.sys.id,
+            name: newCompanyContentful.fields.name['en-US']
+          }))
           onSubmit(newCompanyContentful.sys.id);
         }
 

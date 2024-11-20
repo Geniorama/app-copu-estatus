@@ -5,13 +5,17 @@ import Input from "@/app/utilities/ui/Input";
 import Select from "@/app/utilities/ui/Select";
 import Label from "@/app/utilities/ui/Label";
 import Button from "@/app/utilities/ui/Button";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { SocialListsProps } from "@/app/types";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus, faMinus } from "@fortawesome/free-solid-svg-icons";
 import type { ChangeEvent } from "react";
+import { useFetchServices } from "@/app/hooks/useFetchServices";
+import { createContent } from "@/app/utilities/helpers/fetchers";
+import Swal from "sweetalert2";
+import type { FormEvent } from "react";
 
-const actionOptions: OptionSelect[] = [
+export const actionOptions: OptionSelect[] = [
   {
     name: "Post en social media",
     value: "post",
@@ -65,13 +69,21 @@ const socialList: SocialListsProps[] = [
   },
 ];
 
-export default function FormCreateContent() {
+interface FormCreateContentProps {
+    onSubmit?: (contentId?:string) => void;
+    onClose: () => void;
+}
+
+export default function FormCreateContent({onSubmit, onClose}:FormCreateContentProps) {
   const [activeStep, setActiveStep] = useState(1);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [optionsServices, setOptionsServices] = useState<OptionSelect[] | null>(
+    null
+  );
   const [infoContent, setInfoContent] = useState<Content | null>({
     id: "",
     headline: "",
-    pubDate: "",
+    publicationDate: "",
     service: undefined,
     socialMediaInfo: socialList.map((item) => ({
       id: item.id,
@@ -83,7 +95,9 @@ export default function FormCreateContent() {
       },
     })),
   });
-  
+
+
+  const { dataServices, loading } = useFetchServices({ hasUpdate: undefined });
 
   const handleNextStep = () => {
     if (activeStep < 3) {
@@ -101,20 +115,41 @@ export default function FormCreateContent() {
     }
   };
 
+  useEffect(() => {
+    if (!loading && dataServices) {
+      const convertToOption: OptionSelect[] = dataServices.map((service) => ({
+        name: service.name || '',
+        value: service.id || ''
+      }))
+
+      if(convertToOption){
+        setOptionsServices(convertToOption)
+      }
+    }
+  }, [dataServices, loading]);
+
+  const handleChangeService = (e: ChangeEvent<HTMLSelectElement>) => {
+    const {value} = e.target
+
+    if(value){
+      const filterService = dataServices.find((service) => service.id === value)
+
+      setInfoContent((prevState) => ({
+        ...prevState,
+        service: filterService
+      }))
+    }
+  }
+
   const handleChange = (
     e: ChangeEvent<HTMLSelectElement> | ChangeEvent<HTMLInputElement>
   ) => {
     const { name, value } = e.target;
 
-    console.log(name + ": " + value);
-
     setInfoContent((prevState) => ({
       ...prevState,
-      id: "",
       [name]: value,
     }));
-
-    console.log(infoContent);
   };
 
   const handleSocialChange = (
@@ -122,44 +157,84 @@ export default function FormCreateContent() {
     socialId: string
   ) => {
     const { name, value } = e.target;
-  
+
     setInfoContent((prevState) => {
       if (!prevState) return null;
-  
-      const updatedSocialMediaInfo = prevState.socialMediaInfo?.map((social) => {
-        if (social.id === socialId) {
-          if (name.startsWith("statistics.")) {
-            const key = name.split(".")[1];
-  
+
+      const updatedSocialMediaInfo = prevState.socialMediaInfo?.map(
+        (social) => {
+          if (social.id === socialId) {
+            if (name.startsWith("statistics.")) {
+              const key = name.split(".")[1];
+
+              return {
+                ...social,
+                statistics: {
+                  ...social.statistics,
+                  [key]: Number(value),
+                },
+              };
+            }
+
             return {
               ...social,
-              statistics: {
-                ...social.statistics,
-                [key]: Number(value),
-              },
+              [name]: value,
             };
           }
-  
-          return {
-            ...social,
-            [name]: value,
-          };
+          return social;
         }
-        return social;
-      });
-  
+      );
+
       return {
         ...prevState,
         socialMediaInfo: updatedSocialMediaInfo,
       };
     });
-
-    console.log(infoContent)
   };
-  
+
+  const handleSubmitCreate = async (e:FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+
+    Swal.fire({
+      title: "¿Estás seguro?",
+      text: "Estás a punto de crear un nuevo contenido. ¿Deseas continuar?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Sí, crear contenido",
+      cancelButtonText: "Cancelar",
+    }).then( async (result) => {
+      if (result.isConfirmed) {
+        try {
+          if(infoContent){
+            const res = await createContent(infoContent)
+            if(res){
+              onSubmit && onSubmit(res.sys.id)
+              
+              Swal.fire({
+                title: "Contenido creado",
+                text: "El contenido se ha creado exitosamente",
+                icon: "success",
+                confirmButtonText: "OK",
+              }).then(() => {
+                onClose();
+              });
+            }
+          }
+        } catch (error) {
+          console.log(error)
+        }
+      } else {
+        console.log("Creación de contenido cancelada");
+      }
+    });
+    
+  }
+
   return (
     <form
-      onSubmit={(e) => e.preventDefault()}
+      onSubmit={(e) => handleSubmitCreate(e)}
       className="w-full bg-slate-100 p-8 rounded-lg"
     >
       <div className="flex gap-4 justify-center mb-5">
@@ -194,7 +269,8 @@ export default function FormCreateContent() {
               onChange={(e) => handleChange(e)}
               mode="cp-dark"
               options={actionOptions}
-              value={infoContent?.type}
+              value={infoContent?.type || ''}
+              defaultOptionText="Selecciona una opción"
             />
           </div>
           <div className="w-full">
@@ -209,22 +285,26 @@ export default function FormCreateContent() {
           <div className="w-full">
             <Label mode="cp-dark">Fecha publicación*</Label>
             <Input
-              name="pubDate"
+              name="publicationDate"
               onChange={(e) => handleChange(e)}
               type="date"
               mode="cp-dark"
-              value={infoContent?.pubDate || ''}
+              value={infoContent?.publicationDate || ""}
             />
           </div>
-          <div className="w-full">
-            <Label mode="cp-dark">Servicio asociado*</Label>
-            <Select
-              name="service"
-              onChange={(e) => handleChange(e)}
-              mode="cp-dark"
-              options={actionOptions}
-            />
-          </div>
+          {optionsServices && (
+            <div className="w-full">
+              <Label mode="cp-dark">Servicio asociado*</Label>
+              <Select
+                name="service"
+                onChange={(e) => handleChangeService(e)}
+                mode="cp-dark"
+                options={optionsServices}
+                value={infoContent?.service?.id || ''}
+                defaultOptionText="Selecciona una opción"
+              />
+            </div>
+          )}
         </fieldset>
       )}
 
@@ -268,8 +348,9 @@ export default function FormCreateContent() {
                       min={0}
                       onChange={(e) => handleSocialChange(e, item.id)}
                       value={
-                        infoContent?.socialMediaInfo?.find((social) => social.id === item.id)
-                          ?.link || ""
+                        infoContent?.socialMediaInfo?.find(
+                          (social) => social.id === item.id
+                        )?.link || ""
                       }
                     />
                     <div className="flex gap-2 mt-2">
@@ -281,8 +362,9 @@ export default function FormCreateContent() {
                         min={0}
                         onChange={(e) => handleSocialChange(e, item.id)}
                         value={
-                          infoContent?.socialMediaInfo?.find((social) => social.id === item.id)
-                            ?.statistics?.scope || 0
+                          infoContent?.socialMediaInfo?.find(
+                            (social) => social.id === item.id
+                          )?.statistics?.scope || 0
                         }
                       />
                       <input
@@ -293,8 +375,9 @@ export default function FormCreateContent() {
                         min={0}
                         onChange={(e) => handleSocialChange(e, item.id)}
                         value={
-                          infoContent?.socialMediaInfo?.find((social) => social.id === item.id)
-                            ?.statistics?.impressions || 0
+                          infoContent?.socialMediaInfo?.find(
+                            (social) => social.id === item.id
+                          )?.statistics?.impressions || 0
                         }
                       />
                       <input
@@ -305,8 +388,9 @@ export default function FormCreateContent() {
                         min={0}
                         onChange={(e) => handleSocialChange(e, item.id)}
                         value={
-                          infoContent?.socialMediaInfo?.find((social) => social.id === item.id)
-                            ?.statistics?.interactions || 0
+                          infoContent?.socialMediaInfo?.find(
+                            (social) => social.id === item.id
+                          )?.statistics?.interactions || 0
                         }
                       />
                     </div>
@@ -325,12 +409,16 @@ export default function FormCreateContent() {
         >
           Anterior
         </Button>
-        {activeStep < 2 ? (
-          <Button type="button" mode="cp-green" onClick={handleNextStep}>
+        {activeStep === 1 ? (
+          <Button type="button" mode="cp-green" onClick={(e) => {
+            e.preventDefault()
+            e.stopPropagation()
+            handleNextStep()
+          }}>
             Siguiente
           </Button>
         ) : (
-          <Button mode="cp-green" type="submit">
+          <Button disabled={activeStep === 1} mode="cp-green" type="submit">
             Finalizar
           </Button>
         )}

@@ -44,7 +44,26 @@ export const fetchCompaniesOptions = createAsyncThunk(
 const companiesSlice = createSlice({
   name: "companies",
   initialState,
-  reducers: {},
+  reducers: {
+    addCompanyOption: (state, action) => {
+      const newCompany = action.payload as OptionSelect;
+
+      // Evitar duplicados
+      const exists = state.options.some(
+        (option) => option.value === newCompany.value
+      );
+
+      if (!exists) {
+        state.options.push(newCompany);
+
+        // Opcional: Guardar en localStorage para persistencia
+        localStorage.setItem(
+          "companiesOptions",
+          JSON.stringify(state.options)
+        );
+      }
+    },
+  },
   extraReducers: (builder) => {
     builder
       .addCase(fetchCompaniesOptions.pending, (state) => {
@@ -62,4 +81,5 @@ const companiesSlice = createSlice({
   },
 });
 
+export const { addCompanyOption } = companiesSlice.actions;
 export default companiesSlice.reducer;

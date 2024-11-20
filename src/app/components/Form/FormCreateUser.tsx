@@ -122,13 +122,16 @@ export default function FormCreateUser({
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-            let fileProfileUrl = "";
+            let fileProfileUrl = imgProfilePreview;
             if (imgProfile) {
               const res = await fetchUploadImage(imgProfile);
               if (res) {
                 fileProfileUrl = res;
-                console.log('Profile image', fileProfileUrl)
               }
+            }
+
+            if (!imgProfilePreview && !imgProfile) {
+              fileProfileUrl = "";
             }
 
             await updatedUserInContentful({
