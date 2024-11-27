@@ -46,7 +46,7 @@ export default function Sidebar() {
                 <li >
                   <Link
                     href={item.path || "/"}
-                    className={`tracking-wide hover:text-cp-primary transition active:text-cp-primary ${
+                    className={`tracking-wide block hover:text-cp-primary transition active:text-cp-primary py-6 ${
                       pathname === item.path && "text-cp-primary"
                     }`}
                   >
@@ -58,7 +58,7 @@ export default function Sidebar() {
                     {item.name}
                   </Link>
                 </li>
-                <hr className="border-slate-600 my-6" />
+                <hr className="border-slate-600" />
               </>
             ))}
           </ul>
