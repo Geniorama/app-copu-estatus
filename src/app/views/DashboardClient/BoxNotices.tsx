@@ -4,6 +4,7 @@ import { faWhatsapp } from "@fortawesome/free-brands-svg-icons";
 import Button from "@/app/utilities/ui/Button";
 import { useState } from "react";
 
+
 export default function BoxNotices() {
   const [showNotice, setShowNotice] = useState(true)
 

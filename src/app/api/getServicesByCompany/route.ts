@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import contentfulClient from "@/app/lib/contentful";
+import { getContentfulEnvironment } from "@/app/lib/contentfulManagement";
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -12,7 +12,8 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const response = await contentfulClient.getEntries({
+    const environment = await getContentfulEnvironment()
+    const response = await environment.getEntries({
       content_type: "service",
       "fields.company.sys.id": companyId,
     });
@@ -23,8 +24,9 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    const services = response.items.map((item) => item.fields);
-    return new Response(JSON.stringify(services), { status: 200 });
+    // const services = response.items.map((item) => item.fields);
+
+    return new Response(JSON.stringify(response.items), { status: 200 });
   } catch (error) {
     console.error("Error al obtener los servicios de Contentful", error);
     return new Response(

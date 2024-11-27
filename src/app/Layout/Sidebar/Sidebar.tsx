@@ -18,8 +18,9 @@ export default function Sidebar() {
 
   useEffect(() => {
     if(currentUser){
-      const userRoleUri = `${process.env.NEXT_PUBLIC_ROLE_URL}roles`;
+      const userRoleUri = `${process.env.NEXT_PUBLIC_ROLE_URL}`;
       const role =  currentUser.user[userRoleUri]
+      console.log(userRoleUri)
       console.log(currentUser)
       console.log(userData)
       if(role === 'cliente'){

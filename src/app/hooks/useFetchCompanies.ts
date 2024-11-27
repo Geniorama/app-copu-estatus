@@ -2,7 +2,6 @@ import { useState, useEffect, useCallback } from "react";
 import {
   Company,
   User,
-  Service,
   CompanyResponse,
 } from "@/app/types";
 import { getCompaniesByIds } from "../utilities/helpers/fetchers";
@@ -10,7 +9,7 @@ import { Entry } from "contentful-management";
 
 export const useFetchCompanies = (
   userData: User | undefined,
-  fetchServicesByCompany: (companyId: string) => Promise<Service[]>,
+  fetchServicesByCompany: (companyId: string) => Promise<Entry[]>,
   fetchAll: boolean = false
 ) => {
   const [originalData, setOriginalData] = useState<Company[]>([]);
@@ -32,7 +31,6 @@ export const useFetchCompanies = (
         const data = await response.json();
 
         if (data) {
-          console.log(data);
           companies = data.map((company: CompanyResponse) => ({
             ...company,
             fields: {
@@ -68,6 +66,8 @@ export const useFetchCompanies = (
 
               const services = await fetchServicesByCompany(company.sys.id);
 
+              console.log('services company', services)
+
               return {
                 id: company.sys.id,
                 logo: company.fields.logo || "",
@@ -81,7 +81,16 @@ export const useFetchCompanies = (
                 superior: company.fields.superior,
                 superiorId: company.fields.superior?.sys.id || null,
                 updatedAt: `${formattedDate}`,
-                services,
+                services: services.map((service) => ({
+                  id: service.sys.id,
+                  name: service.fields.name['en-US'],
+                  description: service.fields.description['en-US'],
+                  company: service.fields.company['en-US'],
+                  plan: service.fields.plan['en-US'],
+                  startDate: service.fields.startDate['en-US'],
+                  endDate: service.fields.endDate['en-US'],
+                  status: service.fields.status['en-US']
+                })),
                 status: company.fields.status
               };
             }
