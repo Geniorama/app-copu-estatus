@@ -25,6 +25,30 @@ const getAuth0Token = async () => {
 interface UserForAuth extends User {
   password: string
 }
+
+const getAuth0User = async (token: string, userId: string) => {
+  const response = await fetch(`https://${process.env.AUTH0_DOMAIN}/api/v2/users/${userId}`, {
+    method: 'GET',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json();
+    console.error('Error obteniendo usuario de Auth0:', errorData);
+    throw new Error('Error obteniendo usuario de Auth0');
+  }
+
+  const user = await response.json();
+  return {
+    id: user.user_id,
+    email: user.email,
+    role: user.app_metadata?.role || 'Sin rol asignado',
+  };
+};
+
   
 
 const createAuth0User = async (token: string, user: UserForAuth) => {
@@ -53,13 +77,24 @@ const createAuth0User = async (token: string, user: UserForAuth) => {
 
 export async function POST(req: Request) {
   try {
-    const user = await req.json();
-    const token = await getAuth0Token();
-    const auth0Id = await createAuth0User(token, user);
+    const { action, user } = await req.json();
 
-    return NextResponse.json({ auth0Id }, { status: 200 });
+    const token = await getAuth0Token();
+
+    if (action === 'create') {
+      const auth0Id = await createAuth0User(token, user);
+      return NextResponse.json({ auth0Id }, { status: 200 });
+    } else if (action === 'getRole') {
+      const auth0User = await getAuth0User(token, user.auth0Id);
+      return NextResponse.json({ auth0User }, { status: 200 });
+    } else {
+      return NextResponse.json(
+        { message: 'Acción no válida. Usa "create" o "getRole".' },
+        { status: 400 }
+      );
+    }
   } catch (error) {
-    console.error('Error en la creación de usuario:', error);
-    return NextResponse.json({ message: 'Error creando usuario en Auth0' }, { status: 500 });
+    console.error('Error en la API de Auth0:', error);
+    return NextResponse.json({ message: 'Error en la API de Auth0' }, { status: 500 });
   }
 }

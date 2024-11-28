@@ -175,7 +175,7 @@ export default function FormCreateUser({
             headers: {
               "Content-Type": "application/json",
             },
-            body: JSON.stringify({ ...user, password }),
+            body: JSON.stringify({ action: 'create', user: {...user, password} }),
           });
 
           if (response.ok) {

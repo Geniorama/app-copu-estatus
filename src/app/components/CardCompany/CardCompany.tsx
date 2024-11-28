@@ -7,6 +7,7 @@ interface CardCompanyProps {
   executiveName: string;
   executiveLink: string;
   companySuperior?: string | null;
+  handle?: string;
 }
 
 export default function CardCompany({
@@ -15,9 +16,19 @@ export default function CardCompany({
   executiveName,
   companySuperior,
   icon,
+  handle
 }: CardCompanyProps) {
+
+  const handleClick = () => {
+    if(!handle){
+      return
+    }
+
+    console.log(handle)
+  }
+
   return (
-    <div className="bg-slate-800 rounded-md p-5 flex gap-4 items-center">
+    <div onClick={handleClick} className={`bg-slate-800 rounded-md p-5 flex gap-4 items-center ${handle && "cursor-pointer"}`}>
       <div>
         {icon ? (
           <div className="w-20 aspect-square bg-slate-800 rounded-full flex justify-center items-center text-2xl overflow-hidden">

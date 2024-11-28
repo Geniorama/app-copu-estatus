@@ -160,6 +160,20 @@ export const getAllUsers = async () => {
   }
 };
 
+
+export const getUsersByCompanyId = async(companyId:string) => {
+  try {
+    const fetchUsers = await fetch(`/api/getUsersByCompanyId?companyId=${companyId}`);
+    if (fetchUsers.ok) {
+      const res = await fetchUsers.json();
+      return res;
+    } else {
+      console.log("Error fetch all users");
+    }
+  } catch (error) {
+    console.log(error);
+  }
+}
 export const updateCompany = async (data: Company) => {
   try {
     const fetchUpdate = await fetch("/api/companies", {
