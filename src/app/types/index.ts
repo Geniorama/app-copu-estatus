@@ -172,3 +172,7 @@ export interface OptionSelect {
   value: string;
   name: string;
 }
+
+export interface CompanyWithUser extends Company {
+  usersAdmin?: User[] | null;
+}
