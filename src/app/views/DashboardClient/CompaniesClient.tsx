@@ -13,6 +13,7 @@ import Spinner from "@/app/utilities/ui/Spinner";
 
 export default function CompaniesClient() {
   const { userData } = useSelector((state: RootState) => state.user);
+  console.log(userData)
 
   const fetchServicesByCompany = useCallback(async (companyId: string) => {
     try {
@@ -27,7 +28,7 @@ export default function CompaniesClient() {
     }
   }, []);
 
-  const { originalData: companies } = useFetchCompanies(
+  const { originalData: companies, loading: loadingOriginalData } = useFetchCompanies(
     userData,
     fetchServicesByCompany,
     false
@@ -41,7 +42,7 @@ export default function CompaniesClient() {
         <TitleSection title="Mis Compañías" />
       </div>
 
-      {loading ? (
+      {loading || loadingOriginalData ? (
         <div className="w-full h-[70vh] flex justify-center items-center">
           <span className="text-8xl">
             <Spinner />
@@ -51,21 +52,26 @@ export default function CompaniesClient() {
         <>
         {updatedCompanies && (
         <div className="flex flex-wrap flex-col lg:flex-row gap-4">
-          {updatedCompanies.map((company: CompanyWithUser) => (
-            <CardCompany
-              key={company.id}
-              name={company.name || ""}
-              executiveLink={company.usersAdmin?.[0].linkWhatsApp || "#"}
-              executiveName={
-                company.usersAdmin && company.usersAdmin.length > 0
-                  ? `${company.usersAdmin[0].fname} ${company.usersAdmin[0].lname}` ||
-                    ""
-                  : "Sin administrador"
-              }
-              icon={company.logo}
-              handle={company.id}
-            />
-          ))}
+          {updatedCompanies.map((company: CompanyWithUser) => {
+            const linkWhatsApp = `https://wa.me/${company.usersAdmin?.[0].phone?.replace(/\+/g, "")}` || "#";
+            console.log(company)
+            return(
+              <CardCompany
+                  key={company.id}
+                  name={company.name || ""}
+                  executiveLink={linkWhatsApp}
+                  executiveName={
+                    company.usersAdmin && company.usersAdmin.length > 0
+                      ? `${company.usersAdmin[0].fname} ${company.usersAdmin[0].lname}` ||
+                        ""
+                      : "Sin administrador"
+                  }
+                  icon={company.logo}
+                  handle={company.id}
+                  active={company.status}
+                />
+            )
+          })}
         </div>
       )}
 
@@ -78,7 +84,7 @@ export default function CompaniesClient() {
                 <CardCompany
                   key={company.id}
                   name={company.name || ""}
-                  executiveLink={company.usersAdmin?.[0].linkWhatsApp || "#"}
+                  executiveLink={`https://wa.me/${(company.usersAdmin?.[0].phone)?.replace(/\+/g, "")}` || "#"}
                   executiveName={
                     company.usersAdmin && company.usersAdmin.length > 0
                       ? `${company.usersAdmin[0].fname} ${company.usersAdmin[0].lname}` ||

@@ -284,3 +284,19 @@ export const getAllContents = async () => {
     console.log(error);
   }
 };
+
+export const getServicesByCompanyId = async (companyId: string) => {
+  try {
+    const res = await fetch(`/api/getServicesByCompany?companyId=${companyId}`);
+    if (res.ok) {
+      const data = await res.json();
+      return data;
+    } else {
+      console.log("Error fetch services");
+      return null; // Retornar null para indicar fallo
+    }
+  } catch (error) {
+    console.error("Error en fetch:", error);
+    return null; // Retornar null para indicar error
+  }
+};

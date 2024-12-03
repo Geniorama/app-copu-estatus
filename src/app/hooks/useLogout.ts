@@ -12,9 +12,9 @@ export default function useLogout() {
 
   const handleLogout = (e: MouseEvent<HTMLAnchorElement, globalThis.MouseEvent>) => {
     e.preventDefault();
+    router.push("/api/auth/logout");
     dispatch(resetCurrentUser());
     dispatch(resetUserData());
-    router.push("/api/auth/logout");
   };
 
   return handleLogout;

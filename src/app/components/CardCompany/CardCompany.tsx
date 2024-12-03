@@ -8,6 +8,7 @@ interface CardCompanyProps {
   executiveLink: string;
   companySuperior?: string | null;
   handle?: string;
+  active?: boolean
 }
 
 export default function CardCompany({
@@ -16,11 +17,12 @@ export default function CardCompany({
   executiveName,
   companySuperior,
   icon,
-  handle
+  handle,
+  active
 }: CardCompanyProps) {
 
   const handleClick = () => {
-    if(!handle){
+    if(!handle || !active){
       return
     }
 
@@ -28,11 +30,11 @@ export default function CardCompany({
   }
 
   return (
-    <div onClick={handleClick} className={`bg-slate-800 rounded-md p-5 flex gap-4 items-center ${handle && "cursor-pointer"}`}>
+    <div onClick={handleClick} className={`bg-slate-800 rounded-md p-5 flex gap-4 items-center ${handle && active && "cursor-pointer"} ${!active && 'opacity-50 pointer-events-none'}`}>
       <div>
         {icon ? (
           <div className="w-20 aspect-square bg-slate-800 rounded-full flex justify-center items-center text-2xl overflow-hidden">
-            <img className="w-full h-full object-cover" src={icon} alt="" />
+            <img className={`w-full h-full object-cover ${!active && "grayscale"}`} src={icon} alt="" />
           </div>
         ) : (
           <div className="w-20 aspect-square bg-slate-800 rounded-full flex justify-center items-center text-2xl">
@@ -44,8 +46,14 @@ export default function CardCompany({
 
       <div>
         {companySuperior && (
-          <span className="text-xs bg-slate-300 rounded-sm text-cp-dark p-1 py-[2px] font-bold mb-2 inline-block">
+          <span className="text-xs bg-slate-300 rounded-sm text-cp-dark p-1 py-[2px] font-bold mb-2 inline-block mr-1">
             {companySuperior}
+          </span>
+        )}
+
+        {!active && (
+          <span className="text-xs bg-slate-300 rounded-sm text-cp-dark p-1 py-[2px] font-bold mb-2 inline-block mr-1">
+            Inactiva
           </span>
         )}
         <h3 className="font-bold text-2xl">{name}</h3>
@@ -54,6 +62,7 @@ export default function CardCompany({
           <a
             className="underline hover:opacity-65 text-cp-primary"
             href={executiveLink}
+            target="_blank"
           >
             {executiveName}
           </a>

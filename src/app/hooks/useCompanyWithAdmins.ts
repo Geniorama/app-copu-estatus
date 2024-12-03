@@ -7,7 +7,7 @@ import { Entry } from "contentful-management";
 export const useCompanyWithAdmins = (companies: CompanyWithUser[]) => {
   const [updatedCompanies, setUpdatedCompanies] = useState<CompanyWithUser[] | null>(null);
   const [subUpdatedData, setSubUpdatedData] = useState<CompanyWithUser[] | null>(null);
-  const [loading, setLoading] = useState<boolean>(true); // Estado de carga comienza en true
+  const [loading, setLoading] = useState<boolean>(true);
 
   const getRoleUser = async (user: Entry): Promise<string | null> => {
     const fieldsUser = user.fields;
@@ -42,7 +42,7 @@ export const useCompanyWithAdmins = (companies: CompanyWithUser[]) => {
   useEffect(() => {
     const fetchAndUpdateCompanies = async () => {
       if (companies && companies.length > 0) {
-        setLoading(true); // Se asegura de que el loading esté en true mientras se cargan los datos
+        setLoading(true);
         try {
           const updatedData: CompanyWithUser[] = await Promise.all(
             companies.map(async (company) => {
@@ -56,6 +56,8 @@ export const useCompanyWithAdmins = (companies: CompanyWithUser[]) => {
                     ...user,
                     fname: user.fields.firstName["en-US"],
                     lname: user.fields.lastName["en-US"],
+                    phone: user.fields.phone["en-US"],
+                    status: user.fields.status["en-US"]
                   });
                 }
               }
@@ -75,15 +77,15 @@ export const useCompanyWithAdmins = (companies: CompanyWithUser[]) => {
         } catch (error) {
           console.error("Error al actualizar los datos de las compañías", error);
         } finally {
-          setLoading(false); // Desactiva loading una vez que se ha completado la carga de datos
+          setLoading(false);
         }
       } else {
-        setLoading(false); // Si no hay compañías, desactiva loading
+        setLoading(false);
       }
     };
 
     fetchAndUpdateCompanies();
-  }, [companies]); // Solo depende de 'companies'
+  }, [companies]);
 
   return { updatedCompanies, subUpdatedData, loading };
 };
