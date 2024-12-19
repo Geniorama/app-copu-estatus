@@ -82,6 +82,7 @@ export default function ServicesClient() {
 
         if(transformData){
           setOriginalData(transformData)
+          console.log(originalData)
         }
       }
     } catch (error) {
