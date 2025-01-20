@@ -25,6 +25,7 @@ import { updateCompany } from "@/app/utilities/helpers/fetchers";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import useExportCSV from "@/app/hooks/useExportCSV";
+import { useSearchParams } from "next/navigation";
 
 export default function Companies() {
   const [searchValue, setSearchValue] = useState("");
@@ -34,6 +35,8 @@ export default function Companies() {
   const [editCompany, setEditCompany] = useState<Company | null>(null)
   const [success, setSuccess] = useState(false)
   const notify = (message: string) => toast(message);
+  const searchParams = useSearchParams();
+  const actionUrl = searchParams.get('action')
 
   const headsTable = [
     "Logo",
@@ -74,6 +77,12 @@ export default function Companies() {
       setTableData(originalData.length > 0 ? dataTable : null);
     }
   }, [loading, originalData]);
+
+  useEffect(() => {
+    if(actionUrl === "create"){
+      setOpenModal(true)
+    }
+  }, [actionUrl])
 
   useEffect(() => {
     const filteredData = originalData.filter((company) =>

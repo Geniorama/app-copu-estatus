@@ -17,7 +17,7 @@ import { useSelector } from "react-redux";
 import type { RootState } from "@/app/store";
 import type { MouseEvent } from "react";
 import Spinner from "@/app/utilities/ui/Spinner";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import Switch from "@/app/utilities/ui/Switch";
 import BoxLogo from "@/app/utilities/ui/BoxLogo";
 import {
@@ -38,6 +38,8 @@ export default function Users() {
   const [loading, setLoading] = useState(true);
   const [editUser, setEditUser] = useState<User | null>(null);
   const notify = (message: string) => toast(message);
+  const searchParams = useSearchParams();
+  const actionUrl = searchParams.get("action");
 
   const { currentUser } = useSelector((state: RootState) => state.user);
   const currentUserId = currentUser?.user.sub;
@@ -113,6 +115,12 @@ export default function Users() {
 
     return filteredData;
   };
+
+  useEffect(() => {
+    if (actionUrl === "create") {
+      setOpenModal(true);
+    }
+  }, [actionUrl]);
 
   useEffect(() => {
     const fetchUsers = async () => {

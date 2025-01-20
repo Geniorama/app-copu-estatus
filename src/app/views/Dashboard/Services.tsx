@@ -20,6 +20,7 @@ import { updateService } from "@/app/utilities/helpers/fetchers";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { formattedDate } from "@/app/utilities/helpers/formatters";
+import { useSearchParams } from "next/navigation";
 
 const headsTable = [
   "Nombre servicio",
@@ -41,6 +42,8 @@ export default function Services() {
     hasUpdate: hasUpdate
   });
   const notify = (message: string) => toast(message);
+  const searchParams = useSearchParams();
+  const actionUrl = searchParams.get("action");
 
   const handleSwitch = async (serviceId?: string) => {
     if (serviceId) {
@@ -94,6 +97,12 @@ export default function Services() {
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     setSearchValue(e.target.value);
   };
+
+  useEffect(() => {
+    if (actionUrl === "create") {
+      setOpenModal(true);
+    }
+  }, [actionUrl]);
 
   useEffect(() => {
     if (dataServices) {

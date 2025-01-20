@@ -26,6 +26,7 @@ import type { ServiceOptionsProps } from "../FilterContentBar";
 import type { FilterDataProps } from "@/app/types";
 import useExportCSV from "@/app/hooks/useExportCSV";
 import { truncateText } from "@/app/utilities/helpers/formatters";
+import { useSearchParams } from "next/navigation";
 
 const headsTable = [
   "Compañía",
@@ -60,6 +61,8 @@ export default function Contents() {
   const [filteredData, setFilteredData] = useState<Content[] | null>(null);
 
   const dispatch = useDispatch<AppDispatch>();
+  const searchParams = useSearchParams();
+  const actionUrl = searchParams.get("action");
 
   const showSocialLink = (link?: string) => {
     if (link) {
@@ -97,6 +100,12 @@ export default function Contents() {
       }
     }
   }, [dataServices, loadingServices]);
+
+  useEffect(() => {
+    if (actionUrl === "create") {
+      setOpenModal(true);
+    }
+  }, [actionUrl]);
 
   const rowsTable = (data: Content[]) => {
     const result = data.map((content) => [
