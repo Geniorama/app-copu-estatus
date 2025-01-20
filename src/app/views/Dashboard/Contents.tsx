@@ -13,7 +13,7 @@ import type { ChangeEvent } from "react";
 import TitleSection from "@/app/utilities/ui/TitleSection";
 import FilterContentBar from "../FilterContentBar";
 import FormCreateContent from "@/app/components/Form/FormCreateContent";
-import { getAllContents } from "@/app/utilities/helpers/fetchers";
+import { getAllContents, getServiceById, getCompanyById } from "@/app/utilities/helpers/fetchers";
 import { Entry } from "contentful-management";
 import Spinner from "@/app/utilities/ui/Spinner";
 import { actionOptions } from "@/app/components/Form/FormCreateContent";
@@ -25,9 +25,11 @@ import { useFetchServices } from "@/app/hooks/useFetchServices";
 import type { ServiceOptionsProps } from "../FilterContentBar";
 import type { FilterDataProps } from "@/app/types";
 import useExportCSV from "@/app/hooks/useExportCSV";
+import { truncateText } from "@/app/utilities/helpers/formatters";
 
 const headsTable = [
-  "ID",
+  "Compañía",
+  "Servicio",
   "Tipo acción",
   "Titular",
   "Fecha Publicación",
@@ -35,6 +37,10 @@ const headsTable = [
   "Url IG",
   "Url FB",
   "Url LK",
+  "Url X",
+  "Url TK",
+  "Url YT",
+  "Url TH",
   "",
 ];
 
@@ -64,7 +70,7 @@ export default function Contents() {
       );
     }
 
-    return <p className="text-slate-400">Sin enlace</p>;
+    return <p className="text-slate-400">N/A</p>;
   };
 
   const { options: companiesData } = useSelector(
@@ -83,7 +89,7 @@ export default function Contents() {
       const options: ServiceOptionsProps[] = dataServices.map((service) => ({
         value: service.id || "",
         name: service.name,
-        companyId: service.companyId || "",
+        companyId: service.companyId || ""
       }));
 
       if (options) {
@@ -94,9 +100,10 @@ export default function Contents() {
 
   const rowsTable = (data: Content[]) => {
     const result = data.map((content) => [
-      content.id,
+      content.companyName || "Sin compañía",
+      content.serviceName || "Sin servicio",
       actionOptions.find((option) => option.value === content.type)?.name,
-      content.headline,
+      <p title={content.headline} key={content.id}>{truncateText(content.headline || "", 30)}</p>,
       formattedDate(content.publicationDate),
       showSocialLink(
         content.socialMediaInfo?.find((social) => social.id === "webcopu")?.link
@@ -113,6 +120,22 @@ export default function Contents() {
         content.socialMediaInfo?.find((social) => social.id === "linkedin")
           ?.link
       ),
+      showSocialLink(
+        content.socialMediaInfo?.find((social) => social.id === "xtwitter")
+          ?.link
+      ),
+      showSocialLink(
+        content.socialMediaInfo?.find((social) => social.id === "tiktok")
+          ?.link
+      ),
+      showSocialLink(
+        content.socialMediaInfo?.find((social) => social.id === "youtube")
+          ?.link
+      ),
+      showSocialLink(
+        content.socialMediaInfo?.find((social) => social.id === "threads")
+          ?.link
+      ),
       <LinkCP key={content.id}>Editar</LinkCP>,
     ]);
 
@@ -122,14 +145,22 @@ export default function Contents() {
   const fetchAllContents = async () => {
     setLoading(true);
     const res = await getAllContents();
+
     if (res) {
-      const transformData: Content[] = res.map((content: Entry) => ({
-        id: content.sys.id,
-        headline: content.fields.headline["en-US"],
-        type: content.fields.type["en-US"],
-        publicationDate: content.fields.publicationDate["en-US"],
-        socialMediaInfo: content.fields.socialLinksAndStatistics["en-US"],
-        serviceId: content.fields.service["en-US"].sys.id,
+
+      const transformData: Content[] = await Promise.all(res.map(async(content: Entry) => {
+        const serviceInfo = await getServiceById(content.fields.service["en-US"].sys.id);
+        const companyInfo = await getCompanyById(serviceInfo.fields.company["en-US"].sys.id);
+
+        return {
+          headline: content.fields.headline["en-US"],
+          type: content.fields.type["en-US"],
+          publicationDate: content.fields.publicationDate["en-US"],
+          socialMediaInfo: content.fields.socialLinksAndStatistics["en-US"],
+          serviceId: content.fields.service["en-US"].sys.id,
+          companyName: companyInfo.fields.name["en-US"],
+          serviceName: serviceInfo.fields.name["en-US"],
+        }
       }));
 
       const tableData: TableDataProps = {
@@ -307,25 +338,28 @@ export default function Contents() {
                 <b>Nombre paquete: </b> {dataServices?.find((service) => service.id === filters.service)?.name}
               </li>
               <li>
+                <b>Fecha inicio: </b>{formattedDate(dataServices?.find((service) => service.id === filters.service)?.startDate)}
+              </li>
+              <li>
                 <b>Fecha expiración: </b>{formattedDate(dataServices?.find((service) => service.id === filters.service)?.endDate)}
               </li>
               <li>
                 <b>Tipo plan: </b>{dataServices?.find((service) => service.id === filters.service)?.plan?.toUpperCase()}
               </li>
-              <li>
+              {/* <li>
                 <b>Publicaciones restantes: </b>50
-              </li>
+              </li> */}
             </ul>
           </div>
         )}
         <div className="w-full max-w-xs text-cp-primary bg-slate-800 p-8 rounded-lg hover:outline-3 text-center">
           <h3 className="text-xl font-bold min-h-14">
-            Post en social media y artículo web
+            Post en social media
           </h3>
           <span className="text-8xl">{postSocialCount}</span>
         </div>
         <div className="w-full max-w-xs text-cp-primary bg-slate-800 p-8 rounded-lg hover:outline-3 text-center">
-          <h3 className="text-xl font-bold min-h-14">Artículo web</h3>
+          <h3 className="text-xl font-bold min-h-14">Artículo web y post en social media</h3>
           <span className="text-8xl">{postWebCount}</span>
         </div>
       </div>

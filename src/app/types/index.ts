@@ -65,11 +65,13 @@ export interface SocialListsProps {
 
 export interface Content {
   id?: string;
+  companyName?: string;
   type?: string;
   headline?: string;
   publicationDate?: string | null;
   service?: Service;
   serviceId?: string;
+  serviceName?: string;
   socialMediaInfo?: SocialListsProps[];
   createdBy?: string;
 }

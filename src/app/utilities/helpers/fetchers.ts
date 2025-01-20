@@ -300,3 +300,46 @@ export const getServicesByCompanyId = async (companyId: string) => {
     return null; // Retornar null para indicar error
   }
 };
+
+export const getServiceById = async (serviceId: string) => {
+  if (!serviceId) {
+    console.error("serviceId is required");
+    return null;
+  }
+
+  try {
+    const res = await fetch(`/api/getServiceById/?serviceId=${serviceId}`);
+    if (res.ok) {
+      const data = await res.json();
+      return data;
+    } else {
+      console.error("Error fetching service:", res.statusText);
+      return null;
+    }
+  } catch (error) {
+    console.error("Error in fetch:", error);
+    return null;
+  }
+};
+
+
+export const getCompanyById = async (companyId: string) => {
+  if (!companyId) {
+    console.error("serviceId is required");
+    return null;
+  }
+
+  try {
+    const res = await fetch(`/api/getCompanyById/?companyId=${companyId}`);
+    if (res.ok) {
+      const data = await res.json();
+      return data;
+    } else {
+      console.error("Error fetching company:", res.statusText);
+      return null;
+    }
+  } catch (error) {
+    console.error("Error in fetch:", error);
+    return null;
+  }
+};

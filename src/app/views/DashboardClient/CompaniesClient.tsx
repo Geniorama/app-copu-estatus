@@ -104,7 +104,7 @@ export default function CompaniesClient() {
         Si deseas agregar otra compañía,{" "}
         <a
           className="underline text-cp-primary hover:text-cp-primary-hover"
-          href="#"
+          href="https://wa.link/3ur7qr"
           target="_blank"
         >
           ponte en contacto con COPU
