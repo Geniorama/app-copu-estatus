@@ -19,6 +19,11 @@ import { RootState } from "@/app/store";
 import { useFetchCompanies } from "@/app/hooks/useFetchCompanies";
 import { formattedDate } from "@/app/utilities/helpers/formatters";
 import Button from "@/app/utilities/ui/Button";
+import type { Content } from "@/app/types";
+import { getContentsByServiceId } from "@/app/utilities/helpers/fetchers";
+import LinkCP from "@/app/utilities/ui/LinkCP";
+import { actionOptions } from "@/app/components/Form/FormCreateContent";
+import { truncateText } from "@/app/utilities/helpers/formatters";
 
 const Pie = dynamic(() => import("react-chartjs-2").then((mod) => mod.Pie), {
   ssr: false,
@@ -28,31 +33,6 @@ const Line = dynamic(() => import("react-chartjs-2").then((mod) => mod.Line), {
   ssr: false,
 });
 
-const data = {
-  labels: ["January", "February", "March", "April", "May"],
-  datasets: [
-    {
-      label: "GeeksforGeeks Pie Chart",
-      data: [65, 59, 80, 81, 56], // Estos datos deben representar partes de un todo
-      backgroundColor: [
-        "rgba(75, 192, 192, 0.2)",
-        "rgba(54, 162, 235, 0.2)",
-        "rgba(255, 206, 86, 0.2)",
-        "rgba(75, 192, 192, 0.2)",
-        "rgba(153, 102, 255, 0.2)",
-      ],
-      borderColor: [
-        "rgba(75, 192, 192, 1)",
-        "rgba(54, 162, 235, 1)",
-        "rgba(255, 206, 86, 1)",
-        "rgba(75, 192, 192, 1)",
-        "rgba(153, 102, 255, 1)",
-      ],
-      borderWidth: 1,
-    },
-  ],
-};
-
 export default function DashboardHomeClient() {
   // const [userServices, setUserServices] = useState<Service[] | null>(null)
   const [alertMessage, setAlertMessage] = useState({
@@ -60,10 +40,100 @@ export default function DashboardHomeClient() {
     date: "",
     active: false
   });
+  const [filterContents, setFilterContents] = useState<Content[] | null>(null);
+  const [dataPie, setDataPie] = useState([65, 59]) //Tipos de publicaciones
   const notify = (message: string) => toast(message);
   const { userData } = useSelector(
     (state: RootState) => state.user
   );
+
+  const fetchContentsByServiceId = async (serviceId: string) => {
+    try {
+      const response = await getContentsByServiceId(serviceId);
+      return response;
+    } catch (error) {
+      console.error("Error fetching contents by service id:", error);
+      return [];
+    }
+  }
+
+  const showSocialLink = (link?: string) => {
+      if (link) {
+        return (
+          <LinkCP target="_blank" href={link}>
+            Link
+          </LinkCP>
+        );
+      }
+  
+      return <p className="text-slate-400">N/A</p>;
+  };
+
+  const data = {
+    labels: ["Posts en Social Media", "Articulos web y posts en Social Media",],
+    datasets: [
+      {
+        label: "Tipos de publicaciones",
+        data: dataPie, // Estos datos deben representar partes de un todo
+        backgroundColor: [
+          "rgba(75, 192, 192, 0.2)",
+          "rgba(54, 162, 235, 0.2)",
+          "rgba(255, 206, 86, 0.2)",
+        ],
+        borderColor: [
+          "rgba(75, 192, 192, 1)",
+          "rgba(54, 162, 235, 1)",
+          "rgba(255, 206, 86, 1)",
+        ],
+        borderWidth: 1,
+      },
+    ],
+  };
+
+  const rowsTable = (data: Content[]) => {
+      const result = data.map((content) => [
+        content.companyName || "Sin compañía",
+        content.serviceName || "Sin servicio",
+        actionOptions.find((option) => option.value === content.type)?.name,
+        <p title={content.headline} key={content.id}>{truncateText(content.headline || "", 30)}</p>,
+        formattedDate(content.publicationDate),
+        showSocialLink(
+          content.socialMediaInfo?.find((social) => social.id === "webcopu")?.link
+        ),
+        showSocialLink(
+          content.socialMediaInfo?.find((social) => social.id === "instagram")
+            ?.link
+        ),
+        showSocialLink(
+          content.socialMediaInfo?.find((social) => social.id === "facebook")
+            ?.link
+        ),
+        showSocialLink(
+          content.socialMediaInfo?.find((social) => social.id === "linkedin")
+            ?.link
+        ),
+        showSocialLink(
+          content.socialMediaInfo?.find((social) => social.id === "xtwitter")
+            ?.link
+        ),
+        showSocialLink(
+          content.socialMediaInfo?.find((social) => social.id === "tiktok")
+            ?.link
+        ),
+        showSocialLink(
+          content.socialMediaInfo?.find((social) => social.id === "youtube")
+            ?.link
+        ),
+        showSocialLink(
+          content.socialMediaInfo?.find((social) => social.id === "threads")
+            ?.link
+        ),
+        <LinkCP key={content.id}>Editar</LinkCP>,
+      ]);
+  
+      return result;
+  };
+  
 
   const fetchServicesByCompany = useCallback(async (companyId: string) => {
     try {
@@ -85,9 +155,28 @@ export default function DashboardHomeClient() {
 
   useEffect(() => {
     if (companiesData) {
-
+      console.log("companiesData", companiesData);
       // Extraer todos los servicios en un solo array
       const allServices = companiesData.flatMap((company) => company.services);
+
+      const allContents: Content[] = [];
+
+      allServices.map(async (service) => {
+        if(!service?.id) return;
+        const contents = await fetchContentsByServiceId(service.id);
+        
+        if(contents) {
+          console.log("contents", contents);
+          allContents.push(...contents)
+        }
+      });
+
+      if(allContents.length > 0) {
+        console.log("allContents", allContents);
+        setFilterContents(allContents);
+      }
+
+      console.log("filterContents", filterContents);
 
       if (allServices.length > 0) {
         allServices.map((service) => {
@@ -120,6 +209,12 @@ export default function DashboardHomeClient() {
       }
     }
   }, [companiesData]);
+
+  useEffect(() => {
+    if(filterContents) {
+      
+    }
+  }, [filterContents]);
 
   const handleCopyText = async (textToCopy: string) => {
     try {
@@ -158,19 +253,24 @@ export default function DashboardHomeClient() {
 
   const initialDataTable: TableDataProps = {
     heads: [
-      "ID",
+      "Compañía",
+      "Servicio",
       "Tipo acción",
-      "Fecha publicación",
+      "Titular",
+      "Fecha Publicación",
       "Url Web",
       "Url IG",
       "Url FB",
       "Url LK",
+      "Url X",
+      "Url TK",
       "Url YT",
-      "Url Tk",
+      "Url TH",
     ],
     rows: [
       [
-        "1",
+        "",
+        "",
         "Post en social media",
         "1 feb 2025",
         actionLinkButtons("https://instagram.com"),
@@ -182,7 +282,8 @@ export default function DashboardHomeClient() {
       ],
 
       [
-        "2",
+        "",
+        "",
         "Post en social media",
         "13 feb 2025",
         actionLinkButtons("https://instagram.com"),
@@ -196,6 +297,8 @@ export default function DashboardHomeClient() {
     ],
   };
   const [entries] = useState<TableDataProps>(initialDataTable);
+
+  console.log("filterContents", filterContents);
 
   return (
     <div>

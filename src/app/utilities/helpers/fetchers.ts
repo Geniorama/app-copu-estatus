@@ -343,3 +343,24 @@ export const getCompanyById = async (companyId: string) => {
     return null;
   }
 };
+
+export const getContentsByServiceId = async (serviceId: string) => {
+  if (!serviceId) {
+    console.error("serviceId is required");
+    return null;
+  }
+
+  try {
+    const res = await fetch(`/api/getContentsByServiceId?serviceId=${serviceId}`);
+    if (res.ok) {
+      const data = await res.json();
+      return data;
+    } else {
+      console.error("Error fetching contents:", res.statusText);
+      return null;
+    }
+  } catch (error) {
+    console.error("Error in fetch:", error);
+    return null;
+  }
+};
