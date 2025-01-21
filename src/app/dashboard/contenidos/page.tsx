@@ -6,7 +6,6 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: 'Contenidos - Dashboard',
-  description: 'This is the service page',
   viewport: 'width=device-width, initial-scale=1',
 };
 

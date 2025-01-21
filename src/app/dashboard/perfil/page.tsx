@@ -3,8 +3,7 @@ import { withPageAuthRequired } from "@auth0/nextjs-auth0"
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: 'Perfil - Dashboard',
-  description: 'This is the service page',
+  title: 'Mi Perfil - Dashboard',
   viewport: 'width=device-width, initial-scale=1',
 };
 
