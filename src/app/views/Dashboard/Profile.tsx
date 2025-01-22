@@ -17,7 +17,6 @@ export default function Profile() {
   const [user, setUser] = useState<User | null>(null);
   const [prevImage, setPrevImage] = useState<string | null>(null);
   const [email, setEmail] = useState<string>("");
-  const [message, setMessage] = useState<string>("");
 
   const { userData, currentUser } = useSelector(
     (state: RootState) => state.user
@@ -25,8 +24,54 @@ export default function Profile() {
 
   const imageProfileRef = useRef<HTMLInputElement | null>(null);
 
+  const sentEmailResetPassword = async (email: string, linkReset: string) => {
+    if (!email && !linkReset) {
+      console.log("Faltan datos obligatorios");
+      return;
+    }
+
+    try {
+      const response = await fetch("/api/sendEmailTemplate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          to: email,
+          templateId: 1,
+          dynamicData: {
+            reset_password_url: linkReset,
+          },
+        }),
+      });
+  
+      if (!response.ok) {
+        console.error("Error al enviar correo de restablecimiento de contraseña");
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: "Error al enviar correo de restablecimiento de contraseña",
+        });
+        return;
+      }
+  
+      const data = await response.json();
+      console.log("Correo enviado", data);
+  
+      Swal.fire({
+        icon: "success",
+        title: "Correo enviado",
+        text: "Hemos enviado un enlace para restablecer tu contraseña a tu correo electrónico, si no lo encuentras, revisa tu bandeja de spam.",
+      });
+    } catch (error) {
+      console.error("Error al procesar la solicitud:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "Error al procesar la solicitud",
+      });
+    }
+  };
+
   const handleReset = async () => {
-    setMessage("");
     try {
       const response = await fetch("/api/reset-password", {
         method: "POST",
@@ -36,16 +81,33 @@ export default function Profile() {
 
       if (response.ok) {
         const { url } = await response.json();
-        setMessage(`Enlace enviado correctamente: ${url}`);
         console.log(`Enlace enviado correctamente: ${url}`);
+        if (url) {
+          sentEmailResetPassword(email, url);
+          return;
+        }
+
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: "Error al crear el link de restablecimiento de contraseña",
+        });
       } else {
         const errorData = await response.json();
-        setMessage(errorData.error || "Error al enviar el enlace.");
         console.log(errorData.error || "Error al enviar el enlace.");
+        Swal.fire({
+          icon: "error",
+          title: "Error",
+          text: "Error al enviar el enlace",
+        });
       }
     } catch (error) {
       console.error("Error:", error);
-      setMessage("Error al procesar la solicitud.");
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "Error al procesar la solicitud",
+      });
     }
   };
 
@@ -58,17 +120,17 @@ export default function Profile() {
 
       setEmail(`${userData.email}`);
       setUser(userDataWithAuth0Id);
-      if(userData.imageProfile){
-        setPrevImage(userData.imageProfile)
+      if (userData.imageProfile) {
+        setPrevImage(userData.imageProfile);
       }
     }
   }, [userData, currentUser]);
 
   const onClickImage = () => {
-    if(imageProfileRef.current){
-      imageProfileRef.current.click()
+    if (imageProfileRef.current) {
+      imageProfileRef.current.click();
     }
-  }
+  };
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -90,19 +152,21 @@ export default function Profile() {
           cancelButtonColor: "#d33",
           confirmButtonText: "Sí, cambiar foto de perfil",
           cancelButtonText: "Cancelar",
-        }).then(async(result) => {
-          if(result.isConfirmed){
-            if(user){
+        }).then(async (result) => {
+          if (result.isConfirmed) {
+            if (user) {
               try {
-                const fileUrl = await fetchUploadImage(file)
-                if(fileUrl){
-                      console.log('file url', fileUrl)
-                      const userWithChangeImage = {
-                      ...user,
-                      imageProfile: fileUrl
-                  }
-                  const res = await updatedUserInContentful(userWithChangeImage)
-                  if(res){
+                const fileUrl = await fetchUploadImage(file);
+                if (fileUrl) {
+                  console.log("file url", fileUrl);
+                  const userWithChangeImage = {
+                    ...user,
+                    imageProfile: fileUrl,
+                  };
+                  const res = await updatedUserInContentful(
+                    userWithChangeImage
+                  );
+                  if (res) {
                     Swal.fire({
                       title: "Imagen actualizada",
                       text: "Tu foto de perfil se ha actualizado exitosamente",
@@ -110,21 +174,21 @@ export default function Profile() {
                       confirmButtonText: "OK",
                     }).then(() => {
                       setPrevImage(newImage);
-                    })
+                    });
                   }
                 } else {
-                  console.log('No se encontró una url de imagen')
+                  console.log("No se encontró una url de imagen");
                 }
               } catch (error) {
-                console.log('Error al cargar imagen', error)
+                console.log("Error al cargar imagen", error);
               }
             }
-          } else if(result.isDenied){
-            if(imageProfileRef.current){
-              imageProfileRef.current.value = ""
+          } else if (result.isDenied) {
+            if (imageProfileRef.current) {
+              imageProfileRef.current.value = "";
             }
           }
-        })
+        });
       };
       reader.readAsDataURL(file);
     }
@@ -149,7 +213,10 @@ export default function Profile() {
                 <FontAwesomeIcon icon={faUser} />
               </div>
             )}
-            <div onClick={onClickImage} className="absolute top-0 left-0 w-full h-full bg-black bg-opacity-25 text-[40px] flex justify-center items-center text-cp-primary opacity-0 transition hover:opacity-100 cursor-pointer">
+            <div
+              onClick={onClickImage}
+              className="absolute top-0 left-0 w-full h-full bg-black bg-opacity-25 text-[40px] flex justify-center items-center text-cp-primary opacity-0 transition hover:opacity-100 cursor-pointer"
+            >
               <FontAwesomeIcon icon={faCamera} />
             </div>
           </div>
