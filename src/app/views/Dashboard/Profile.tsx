@@ -16,11 +16,38 @@ import { fetchUploadImage } from "@/app/utilities/helpers/fetchers";
 export default function Profile() {
   const [user, setUser] = useState<User | null>(null);
   const [prevImage, setPrevImage] = useState<string | null>(null);
+  const [email, setEmail] = useState<string>("");
+  const [message, setMessage] = useState<string>("");
+
   const { userData, currentUser } = useSelector(
     (state: RootState) => state.user
   );
 
   const imageProfileRef = useRef<HTMLInputElement | null>(null);
+
+  const handleReset = async () => {
+    setMessage("");
+    try {
+      const response = await fetch("/api/reset-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+
+      if (response.ok) {
+        const { url } = await response.json();
+        setMessage(`Enlace enviado correctamente: ${url}`);
+        console.log(`Enlace enviado correctamente: ${url}`);
+      } else {
+        const errorData = await response.json();
+        setMessage(errorData.error || "Error al enviar el enlace.");
+        console.log(errorData.error || "Error al enviar el enlace.");
+      }
+    } catch (error) {
+      console.error("Error:", error);
+      setMessage("Error al procesar la solicitud.");
+    }
+  };
 
   useEffect(() => {
     if (userData && currentUser) {
@@ -29,6 +56,7 @@ export default function Profile() {
         auth0Id: currentUser.user.sub,
       };
 
+      setEmail(`${userData.email}`);
       setUser(userDataWithAuth0Id);
       if(userData.imageProfile){
         setPrevImage(userData.imageProfile)
@@ -143,13 +171,12 @@ export default function Profile() {
           <div className="text-sm mt-3">
             <p>{user?.email}</p>
             <p>{user?.phone}</p>
-            <a
-              href="#"
-              target="blank"
+            <button
+              onClick={handleReset}
               className="text-cp-primary underline hover:text-cp-primary-hover transition"
             >
               Cambiar contraseña
-            </a>
+            </button>
           </div>
         </div>
 
