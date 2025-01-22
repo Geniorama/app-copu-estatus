@@ -55,7 +55,11 @@ export default function Users() {
     "Acciones",
   ];
 
-  const exportToCSV = useExportCSV(originalData as Record<string, string | number>[], ["email", "fname", "lname", "role", "status"], `usuarios-${new Date().toISOString()}`);
+  const exportToCSV = useExportCSV(
+    originalData as Record<string, string | number>[],
+    ["email", "fname", "lname", "role", "status"],
+    `usuarios-${new Date().toISOString()}`
+  );
 
   const handleEdit = (userId?: string) => {
     if (!userId) {
@@ -89,6 +93,39 @@ export default function Users() {
   ) => {
     e.preventDefault();
     handleEdit(userId);
+  };
+
+  const sentEmailUserCreated = async (email: string) => {
+    if (!email || email.trim() === "") {
+      console.log("Faltan datos obligatorios");
+      return;
+    }
+
+    try {
+      const response = await fetch("/api/sendEmailTemplate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          to: email,
+          templateId: 2,
+          dynamicData: {
+            email: email
+          },
+        }),
+      });
+
+      if (!response.ok) {
+        console.error(
+          "Error al enviar correo de creación de usuario"
+        );
+        return;
+      }
+
+      const data = await response.json();
+      console.log("Correo enviado", data);
+    } catch (error) {
+      console.error("Error al procesar la solicitud de envío de correo:", error);
+    }
   };
 
   const rowsTable = (data: User[]) => {
@@ -159,7 +196,7 @@ export default function Users() {
           (user) => user.auth0Id !== currentUserId
         );
 
-        console.log(filteredData)
+        console.log(filteredData);
         const dataTable: TableDataProps = {
           heads: headsTable,
           rows: rowsTable(filteredData),
@@ -172,6 +209,10 @@ export default function Users() {
     };
 
     fetchUsers();
+
+    if (userCreated && userCreated.email) {
+      sentEmailUserCreated(userCreated.email);
+    }
   }, [pathname, userCreated, userEdited]);
 
   useEffect(() => {
@@ -241,7 +282,7 @@ export default function Users() {
           onSubmit={editUser ? handleEditedUser : handleCreateUser}
           onClose={() => setOpenModal(false)}
           currentUser={editUser}
-          action={editUser ? 'edit' : 'create'}
+          action={editUser ? "edit" : "create"}
         />
       </Modal>
       <div className="mb-5">
