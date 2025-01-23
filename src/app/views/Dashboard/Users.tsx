@@ -62,6 +62,52 @@ export default function Users() {
     `usuarios-${new Date().toISOString()}`
   );
 
+  const fetchUsers = async () => {
+    const res = await getAllUsers();
+
+    if (res) {
+      const transformData: User[] = res.map((user: Entry) => {
+        return {
+          id: user.sys.id,
+          fname:
+            (user.fields.firstName as { "en-US": string })?.["en-US"] || null,
+          lname:
+            (user.fields.lastName as { "en-US": string })?.["en-US"] || null,
+          email: (user.fields.email as { "en-US": string })?.["en-US"] || null,
+          role: (user.fields.role as { "en-US": string })?.["en-US"] || null,
+          phone: (user.fields.phone as { "en-US": string })?.["en-US"] || null,
+          imageProfile:
+            (user.fields.imageProfile as { "en-US": string })?.["en-US"] ||
+            null,
+          status:
+            (user.fields.status as { "en-US": string })?.["en-US"] || null,
+          auth0Id:
+            (user.fields.auth0Id as { "en-US": string })?.["en-US"] || null,
+          companiesId:
+            (user.fields.company as { "en-US": Entry[] })?.["en-US"].map(
+              (company) => company.sys.id
+            ) || null,
+          position:
+            (user.fields.position as { "en-US": string })?.["en-US"] || null,
+        };
+      });
+
+      const filteredData = transformData.filter(
+        (user) => user.auth0Id !== currentUserId
+      );
+
+      console.log(filteredData);
+      const dataTable: TableDataProps = {
+        heads: headsTable,
+        rows: rowsTable(filteredData),
+      };
+
+      setTableData(dataTable);
+      setOriginalData(filteredData);
+      setLoading(false);
+    }
+  };
+
   const sentEmailUserCreated = async (email: string, url: string) => {
     if (!email || email.trim() === "" || !url || url.trim() === "") {
       console.log("Faltan datos obligatorios");
@@ -84,6 +130,40 @@ export default function Users() {
 
       if (!response.ok) {
         console.error("Error al enviar correo de creación de usuario");
+        return;
+      }
+
+      const data = await response.json();
+      console.log("Correo enviado", data);
+    } catch (error) {
+      console.error(
+        "Error al procesar la solicitud de envío de correo:",
+        error
+      );
+    }
+  };
+
+  const sentEmailUserDeleted = async (email: string) => {
+    if (!email || email.trim() === "") {
+      console.log("Faltan datos obligatorios");
+      return;
+    }
+
+    try {
+      const response = await fetch("/api/sendEmailTemplate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          to: email,
+          templateId: 3,
+          dynamicData: {
+            email: email,
+          },
+        }),
+      });
+
+      if (!response.ok) {
+        console.error("Error al enviar correo de eliminación de usuario");
         return;
       }
 
@@ -155,58 +235,59 @@ export default function Users() {
     handleEdit(userId);
   };
 
-  const handleDeleteUser = async (auth0Id: string) => {
-    if(!auth0Id){
+  const handleDeleteUser = async (auth0Id: string, email: string) => {
+    if (!auth0Id || !email) {
       return;
     }
 
     const result = await Swal.fire({
-      title: '¿Estás seguro?',
+      title: "¿Estás seguro?",
       text: "No podrás revertir esto",
-      icon: 'warning',
+      icon: "warning",
       showCancelButton: true,
-      confirmButtonColor: '#3085d6',
-      cancelButtonColor: '#d33',
-      confirmButtonText: 'Sí, eliminar',
-      cancelButtonText: 'Cancelar'
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Sí, eliminar",
+      cancelButtonText: "Cancelar",
     });
 
-    if(result.isConfirmed){
+    if (result.isConfirmed) {
       try {
         const response = await fetch(`/api/deleteUser?auth0Id=${auth0Id}`, {
           method: "DELETE",
         });
-  
+
         if (response.ok) {
           const data = await response.json();
+          sentEmailUserDeleted(email);
           console.log(data.message);
+          fetchUsers();
           Swal.fire({
-            icon: 'success',
-            title: 'Éxito',
-            text: 'Usuario eliminado exitosamente',
+            icon: "success",
+            title: "Éxito",
+            text: "Usuario eliminado exitosamente",
           });
           // Actualiza la lista de usuarios después de eliminar
           // fetchUsers();
         } else {
           const errorData = await response.json();
-          console.log(errorData.error || 'Error al eliminar el usuario.');
+          console.log(errorData.error || "Error al eliminar el usuario.");
           Swal.fire({
-            icon: 'error',
-            title: 'Error',
-            text: errorData.error || 'Error al eliminar el usuario.',
+            icon: "error",
+            title: "Error",
+            text: errorData.error || "Error al eliminar el usuario.",
           });
         }
       } catch (error) {
-        console.error('Error:', error);
+        console.error("Error:", error);
         Swal.fire({
-          icon: 'error',
-          title: 'Error',
-          text: 'Error al procesar la solicitud.',
+          icon: "error",
+          title: "Error",
+          text: "Error al procesar la solicitud.",
         });
       }
     }
-  }
-  
+  };
 
   const rowsTable = (data: User[]) => {
     const filteredData = data.map((user: User) => [
@@ -226,14 +307,15 @@ export default function Users() {
         key={user.id}
       />,
       <div key={user.id} className="flex gap-5">
-        <LinkCP onClick={(e) => handleClick(e, user.auth0Id)}>
-          Editar
-        </LinkCP>
+        <LinkCP onClick={(e) => handleClick(e, user.auth0Id)}>Editar</LinkCP>
 
-        <button className="text-red-500 hover:underline" onClick={() => handleDeleteUser(`${user.auth0Id}`)}>
+        <button
+          className="text-red-500 hover:underline"
+          onClick={() => handleDeleteUser(`${user.auth0Id}`, `${user.email}`)}
+        >
           Borrar
         </button>
-      </div>
+      </div>,
     ]);
 
     return filteredData;
@@ -246,54 +328,6 @@ export default function Users() {
   }, [actionUrl]);
 
   useEffect(() => {
-    const fetchUsers = async () => {
-      const res = await getAllUsers();
-
-      if (res) {
-        const transformData: User[] = res.map((user: Entry) => {
-          return {
-            id: user.sys.id,
-            fname:
-              (user.fields.firstName as { "en-US": string })?.["en-US"] || null,
-            lname:
-              (user.fields.lastName as { "en-US": string })?.["en-US"] || null,
-            email:
-              (user.fields.email as { "en-US": string })?.["en-US"] || null,
-            role: (user.fields.role as { "en-US": string })?.["en-US"] || null,
-            phone:
-              (user.fields.phone as { "en-US": string })?.["en-US"] || null,
-            imageProfile:
-              (user.fields.imageProfile as { "en-US": string })?.["en-US"] ||
-              null,
-            status:
-              (user.fields.status as { "en-US": string })?.["en-US"] || null,
-            auth0Id:
-              (user.fields.auth0Id as { "en-US": string })?.["en-US"] || null,
-            companiesId:
-              (user.fields.company as { "en-US": Entry[] })?.["en-US"].map(
-                (company) => company.sys.id
-              ) || null,
-            position:
-              (user.fields.position as { "en-US": string })?.["en-US"] || null,
-          };
-        });
-
-        const filteredData = transformData.filter(
-          (user) => user.auth0Id !== currentUserId
-        );
-
-        console.log(filteredData);
-        const dataTable: TableDataProps = {
-          heads: headsTable,
-          rows: rowsTable(filteredData),
-        };
-
-        setTableData(dataTable);
-        setOriginalData(filteredData);
-        setLoading(false);
-      }
-    };
-
     fetchUsers();
 
     if (userCreated && userCreated.email) {
