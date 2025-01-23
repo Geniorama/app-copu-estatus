@@ -8,6 +8,8 @@ import type { FormEvent, ChangeEvent } from "react";
 import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
 import { updatedUserInContentful } from "@/app/utilities/helpers/fetchers";
+import { PhoneInput } from "react-international-phone";
+import "react-international-phone/style.css";
 
 interface FormCreateCompanyProps {
   onClose?: () => void;
@@ -134,13 +136,30 @@ export default function FormUpdateUser({
 
         <div className="w-1/3">
           <Label htmlFor="phone">Teléfono *</Label>
-          <Input
+          <PhoneInput
+            value={user?.phone || ""} // Asegúrate de pasar el valor inicial
+            onChange={(value) => {
+              setUser((prevUser) => ({
+                ...prevUser,
+                phone: value, // Actualiza el estado con el nuevo valor
+              }));
+            }}
+            inputProps={{
+              name: "phone",
+              required: true,
+              id: "phone",
+              className:
+                "intl-phone-light w-full bg-black border-gray-300 border-2 rounded-r-md p-2",
+            }}
+          />
+
+          {/* <Input
             onChange={handleChange}
             name="phone"
             id="phone"
             type="text"
             value={user?.phone || ""}
-          />
+          /> */}
         </div>
 
         <div className="w-1/3">
