@@ -27,6 +27,7 @@ import {
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import useExportCSV from "@/app/hooks/useExportCSV";
+import Swal from "sweetalert2";
 
 export default function Users() {
   const [searchValue, setSearchValue] = useState("");
@@ -60,6 +61,65 @@ export default function Users() {
     ["email", "fname", "lname", "role", "status"],
     `usuarios-${new Date().toISOString()}`
   );
+
+  const sentEmailUserCreated = async (email: string, url: string) => {
+    if (!email || email.trim() === "" || !url || url.trim() === "") {
+      console.log("Faltan datos obligatorios");
+      return;
+    }
+
+    try {
+      const response = await fetch("/api/sendEmailTemplate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          to: email,
+          templateId: 2,
+          dynamicData: {
+            email: email,
+            reset_password_link: url,
+          },
+        }),
+      });
+
+      if (!response.ok) {
+        console.error("Error al enviar correo de creación de usuario");
+        return;
+      }
+
+      const data = await response.json();
+      console.log("Correo enviado", data);
+    } catch (error) {
+      console.error(
+        "Error al procesar la solicitud de envío de correo:",
+        error
+      );
+    }
+  };
+
+  const handleReset = async (email: string) => {
+    try {
+      const response = await fetch("/api/reset-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+
+      if (response.ok) {
+        const { url } = await response.json();
+        console.log(`Enlace enviado correctamente: ${url}`);
+        if (url) {
+          sentEmailUserCreated(email, url);
+          return;
+        }
+      } else {
+        const errorData = await response.json();
+        console.log(errorData.error || "Error al enviar el enlace.");
+      }
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  };
 
   const handleEdit = (userId?: string) => {
     if (!userId) {
@@ -95,38 +155,58 @@ export default function Users() {
     handleEdit(userId);
   };
 
-  const sentEmailUserCreated = async (email: string) => {
-    if (!email || email.trim() === "") {
-      console.log("Faltan datos obligatorios");
+  const handleDeleteUser = async (auth0Id: string) => {
+    if(!auth0Id){
       return;
     }
 
-    try {
-      const response = await fetch("/api/sendEmailTemplate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          to: email,
-          templateId: 2,
-          dynamicData: {
-            email: email
-          },
-        }),
-      });
+    const result = await Swal.fire({
+      title: '¿Estás seguro?',
+      text: "No podrás revertir esto",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Sí, eliminar',
+      cancelButtonText: 'Cancelar'
+    });
 
-      if (!response.ok) {
-        console.error(
-          "Error al enviar correo de creación de usuario"
-        );
-        return;
+    if(result.isConfirmed){
+      try {
+        const response = await fetch(`/api/deleteUser?auth0Id=${auth0Id}`, {
+          method: "DELETE",
+        });
+  
+        if (response.ok) {
+          const data = await response.json();
+          console.log(data.message);
+          Swal.fire({
+            icon: 'success',
+            title: 'Éxito',
+            text: 'Usuario eliminado exitosamente',
+          });
+          // Actualiza la lista de usuarios después de eliminar
+          // fetchUsers();
+        } else {
+          const errorData = await response.json();
+          console.log(errorData.error || 'Error al eliminar el usuario.');
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: errorData.error || 'Error al eliminar el usuario.',
+          });
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'Error al procesar la solicitud.',
+        });
       }
-
-      const data = await response.json();
-      console.log("Correo enviado", data);
-    } catch (error) {
-      console.error("Error al procesar la solicitud de envío de correo:", error);
     }
-  };
+  }
+  
 
   const rowsTable = (data: User[]) => {
     const filteredData = data.map((user: User) => [
@@ -145,9 +225,15 @@ export default function Users() {
         active={user.status || false}
         key={user.id}
       />,
-      <LinkCP key={user.auth0Id} onClick={(e) => handleClick(e, user.auth0Id)}>
-        Editar
-      </LinkCP>,
+      <div key={user.id} className="flex gap-5">
+        <LinkCP onClick={(e) => handleClick(e, user.auth0Id)}>
+          Editar
+        </LinkCP>
+
+        <button className="text-red-500 hover:underline" onClick={() => handleDeleteUser(`${user.auth0Id}`)}>
+          Borrar
+        </button>
+      </div>
     ]);
 
     return filteredData;
@@ -211,7 +297,7 @@ export default function Users() {
     fetchUsers();
 
     if (userCreated && userCreated.email) {
-      sentEmailUserCreated(userCreated.email);
+      handleReset(userCreated.email);
     }
   }, [pathname, userCreated, userEdited]);
 
