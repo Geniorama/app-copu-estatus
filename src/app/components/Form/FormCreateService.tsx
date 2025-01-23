@@ -11,6 +11,8 @@ import { useState, useEffect } from "react";
 import Swal from "sweetalert2";
 import { useCompaniesOptions } from "@/app/hooks/useCompaniesOptions";
 import { updateService, createService } from "@/app/utilities/helpers/fetchers";
+import { faPlus, faTrash } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 const optionsPlan = [
   {
@@ -31,7 +33,6 @@ const optionsPlan = [
   },
 ];
 
-
 const initialData: Service = {
   name: "",
   description: "",
@@ -46,18 +47,60 @@ interface FormCreateServiceProps {
   onSubmit?: (serviceId?: string) => void;
   onClose: () => void;
   currentService?: Service | null;
-  action?: 'create' | 'edit';
+  action?: "create" | "edit";
 }
 
-export default function FormCreateService({ onClose, currentService, action, onSubmit }: FormCreateServiceProps) {
+interface serviceFeature {
+  title: string;
+  quantity?: number;
+}
+
+export default function FormCreateService({
+  onClose,
+  currentService,
+  action,
+  onSubmit,
+}: FormCreateServiceProps) {
   const [service, setService] = useState<Service>(initialData);
-  const {companiesOptions} = useCompaniesOptions()
+  const { companiesOptions } = useCompaniesOptions();
+  const [listFeatures, setListFeatures] = useState<serviceFeature[]>([]);
+  const [newFeature, setNewFeature] = useState<serviceFeature>({
+    title: "",
+    quantity: 0,
+  });
 
   useEffect(() => {
-    if(currentService){
-      setService(currentService)
+    if (currentService) {
+      setService(currentService);
     }
-  },[currentService])
+  }, [currentService]);
+
+  const handleAddFeature = (data: serviceFeature) => {
+    if (!data) {
+      console.log("No se ha ingresado información de la característica");
+      return;
+    }
+    setListFeatures([...listFeatures, data]);
+
+    console.log("Característica agregada", data);
+  };
+
+  useEffect(() => {
+    console.log("Listado de características", listFeatures);
+  }, [listFeatures]);
+
+  const handleDeleteFeature = (index: number) => {
+    const newListFeatures = listFeatures.filter((feature, i) => i !== index);
+    setListFeatures(newListFeatures);
+  };
+
+  const handleChangesFeature = (e: ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setNewFeature({
+      ...newFeature,
+      [e.target.name]: value,
+    });
+  };
 
   const handleSubmitEdit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -74,10 +117,10 @@ export default function FormCreateService({ onClose, currentService, action, onS
     }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          const res = await updateService(service)
+          const res = await updateService(service);
 
-          if(res){
-            onSubmit && onSubmit(service.id)
+          if (res) {
+            onSubmit && onSubmit(service.id);
             Swal.fire({
               title: "Servicio actualizado",
               text: "El servicio ha sido actualizado exitosamente",
@@ -88,7 +131,7 @@ export default function FormCreateService({ onClose, currentService, action, onS
             });
           }
         } catch (error) {
-          console.log(error)
+          console.log(error);
         }
       } else {
         console.log("Actualización de servicio cancelada");
@@ -108,13 +151,13 @@ export default function FormCreateService({ onClose, currentService, action, onS
       cancelButtonColor: "#d33",
       confirmButtonText: "Sí, crear servicio",
       cancelButtonText: "Cancelar",
-    }).then( async (result) => {
+    }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          const res = await createService(service)
+          const res = await createService(service);
 
-          if(res){
-            onSubmit && onSubmit(service.id)
+          if (res) {
+            onSubmit && onSubmit(service.id);
 
             Swal.fire({
               title: "Servicio creado",
@@ -134,7 +177,12 @@ export default function FormCreateService({ onClose, currentService, action, onS
     });
   };
 
-  const handleChange = (e: ChangeEvent<HTMLInputElement> | ChangeEvent<HTMLSelectElement> | ChangeEvent<HTMLTextAreaElement>) => {
+  const handleChange = (
+    e:
+      | ChangeEvent<HTMLInputElement>
+      | ChangeEvent<HTMLSelectElement>
+      | ChangeEvent<HTMLTextAreaElement>
+  ) => {
     const value = e.target.value;
     setService({
       ...service,
@@ -146,13 +194,15 @@ export default function FormCreateService({ onClose, currentService, action, onS
     const value = e.target.value;
     setService({
       ...service,
-      companyId: value
+      companyId: value,
     });
-  }
+  };
 
   return (
     <form
-      onSubmit={(e) => action === 'edit' ? handleSubmitEdit(e) : handleSubmitCreate(e)}
+      onSubmit={(e) =>
+        action === "edit" ? handleSubmitEdit(e) : handleSubmitCreate(e)
+      }
       className="w-full flex flex-col gap-3 bg-slate-100 p-8 rounded-lg"
     >
       <div className="w-full">
@@ -173,13 +223,74 @@ export default function FormCreateService({ onClose, currentService, action, onS
         <Label htmlFor="description" mode="cp-dark">
           Descripción
         </Label>
-        <Textarea 
-          id="description" 
-          mode="cp-dark" 
-          name="description" 
+        <Textarea
+          id="description"
+          mode="cp-dark"
+          name="description"
           value={service.description}
           onChange={(e) => handleChange(e)}
         />
+      </div>
+
+      <div>
+        <Label htmlFor="description" mode="cp-dark">
+          Características
+        </Label>
+        <div>
+          {listFeatures.length > 0 && (
+            <ul className="text-cp-dark my-3">
+              {listFeatures.map((feature, index) => (
+                <>
+                  <li className="flex gap-3 items-center justify-between">
+                    <p className="text-sm">
+                      {feature.quantity && (
+                        <span className="inline-flex w-[16px] h-[16px] bg-cp-primary justify-center items-center rounded-full text-[10px] font-bold mr-1">
+                          {feature.quantity}{" "}
+                        </span>
+                      )}
+                      <span>{feature.title}</span>
+                    </p>
+                    <button
+                      className="text-xs hover:underline text-red-500"
+                      onClick={() => handleDeleteFeature(index)}
+                    >
+                      <FontAwesomeIcon icon={faTrash} /> Eliminar
+                    </button>
+                  </li>
+                  <hr className="my-1"/>
+                </>
+              ))}
+            </ul>
+          )}
+        </div>
+        <div className="flex gap-1 items-center">
+          <div className="w-[70%]">
+            <Input
+              name="title"
+              onChange={(e) => handleChangesFeature(e)}
+              placeholder="Escribe el título"
+              mode="cp-dark"
+            />
+          </div>
+          <div className="w-[20%]">
+            <Input
+              name="quantity"
+              onChange={(e) => handleChangesFeature(e)}
+              type="number"
+              placeholder="Cant"
+              mode="cp-dark"
+            />
+          </div>
+          <div className="w-[10%] d-flex items-center justify-center">
+            <button
+              onClick={() => handleAddFeature(newFeature)}
+              type="button"
+              className="w-[40px] h-[40px] bg-cp-primary text-cp-dark rounded-full flex items-center justify-center"
+            >
+              <FontAwesomeIcon icon={faPlus} />
+            </button>
+          </div>
+        </div>
       </div>
 
       <div className="flex gap-3">
@@ -195,7 +306,7 @@ export default function FormCreateService({ onClose, currentService, action, onS
             mode="cp-dark"
             required
             type="date"
-            value={service.startDate || ''}
+            value={service.startDate || ""}
           />
         </div>
 
@@ -209,7 +320,7 @@ export default function FormCreateService({ onClose, currentService, action, onS
             id="endDate"
             mode="cp-dark"
             type="date"
-            value={service.endDate || ''}
+            value={service.endDate || ""}
           />
         </div>
       </div>
@@ -219,12 +330,12 @@ export default function FormCreateService({ onClose, currentService, action, onS
           <Label htmlFor="nit" mode="cp-dark">
             Plan *
           </Label>
-          <Select 
-            mode="cp-dark" 
-            options={optionsPlan} 
+          <Select
+            mode="cp-dark"
+            options={optionsPlan}
             required
             name="plan"
-            value={(service.plan)?.toLocaleLowerCase() || ''}
+            value={service.plan?.toLocaleLowerCase() || ""}
             onChange={(e) => handleChange(e)}
           />
         </div>
@@ -239,7 +350,7 @@ export default function FormCreateService({ onClose, currentService, action, onS
             options={companiesOptions}
             defaultOptionText="Selecciona una opción"
             required
-            value={service.companyId || ''}
+            value={service.companyId || ""}
             onChange={(e) => handleChangeCompany(e)}
           />
         </div>
@@ -253,7 +364,7 @@ export default function FormCreateService({ onClose, currentService, action, onS
         </div>
         <div>
           <Button mode="cp-green" type="submit">
-            {action === 'edit' ? 'Actualizar servicio': 'Crear servicio'}
+            {action === "edit" ? "Actualizar servicio" : "Crear servicio"}
           </Button>
         </div>
       </div>
