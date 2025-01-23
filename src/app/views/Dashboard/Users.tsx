@@ -260,7 +260,6 @@ export default function Users() {
         if (response.ok) {
           const data = await response.json();
           sentEmailUserDeleted(email);
-          console.log(data.message);
           fetchUsers();
           Swal.fire({
             icon: "success",

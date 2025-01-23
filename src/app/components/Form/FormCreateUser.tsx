@@ -56,6 +56,7 @@ export default function FormCreateUser({
   const imageProfileRef = useRef<HTMLInputElement | null>(null);
   const dispatch = useDispatch<AppDispatch>()
   const { options } = useSelector((state: RootState) => state.companies)
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     dispatch(fetchCompaniesOptions())
@@ -110,6 +111,12 @@ export default function FormCreateUser({
 
   const handleSubmitUpdateUser = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    if(!user.companiesId || user.companiesId.length === 0){
+      console.log("No se ha seleccionado ninguna compañía");
+      return
+    }
+
     Swal.fire({
       title: "¿Estás seguro?",
       text: "Estás a punto de editar al usuario. ¿Deseas continuar?",
@@ -156,6 +163,12 @@ export default function FormCreateUser({
 
   const handleSubmitCreateUser = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    if(!user.companiesId || user.companiesId.length === 0){
+      setError("Debes seleccionar al menos una compañía");
+      return
+    }
+
     const password = generatePassword();
 
     Swal.fire({
@@ -406,6 +419,12 @@ export default function FormCreateUser({
           </div>
         </div>
       )}
+
+      <div>
+        {error && (
+          <p className="text-red-500 text-sm">{error}</p>
+        )}
+      </div>
 
       <div className="flex gap-3 justify-end">
         <Button onClick={handleClose} mode="cp-light">
