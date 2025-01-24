@@ -354,45 +354,57 @@ export default function FormCreateContent({onSubmit, onClose}:FormCreateContentP
                       }
                     />
                     <div className="flex gap-2 mt-2">
-                      <input
-                        name="statistics.scope"
-                        type="number"
-                        className="w-full h-8 p-2 border outline-none focus:border-cp-primary text-cp-dark"
-                        placeholder="Alcance"
-                        min={0}
-                        onChange={(e) => handleSocialChange(e, item.id)}
-                        value={
-                          infoContent?.socialMediaInfo?.find(
-                            (social) => social.id === item.id
-                          )?.statistics?.scope || 0
-                        }
-                      />
-                      <input
-                        name="statistics.impressions"
-                        type="number"
-                        className="w-full h-8 p-2 border outline-none focus:border-cp-primary text-cp-dark"
-                        placeholder="Impresiones"
-                        min={0}
-                        onChange={(e) => handleSocialChange(e, item.id)}
-                        value={
-                          infoContent?.socialMediaInfo?.find(
-                            (social) => social.id === item.id
-                          )?.statistics?.impressions || 0
-                        }
-                      />
-                      <input
-                        name="statistics.interactions"
-                        type="number"
-                        className="w-full h-8 p-2 border outline-none focus:border-cp-primary text-cp-dark"
-                        placeholder="Interacciones"
-                        min={0}
-                        onChange={(e) => handleSocialChange(e, item.id)}
-                        value={
-                          infoContent?.socialMediaInfo?.find(
-                            (social) => social.id === item.id
-                          )?.statistics?.interactions || 0
-                        }
-                      />
+                      <div>
+                        <label htmlFor="scope" className="text-cp-dark text-xs">Alcance</label>
+                        <input
+                          id="scope"
+                          name="statistics.scope"
+                          type="number"
+                          className="w-full h-8 p-2 border outline-none focus:border-cp-primary text-cp-dark"
+                          placeholder="Alcance"
+                          min={0}
+                          onChange={(e) => handleSocialChange(e, item.id)}
+                          value={
+                            infoContent?.socialMediaInfo?.find(
+                              (social) => social.id === item.id
+                            )?.statistics?.scope || 0
+                          }
+                        />
+                      </div>
+                      <div>
+                        <label htmlFor="impressions" className="text-cp-dark text-xs">Impresiones</label>
+                        <input
+                          id="impressions"
+                          name="statistics.impressions"
+                          type="number"
+                          className="w-full h-8 p-2 border outline-none focus:border-cp-primary text-cp-dark"
+                          placeholder="Impresiones"
+                          min={0}
+                          onChange={(e) => handleSocialChange(e, item.id)}
+                          value={
+                            infoContent?.socialMediaInfo?.find(
+                              (social) => social.id === item.id
+                            )?.statistics?.impressions || 0
+                          }
+                        />
+                      </div>
+                      <div>
+                        <label htmlFor="interactions" className="text-cp-dark text-xs">Interacciones</label>
+                        <input
+                          id="interactions"
+                          name="statistics.interactions"
+                          type="number"
+                          className="w-full h-8 p-2 border outline-none focus:border-cp-primary text-cp-dark"
+                          placeholder="Interacciones"
+                          min={0}
+                          onChange={(e) => handleSocialChange(e, item.id)}
+                          value={
+                            infoContent?.socialMediaInfo?.find(
+                              (social) => social.id === item.id
+                            )?.statistics?.interactions || 0
+                          }
+                        />
+                      </div>
                     </div>
                   </div>
                 )}
