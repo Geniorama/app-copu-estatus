@@ -74,6 +74,9 @@ export interface Content {
   serviceName?: string;
   socialMediaInfo?: SocialListsProps[];
   createdBy?: string;
+  scope?: number;
+  impressions?: number;
+  interactions?: number;
 }
 
 export interface UserAuth0 {

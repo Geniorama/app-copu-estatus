@@ -18,3 +18,7 @@ export const truncateText = (text: string, maxLength: number): string => {
   }
   return text.slice(0, maxLength) + "...";
 };
+
+export const formatNumber = (number: number): string => {
+  return new Intl.NumberFormat("es-CO").format(number);
+}
