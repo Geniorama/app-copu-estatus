@@ -96,7 +96,6 @@ export default function Users() {
         (user) => user.auth0Id !== currentUserId
       );
 
-      console.log(filteredData);
       const dataTable: TableDataProps = {
         heads: headsTable,
         rows: rowsTable(filteredData),
@@ -130,40 +129,6 @@ export default function Users() {
 
       if (!response.ok) {
         console.error("Error al enviar correo de creación de usuario");
-        return;
-      }
-
-      const data = await response.json();
-      console.log("Correo enviado", data);
-    } catch (error) {
-      console.error(
-        "Error al procesar la solicitud de envío de correo:",
-        error
-      );
-    }
-  };
-
-  const sentEmailUserDeleted = async (email: string) => {
-    if (!email || email.trim() === "") {
-      console.log("Faltan datos obligatorios");
-      return;
-    }
-
-    try {
-      const response = await fetch("/api/sendEmailTemplate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          to: email,
-          templateId: 3,
-          dynamicData: {
-            email: email,
-          },
-        }),
-      });
-
-      if (!response.ok) {
-        console.error("Error al enviar correo de eliminación de usuario");
         return;
       }
 
@@ -259,15 +224,13 @@ export default function Users() {
 
         if (response.ok) {
           const data = await response.json();
-          sentEmailUserDeleted(email);
+          console.log("Usuario eliminado", data);
           fetchUsers();
           Swal.fire({
             icon: "success",
             title: "Éxito",
             text: "Usuario eliminado exitosamente",
           });
-          // Actualiza la lista de usuarios después de eliminar
-          // fetchUsers();
         } else {
           const errorData = await response.json();
           console.log(errorData.error || "Error al eliminar el usuario.");

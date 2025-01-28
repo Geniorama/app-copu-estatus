@@ -12,11 +12,13 @@ import type { ChangeEvent } from "react";
 import Swal from "sweetalert2";
 import { updatedUserInContentful } from "@/app/utilities/helpers/fetchers";
 import { fetchUploadImage } from "@/app/utilities/helpers/fetchers";
+import IconLoader from "@/app/components/Icons/IconLoader";
 
 export default function Profile() {
   const [user, setUser] = useState<User | null>(null);
   const [prevImage, setPrevImage] = useState<string | null>(null);
   const [email, setEmail] = useState<string>("");
+  const [loadChangePassword, setLoadChangePassword] = useState(false);
 
   const { userData, currentUser } = useSelector(
     (state: RootState) => state.user
@@ -61,6 +63,7 @@ export default function Profile() {
         title: "Correo enviado",
         text: "Hemos enviado un enlace para restablecer tu contraseña a tu correo electrónico, si no lo encuentras, revisa tu bandeja de spam.",
       });
+      setLoadChangePassword(false);
     } catch (error) {
       console.error("Error al procesar la solicitud:", error);
       Swal.fire({
@@ -73,6 +76,7 @@ export default function Profile() {
 
   const handleReset = async () => {
     try {
+      setLoadChangePassword(true);
       const response = await fetch("/api/reset-password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -101,6 +105,8 @@ export default function Profile() {
           text: "Error al enviar el enlace",
         });
       }
+
+      setLoadChangePassword(false);
     } catch (error) {
       console.error("Error:", error);
       Swal.fire({
@@ -108,6 +114,8 @@ export default function Profile() {
         title: "Error",
         text: "Error al procesar la solicitud",
       });
+
+      setLoadChangePassword(false);
     }
   };
 
@@ -238,12 +246,15 @@ export default function Profile() {
           <div className="text-sm mt-3">
             <p>{user?.email}</p>
             <p>{user?.phone}</p>
-            <button
-              onClick={handleReset}
-              className="text-cp-primary underline hover:text-cp-primary-hover transition"
-            >
-              Cambiar contraseña
-            </button>
+            <div className="flex items-center justify-center mt-3 gap-1">
+              <button
+                onClick={handleReset}
+                className="text-cp-primary underline hover:text-cp-primary-hover transition"
+              >
+                Cambiar contraseña
+              </button>
+              {loadChangePassword && <IconLoader size={13} color="white" />}
+            </div>
           </div>
         </div>
 

@@ -42,14 +42,14 @@ const headsTable = [
   "Alcance",
   "Impresiones",
   "Interacciones",
-  "Url Web",
-  "Url IG",
-  "Url FB",
-  "Url LK",
-  "Url X",
-  "Url TK",
-  "Url YT",
-  "Url TH",
+  "Web",
+  "IG",
+  "FB",
+  "LK",
+  "X",
+  "TK",
+  "YT",
+  "TH",
   "",
 ];
 
@@ -67,6 +67,7 @@ export default function Contents() {
   const [originalData, setOriginalData] = useState<Content[] | null>(null);
   const [filters, setFilters] = useState<Partial<FilterDataProps>>({});
   const [filteredData, setFilteredData] = useState<Content[] | null>(null);
+  const [editContent, setEditContent] = useState<Content | null>(null);
 
   const dispatch = useDispatch<AppDispatch>();
   const searchParams = useSearchParams();
@@ -115,6 +116,19 @@ export default function Contents() {
     }
   }, [actionUrl]);
 
+  const handleEditContent = (contentId?: string) => {
+    if(!contentId){
+      console.log("No content id");
+      return;
+    }
+    const content = originalData?.find((content) => content.id === contentId);
+
+    if (content) {
+      setEditContent(content);
+      setOpenModal(true);
+    }
+  };
+
   const rowsTable = (data: Content[]) => {
     const result = data.map((content) => [
       content.companyName || "Sin compañía",
@@ -124,11 +138,11 @@ export default function Contents() {
         {truncateText(content.headline || "", 30)}
       </p>,
       formattedDate(content.publicationDate),
-      content.scope && formatNumber(content.scope) || "No registra",
+      content.scope && formatNumber(content.scope) || "--",
       (content.impressions && formatNumber(content.impressions)) ||
-        "No registra",
+        "--",
       (content.interactions && formatNumber(content.interactions)) ||
-        "No registra",
+        "--",
       showSocialLink(
         content.socialMediaInfo?.find((social) => social.id === "webcopu")?.link
       ),
@@ -157,7 +171,7 @@ export default function Contents() {
       showSocialLink(
         content.socialMediaInfo?.find((social) => social.id === "threads")?.link
       ),
-      <LinkCP key={content.id}>Editar</LinkCP>,
+      <LinkCP onClick={() => handleEditContent(content.id)} key={content.id}>Editar</LinkCP>,
     ]);
 
     return result;
@@ -197,6 +211,7 @@ export default function Contents() {
           );
 
           return {
+            id: content.sys.id,
             headline: content.fields.headline["en-US"],
             type: content.fields.type["en-US"],
             publicationDate: content.fields.publicationDate["en-US"],
@@ -316,6 +331,8 @@ export default function Contents() {
     setContents(tableDataOriginal);
   };
 
+  
+
   useEffect(() => {
     if (!originalData) return;
 
@@ -378,6 +395,8 @@ export default function Contents() {
         <FormCreateContent
           onSubmit={handleSubmitForm}
           onClose={() => setOpenModal(false)}
+          action={editContent ? "edit" : "create"}
+          currentContent={editContent}
         />
       </Modal>
       <div className="mb-5">

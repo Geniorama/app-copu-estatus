@@ -1,3 +1,4 @@
+
 export const formattedDate = (date?: string | null) => {
   if (date) {
     const toFormatDate = new Date(date);

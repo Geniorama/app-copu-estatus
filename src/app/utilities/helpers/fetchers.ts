@@ -271,6 +271,27 @@ export const createContent = async (content: Content) => {
   }
 };
 
+export const updateContent = async (content: Content) => {
+  try {
+    const res = await fetch("/api/content", {
+      method: "PATCH",
+      headers: {
+        "Content-type": "application/json",
+      },
+      body: JSON.stringify(content),
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      return data;
+    } else {
+      console.log("Error fetch update content");
+    }
+  } catch (error) {
+    console.log(error);
+  }
+};
+
 export const getAllContents = async () => {
   try {
     const res = await fetch("/api/content");

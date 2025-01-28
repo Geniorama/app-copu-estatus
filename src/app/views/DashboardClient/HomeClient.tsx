@@ -3,16 +3,16 @@
 import TitleSection from "@/app/utilities/ui/TitleSection";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faGoogleDrive } from "@fortawesome/free-brands-svg-icons";
-import { faUpRightFromSquare } from "@fortawesome/free-solid-svg-icons";
+// import { faUpRightFromSquare } from "@fortawesome/free-solid-svg-icons";
 import { useState, useEffect, useCallback } from "react";
 import Select from "@/app/utilities/ui/Select";
 import "chart.js/auto";
 import dynamic from "next/dynamic";
 import Table from "@/app/components/Table/Table";
 import type { TableDataProps } from "@/app/types";
-import { faClone, faEnvelope } from "@fortawesome/free-solid-svg-icons";
+import { faEnvelope } from "@fortawesome/free-solid-svg-icons";
 import { faWhatsapp } from "@fortawesome/free-brands-svg-icons";
-import { ToastContainer, toast } from "react-toastify";
+import { ToastContainer} from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useSelector } from "react-redux";
 import { RootState } from "@/app/store";
@@ -41,11 +41,27 @@ export default function DashboardHomeClient() {
     active: false
   });
   const [filterContents, setFilterContents] = useState<Content[] | null>(null);
-  const [dataPie, setDataPie] = useState([65, 59]) //Tipos de publicaciones
-  const notify = (message: string) => toast(message);
+  const [dataPie] = useState([65, 59]) //Tipos de publicaciones
+  // const notify = (message: string) => toast(message);
   const { userData } = useSelector(
     (state: RootState) => state.user
   );
+
+  const headsTable: TableDataProps['heads'] = [
+    "Compañía",
+    "Servicio",
+    "Tipo acción",
+    "Titular",
+    "Fecha Publicación",
+    "Url Web",
+    "Url IG",
+    "Url FB",
+    "Url LK",
+    "Url X",
+    "Url TK",
+    "Url YT",
+    "Url TH",
+  ]
 
   const fetchContentsByServiceId = async (serviceId: string) => {
     try {
@@ -176,8 +192,6 @@ export default function DashboardHomeClient() {
         setFilterContents(allContents);
       }
 
-      console.log("filterContents", filterContents);
-
       if (allServices.length > 0) {
         allServices.map((service) => {
           if (service) {
@@ -210,95 +224,47 @@ export default function DashboardHomeClient() {
     }
   }, [companiesData]);
 
-  useEffect(() => {
-    if(filterContents) {
-      
-    }
-  }, [filterContents]);
+  // const handleCopyText = async (textToCopy: string) => {
+  //   try {
+  //     await navigator.clipboard.writeText(textToCopy);
+  //     notify("Enlace copiado al portapapeles");
+  //   } catch (err) {
+  //     console.error("Error al copiar: ", err);
+  //   }
+  // };
 
-  const handleCopyText = async (textToCopy: string) => {
-    try {
-      await navigator.clipboard.writeText(textToCopy);
-      notify("Enlace copiado al portapapeles");
-    } catch (err) {
-      console.error("Error al copiar: ", err);
-    }
-  };
+  // const actionLinkButtons = (link: string | null) => {
+  //   if (!link) {
+  //     return <p>Sin enlace</p>;
+  //   }
 
-  const actionLinkButtons = (link: string | null) => {
-    if (!link) {
-      return <p>Sin enlace</p>;
-    }
-
-    return (
-      <div className="flex gap-3 text-xl">
-        <button
-          onClick={() => handleCopyText(link)}
-          className="inline-block text-cp-primary hover:text-cp-primary-hover"
-          title="Copiar Url"
-        >
-          <FontAwesomeIcon icon={faClone} />
-        </button>
-        <a
-          className="inline-block text-cp-primary hover:text-cp-primary-hover"
-          title="Abrir enlace"
-          target="_blank"
-          href={link}
-        >
-          <FontAwesomeIcon icon={faUpRightFromSquare} />
-        </a>
-      </div>
-    );
-  };
+  //   return (
+  //     <div className="flex gap-3 text-xl">
+  //       <button
+  //         onClick={() => handleCopyText(link)}
+  //         className="inline-block text-cp-primary hover:text-cp-primary-hover"
+  //         title="Copiar Url"
+  //       >
+  //         <FontAwesomeIcon icon={faClone} />
+  //       </button>
+  //       <a
+  //         className="inline-block text-cp-primary hover:text-cp-primary-hover"
+  //         title="Abrir enlace"
+  //         target="_blank"
+  //         href={link}
+  //       >
+  //         <FontAwesomeIcon icon={faUpRightFromSquare} />
+  //       </a>
+  //     </div>
+  //   );
+  // };
 
   const initialDataTable: TableDataProps = {
-    heads: [
-      "Compañía",
-      "Servicio",
-      "Tipo acción",
-      "Titular",
-      "Fecha Publicación",
-      "Url Web",
-      "Url IG",
-      "Url FB",
-      "Url LK",
-      "Url X",
-      "Url TK",
-      "Url YT",
-      "Url TH",
-    ],
-    rows: [
-      [
-        "",
-        "",
-        "Post en social media",
-        "1 feb 2025",
-        actionLinkButtons("https://instagram.com"),
-        actionLinkButtons("https://facebook.com"),
-        actionLinkButtons("https://linkedin.com"),
-        actionLinkButtons("https://instagram.com"),
-        actionLinkButtons(null),
-        actionLinkButtons("https://instagram.com"),
-      ],
-
-      [
-        "",
-        "",
-        "Post en social media",
-        "13 feb 2025",
-        actionLinkButtons("https://instagram.com"),
-        actionLinkButtons("https://facebook.com"),
-        actionLinkButtons("https://linkedin.com"),
-        actionLinkButtons("https://instagram.com"),
-        actionLinkButtons(null),
-        actionLinkButtons("https://instagram.com"),
-      ],
-      // Otras filas...
-    ],
+    heads: headsTable,
+    rows: rowsTable(filterContents || []),
   };
+  
   const [entries] = useState<TableDataProps>(initialDataTable);
-
-  console.log("filterContents", filterContents);
 
   return (
     <div>

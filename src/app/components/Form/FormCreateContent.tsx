@@ -11,7 +11,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus, faMinus } from "@fortawesome/free-solid-svg-icons";
 import type { ChangeEvent } from "react";
 import { useFetchServices } from "@/app/hooks/useFetchServices";
-import { createContent } from "@/app/utilities/helpers/fetchers";
+import { createContent, updateContent } from "@/app/utilities/helpers/fetchers";
 import Swal from "sweetalert2";
 import type { FormEvent } from "react";
 
@@ -72,29 +72,33 @@ const socialList: SocialListsProps[] = [
 interface FormCreateContentProps {
     onSubmit?: (contentId?:string) => void;
     onClose: () => void;
+    action?: "create" | "edit";
+    currentContent?: Content | null;
 }
 
-export default function FormCreateContent({onSubmit, onClose}:FormCreateContentProps) {
+const initialData: Content = {
+  id: "",
+  headline: "",
+  publicationDate: "",
+  service: undefined,
+  socialMediaInfo: socialList.map((item) => ({
+    id: item.id,
+    link: "",
+    statistics: {
+      scope: 0,
+      impressions: 0,
+      interactions: 0,
+    },
+  })),
+};
+
+export default function FormCreateContent({onSubmit, onClose, currentContent, action}:FormCreateContentProps) {
   const [activeStep, setActiveStep] = useState(1);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [optionsServices, setOptionsServices] = useState<OptionSelect[] | null>(
     null
   );
-  const [infoContent, setInfoContent] = useState<Content | null>({
-    id: "",
-    headline: "",
-    publicationDate: "",
-    service: undefined,
-    socialMediaInfo: socialList.map((item) => ({
-      id: item.id,
-      link: "",
-      statistics: {
-        scope: 0,
-        impressions: 0,
-        interactions: 0,
-      },
-    })),
-  });
+  const [infoContent, setInfoContent] = useState<Content | null>(initialData);
 
 
   const { dataServices, loading } = useFetchServices({ hasUpdate: undefined });
@@ -127,6 +131,15 @@ export default function FormCreateContent({onSubmit, onClose}:FormCreateContentP
       }
     }
   }, [dataServices, loading]);
+
+  useEffect(() => {
+    if (currentContent && action === "edit") {
+      console.log("currentContent", currentContent);
+      setInfoContent(currentContent);
+    } else {
+      setInfoContent(initialData);
+    }
+  }, [currentContent, action]);
 
   const handleChangeService = (e: ChangeEvent<HTMLSelectElement>) => {
     const {value} = e.target
@@ -192,6 +205,45 @@ export default function FormCreateContent({onSubmit, onClose}:FormCreateContentP
     });
   };
 
+  const handleSubmitUpdateContent = async (e:FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+
+    Swal.fire({
+      title: "¿Estás seguro?",
+      text: "Estás a punto de editar un contenido. ¿Deseas continuar?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Sí, editar contenido",
+      cancelButtonText: "Cancelar",
+    }).then( async (result) => {
+      if (result.isConfirmed) {
+        try {
+          if(infoContent){
+            const res = await updateContent(infoContent)
+            if(res){
+              onSubmit && onSubmit(res.sys.id)
+              
+              Swal.fire({
+                title: "Contenido editado",
+                text: "El contenido se ha editado exitosamente",
+                icon: "success",
+                confirmButtonText: "OK",
+              }).then(() => {
+                onClose();
+              });
+            }
+          }
+        } catch (error) {
+          console.log(error)
+        }
+      } else {
+        console.log("Edición de contenido cancelada");
+      }
+    });
+  }
+
   const handleSubmitCreate = async (e:FormEvent<HTMLFormElement>) => {
     e.preventDefault()
 
@@ -234,7 +286,9 @@ export default function FormCreateContent({onSubmit, onClose}:FormCreateContentP
 
   return (
     <form
-      onSubmit={(e) => handleSubmitCreate(e)}
+      onSubmit={
+        action === "edit" ? handleSubmitUpdateContent : handleSubmitCreate
+      }
       className="w-full bg-slate-100 p-8 rounded-lg"
     >
       <div className="flex gap-4 justify-center mb-5">
@@ -300,7 +354,7 @@ export default function FormCreateContent({onSubmit, onClose}:FormCreateContentP
                 onChange={(e) => handleChangeService(e)}
                 mode="cp-dark"
                 options={optionsServices}
-                value={infoContent?.service?.id || ''}
+                value={infoContent?.service?.id || infoContent?.serviceId  || ''}
                 defaultOptionText="Selecciona una opción"
               />
             </div>
@@ -412,28 +466,33 @@ export default function FormCreateContent({onSubmit, onClose}:FormCreateContentP
             ))}
         </fieldset>
       )}
-      <div className="flex gap-2 justify-end mt-4">
-        <Button
-          type="button"
-          mode="cp-light"
-          onClick={handlePreviousStep}
-          disabled={activeStep === 1}
-        >
-          Anterior
-        </Button>
-        {activeStep === 1 ? (
-          <Button type="button" mode="cp-green" onClick={(e) => {
-            e.preventDefault()
-            e.stopPropagation()
-            handleNextStep()
-          }}>
-            Siguiente
+      <div className="mt-4 flex gap-2 justify-between items-center">
+        <button className="text-cp-dark text-sm underline hover:opacity-60 transition" onClick={onClose}>
+          Cancelar
+        </button>
+        <div className="flex gap-2 justify-end">
+          <Button
+            type="button"
+            mode="cp-light"
+            onClick={handlePreviousStep}
+            disabled={activeStep === 1}
+          >
+            Anterior
           </Button>
-        ) : (
-          <Button disabled={activeStep === 1} mode="cp-green" type="submit">
-            Finalizar
-          </Button>
-        )}
+          {activeStep === 1 ? (
+            <Button type="button" mode="cp-green" onClick={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              handleNextStep()
+            }}>
+              Siguiente
+            </Button>
+          ) : (
+            <Button disabled={activeStep === 1} mode="cp-green" type="submit">
+              Finalizar
+            </Button>
+          )}
+        </div>
       </div>
     </form>
   );

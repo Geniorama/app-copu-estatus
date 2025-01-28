@@ -86,3 +86,54 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+
+
+export async function PATCH(request: NextRequest) {
+  try {
+    const environment = await getContentfulEnvironment();
+    const updateContent = await request.json();
+    const {
+      id,
+      headline,
+      type,
+      publicationDate,
+      socialMediaInfo,
+    } = updateContent;
+
+    if (!id) {
+      throw new Error("Content id is required!");
+    }
+
+    const entry = await environment.getEntry(id);
+
+    // Actualiza los campos, permitiendo valores vacíos o null
+    if (headline !== undefined) {
+      entry.fields.headline = entry.fields.headline || {};
+      entry.fields.headline["en-US"] = headline || null;
+    }
+    if (type !== undefined) {
+      entry.fields.type = entry.fields.type || {};
+      entry.fields.type["en-US"] = type || null;
+    }
+    if (publicationDate !== undefined) {
+      entry.fields.publicationDate = entry.fields.publicationDate || {};
+      entry.fields.publicationDate["en-US"] = publicationDate || null;
+    }
+    if (socialMediaInfo !== undefined) {
+      entry.fields.socialLinksAndStatistics = entry.fields.socialLinksAndStatistics || {};
+      entry.fields.socialLinksAndStatistics["en-US"] = socialMediaInfo || null;
+    }
+
+    // Guardar la entrada actualizada y publicarla
+    const updatedEntry = await entry.update();
+    await updatedEntry.publish();
+
+    return NextResponse.json(updatedEntry, { status: 200 });
+  } catch (error) {
+    console.error("Error updating entry in Contentful:", error);
+    return NextResponse.json(
+      { error: "Error updating entry in Contentful" },
+      { status: 500 }
+    );
+  }
+}
