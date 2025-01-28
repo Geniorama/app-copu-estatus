@@ -50,6 +50,7 @@ export interface Service {
   companyName?: string | null;
   plan?: 'anual' | 'mensual' | 'personalizado' | null;
   status?: boolean;
+  features: FeatureService[];
 }
 
 export interface SocialListsProps {
@@ -128,9 +129,7 @@ export interface CompanyContentful {
 }
 
 export interface FeatureService {
-  id: string
   title: string,
-  description?: string,
   quantity?: number | null
 }
 

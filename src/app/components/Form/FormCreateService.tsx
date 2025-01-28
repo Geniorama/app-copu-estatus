@@ -5,7 +5,7 @@ import Label from "@/app/utilities/ui/Label";
 import Textarea from "@/app/utilities/ui/Textarea";
 import Select from "@/app/utilities/ui/Select";
 import Button from "@/app/utilities/ui/Button";
-import type { Service } from "@/app/types";
+import type { Service, FeatureService } from "@/app/types";
 import type { FormEvent, ChangeEvent } from "react";
 import { useState, useEffect } from "react";
 import Swal from "sweetalert2";
@@ -41,6 +41,7 @@ const initialData: Service = {
   plan: null,
   companyId: "",
   status: true,
+  features: [],
 };
 
 interface FormCreateServiceProps {
@@ -48,11 +49,6 @@ interface FormCreateServiceProps {
   onClose: () => void;
   currentService?: Service | null;
   action?: "create" | "edit";
-}
-
-interface serviceFeature {
-  title: string;
-  quantity?: number;
 }
 
 export default function FormCreateService({
@@ -63,8 +59,7 @@ export default function FormCreateService({
 }: FormCreateServiceProps) {
   const [service, setService] = useState<Service>(initialData);
   const { companiesOptions } = useCompaniesOptions();
-  const [listFeatures, setListFeatures] = useState<serviceFeature[]>([]);
-  const [newFeature, setNewFeature] = useState<serviceFeature>({
+  const [newFeature, setNewFeature] = useState<FeatureService>({
     title: "",
     quantity: 0,
   });
@@ -75,23 +70,23 @@ export default function FormCreateService({
     }
   }, [currentService]);
 
-  const handleAddFeature = (data: serviceFeature) => {
-    if (!data) {
+  const handleAddFeature = (data: FeatureService) => {
+    if (!data || !data.title) {
       console.log("No se ha ingresado información de la característica");
       return;
     }
-    setListFeatures([...listFeatures, data]);
-
-    console.log("Característica agregada", data);
+    setService((prev) => ({
+      ...prev,
+      features: [...prev.features, data],
+    }));
   };
 
-  useEffect(() => {
-    console.log("Listado de características", listFeatures);
-  }, [listFeatures]);
-
   const handleDeleteFeature = (index: number) => {
-    const newListFeatures = listFeatures.filter((feature, i) => i !== index);
-    setListFeatures(newListFeatures);
+    const newListFeatures = service.features.filter((_, i) => i !== index);
+    setService((prev) => ({
+      ...prev,
+      features: newListFeatures,
+    }));
   };
 
   const handleChangesFeature = (e: ChangeEvent<HTMLInputElement>) => {
@@ -237,9 +232,9 @@ export default function FormCreateService({
           Características
         </Label>
         <div>
-          {listFeatures.length > 0 && (
+          {service.features.length > 0 && (
             <ul className="text-cp-dark my-3">
-              {listFeatures.map((feature, index) => (
+              {service.features.map((feature, index) => (
                 <>
                   <li className="flex gap-3 items-center justify-between">
                     <p className="text-sm">
