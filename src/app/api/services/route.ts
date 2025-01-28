@@ -28,9 +28,9 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const environment = await getContentfulEnvironment();
-    const { name, description, startDate, endDate, plan, status, companyId }: Service = await request.json();
+    const { name, description, startDate, endDate, plan, status, companyId, features }: Service = await request.json();
 
-    if (!name || !description || !startDate || !endDate || !plan || typeof status !== "boolean") {
+    if (!name || !description || !startDate || !endDate || !plan || typeof status !== "boolean" || !companyId || !features) {
       return NextResponse.json(
         { error: "Todos los campos son requeridos para crear un servicio" },
         { status: 400 }
@@ -54,6 +54,7 @@ export async function POST(request: NextRequest) {
             },
           },
         },
+        features: { "en-US": features }
       },
     });
 
@@ -119,6 +120,9 @@ export async function PATCH(request: NextRequest) {
         },
       };
     }
+    if(updatedServiceData.features){
+      entry.fields.features["en-US"] = updatedServiceData.features;
+    }
 
     // Guardar y publicar la entrada actualizada
     const updatedEntry = await entry.update();
@@ -128,7 +132,7 @@ export async function PATCH(request: NextRequest) {
   } catch (error) {
     console.error("Error updating entry in Contentful:", error);
     return NextResponse.json(
-      { error: "Error updating entry in Contentful" },
+      { error: `Error updating entry in Contentful: ${error}` },
       { status: 500 }
     );
   }

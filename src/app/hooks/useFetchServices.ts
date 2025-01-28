@@ -31,6 +31,7 @@ export function useFetchServices({hasUpdate}: FetchServicesProps) {
     const fetchServices = async () => {
         setLoading(true)
         const res = await getAllServices();
+
         const transformData = res.map((service: Entry) => ({
           id: service.sys.id,
           name: service.fields.name["en-US"],
@@ -41,9 +42,9 @@ export function useFetchServices({hasUpdate}: FetchServicesProps) {
           status: service.fields.status["en-US"],
           company: service.fields.company["en-US"],
           companyName: getCompanyName(service.fields.company["en-US"].sys.id, options),
-          companyId: service.fields.company["en-US"].sys.id
+          companyId: service.fields.company["en-US"].sys.id,
+          features: service.fields.features?.["en-US"] || []
         }));
-        console.log(transformData)
         setDataServices(transformData)
         setLoading(false)
       };

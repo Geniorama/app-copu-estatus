@@ -221,7 +221,29 @@ export const updateService = async (service: Service) => {
       const data = await res.json();
       return data;
     } else {
-      console.log("Error fetch update service");
+      const errorData = await res.json();
+      console.log("Error fetch update service", errorData);
+    }
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export const updateServiceStatus = async (serviceId: string, status: boolean) => {
+  try {
+    const res = await fetch("/api/updateServiceStatus", {
+      method: "PATCH",
+      headers: {
+        "Content-type": "application/json",
+      },
+      body: JSON.stringify({ id: serviceId, status }),
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      return data;
+    } else {
+      console.log("Error fetch update service status");
     }
   } catch (error) {
     console.log(error);

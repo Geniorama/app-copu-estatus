@@ -16,7 +16,7 @@ import { useFetchServices } from "@/app/hooks/useFetchServices";
 import Switch from "@/app/utilities/ui/Switch";
 import { Service } from "@/app/types";
 import Spinner from "@/app/utilities/ui/Spinner";
-import { updateService } from "@/app/utilities/helpers/fetchers";
+import { updateServiceStatus } from "@/app/utilities/helpers/fetchers";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { formattedDate } from "@/app/utilities/helpers/formatters";
@@ -56,9 +56,19 @@ export default function Services() {
           status: !filterService.status,
         };
 
-        if (updatedService) {
-          await updateService(updatedService);
-          notify("Servicio actualizado");
+      if (updatedService && updatedService.status !== undefined) {
+          try {
+            if(!updatedService.id) return;
+            const response = await updateServiceStatus(updatedService.id, updatedService.status);
+            if (response) {
+              setHasUpdate(true);
+              notify("Servicio actualizado");
+            } else {
+              notify("Error al actualizar el servicio");
+            }
+          } catch (error) {
+              console.log(error)
+          }
         }
       } else {
         console.log("No se encuentra el servicio");
@@ -106,6 +116,7 @@ export default function Services() {
 
   useEffect(() => {
     if (dataServices) {
+      console.log('dataServices', dataServices);
       setServices({
         heads: headsTable,
         rows: rowsTable(dataServices),

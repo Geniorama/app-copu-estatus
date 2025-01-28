@@ -232,29 +232,35 @@ export default function FormCreateService({
           Características
         </Label>
         <div>
-          {service.features.length > 0 && (
+          {service.features?.length > 0 && (
             <ul className="text-cp-dark my-3">
-              {service.features.map((feature, index) => (
-                <>
-                  <li className="flex gap-3 items-center justify-between">
-                    <p className="text-sm">
-                      {feature.quantity && (
-                        <span className="inline-flex w-[16px] h-[16px] bg-cp-primary justify-center items-center rounded-full text-[10px] font-bold mr-1">
-                          {feature.quantity}{" "}
-                        </span>
-                      )}
-                      <span>{feature.title}</span>
-                    </p>
-                    <button
-                      className="text-xs hover:underline text-red-500"
-                      onClick={() => handleDeleteFeature(index)}
-                    >
-                      <FontAwesomeIcon icon={faTrash} /> Eliminar
-                    </button>
-                  </li>
-                  <hr className="my-1"/>
-                </>
-              ))}
+              {service.features.map((feature, index) => {
+                console.log('feature', feature)
+                const qty = parseInt(`${feature.quantity}`) || 0
+                console.log('qty', qty)
+
+                return(
+                  <>
+                    <li className="flex gap-3 items-center justify-between">
+                      <p className="text-sm">
+                        {qty > 0 && (
+                          <span className="inline-flex w-[16px] h-[16px] bg-cp-primary justify-center items-center rounded-full text-[10px] font-bold mr-1">
+                            {feature.quantity}{" "}
+                          </span>
+                        )}
+                        <span>{feature.title}</span>
+                      </p>
+                      <button
+                        className="text-xs hover:underline text-red-500"
+                        onClick={() => handleDeleteFeature(index)}
+                      >
+                        <FontAwesomeIcon icon={faTrash} /> Eliminar
+                      </button>
+                    </li>
+                    <hr className="my-1"/>
+                  </>
+                )
+              })}
             </ul>
           )}
         </div>
