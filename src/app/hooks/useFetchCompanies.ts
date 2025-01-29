@@ -66,8 +66,6 @@ export const useFetchCompanies = (
 
               const services = await fetchServicesByCompany(company.sys.id);
 
-              console.log('services company', services)
-
               return {
                 id: company.sys.id,
                 logo: company.fields.logo || "",

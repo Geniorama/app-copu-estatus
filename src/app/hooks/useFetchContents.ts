@@ -49,6 +49,7 @@ const useFetchContents = () => {
                   allContents.push({
                     id: content.sys.id,
                     companyName: companyData.fields.name["en-US"],
+                    companyId: companyData.sys.id,
                     type: content.fields.type["en-US"],
                     headline: content.fields.headline["en-US"],
                     publicationDate: content.fields.publicationDate["en-US"],

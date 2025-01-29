@@ -67,6 +67,7 @@ export interface SocialListsProps {
 export interface Content {
   id?: string;
   companyName?: string;
+  companyId?: string;
   type?: string;
   headline?: string;
   publicationDate?: string | null;

@@ -21,6 +21,8 @@ import { actionOptions } from "@/app/components/Form/FormCreateContent";
 import { truncateText, formatNumber } from "@/app/utilities/helpers/formatters";
 import useFetchContents from "@/app/hooks/useFetchContents";
 import Spinner from "@/app/utilities/ui/Spinner";
+import { getUsersByCompanyId } from "@/app/utilities/helpers/fetchers";
+import { Entry } from "contentful-management";
 
 const Pie = dynamic(() => import("react-chartjs-2").then((mod) => mod.Pie), {
   ssr: false,
@@ -34,6 +36,7 @@ export default function DashboardHomeClient() {
   const [totalWeb, setTotalWeb] = useState<number>(0);
   const [totalSocialMedia, setTotalSocialMedia] = useState<number>(0);
   const { contents, loading } = useFetchContents();
+  const [userManager, setUserManager] = useState<Entry | null>(null);
 
   const headsTable: TableDataProps['heads'] = [
     "Compañía",
@@ -128,6 +131,17 @@ export default function DashboardHomeClient() {
         heads: headsTable,
       })
 
+      const firstContent = contents[0];
+      if(firstContent && firstContent.companyId) {
+        getUsersByCompanyId(firstContent.companyId).then((users:Entry[]) => {
+          const manager = users.find((user: Entry) => user.fields.role["en-US"] === 'admin');
+          if(manager) {
+            console.log('manager',manager);
+            setUserManager(manager);
+          }
+        });
+      }
+
       const totalScope = contents.reduce((acc, content) => acc + (content.scope ?? 0), 0);
       setTotalScope(totalScope)
       
@@ -171,52 +185,52 @@ export default function DashboardHomeClient() {
         <TitleSection title="Home" />
       </div>
       <div className=" flex gap-3">
-      <div className="bg-slate-800 p-6 rounded-md flex-grow max-w-sm">
-        <div className=" flex flex-col gap-3 justify-center items-center">
-          <div className="w-20">
-            <img
-              className="w-full aspect-square object-cover rounded-full"
-              src="https://img.freepik.com/foto-gratis/mujer-joven-hermosa-sueter-rosa-calido-aspecto-natural-sonriente-retrato-aislado-cabello-largo_285396-896.jpg?t=st=1728569983~exp=1728573583~hmac=f90ae583fe402cc1b6e30853c7ddaea46bae4d5e32b180bd4ba70418ff79f087&w=740"
-              alt=""
-            />
+        {userManager && (
+          <div className="bg-slate-800 p-6 rounded-md flex-grow max-w-sm">
+            <div className=" flex flex-col gap-3 justify-center items-center">
+              <div className="w-20">
+                {userManager?.fields.imageProfile?.["en-US"] && (
+                  <img
+                    className="w-full aspect-square object-cover rounded-full"
+                    src={userManager.fields.imageProfile["en-US"]}
+                    alt=""
+                  />
+                )}
+              </div>
+              <div className="w-full text-center">
+                <p className="text-xl">
+                  Hola, soy{" "}
+                  <span className="font-bold">
+                    {userManager?.fields.firstName?.["en-US"]}
+                  </span>
+                </p>
+                <p>Tu ejecutiva/o de cuenta</p>
+                <p className="text-xs mt-3">Contáctame si tienes dudas</p>
+                <ul className="mt-2 text-2xl flex gap-5 justify-center">
+                  <li>
+                    <a
+                      className="text-cp-primary hover:text-cp-primary-hover"
+                      target="_blank"
+                      href={`https://wa.me/${userManager?.fields.phone?.["en-US"]}?text=Hola ${userManager?.fields.firstName?.["en-US"]}, tengo preguntas sobre mi contenido`}
+                    >
+                      <FontAwesomeIcon icon={faWhatsapp} />
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      className="text-cp-primary hover:text-cp-primary-hover"
+                      target="_blank"
+                      href={`mailto:${userManager?.fields.email?.["en-US"]}`}
+                    >
+                      <FontAwesomeIcon icon={faEnvelope} />
+                    </a>
+                  </li>
+                </ul>
+              </div>
+            </div>
           </div>
-          <div className="w-full text-center">
-            <p className="text-xl">
-              Hola, soy <span className="font-bold">Venus María</span>
-            </p>
-            <p>Tu ejecutiva de cuenta</p>
-            <p className="text-xs mt-3">Contáctame si tienes dudas</p>
-            <ul className="mt-2 text-2xl flex gap-5 justify-center">
-              <li>
-                <a
-                  className="text-cp-primary hover:text-cp-primary-hover"
-                  target="_blank"
-                  href="#"
-                >
-                  <FontAwesomeIcon icon={faWhatsapp} />
-                </a>
-              </li>
-              <li>
-                <a
-                  className="text-cp-primary hover:text-cp-primary-hover"
-                  target="_blank"
-                  href="#"
-                >
-                  <FontAwesomeIcon icon={faEnvelope} />
-                </a>
-              </li>
-            </ul>
-          </div>
-        </div>
+        )}
       </div>
-
-      <div className=" bg-cp-primary gap-2 cursor-pointer hover:bg-cp-primary-hover text-cp-dark flex flex-col justify-center items-center text-xl text-center p-6 rounded-md">
-        <span className="text-3xl">
-          <FontAwesomeIcon icon={faWhatsapp} />
-        </span>
-        <h3 className="font-bold">GRUPO WHATSAPP</h3>
-      </div>
-    </div>
       <div>
         <div className="py-3 mt-2 flex items-center gap-3 justify-end">
           <span>Filtrar por fecha:</span>
@@ -229,12 +243,7 @@ export default function DashboardHomeClient() {
           <div className="w-1/4">
             <h3 className="font-bold mb-3">CONTENIDOS</h3>
             <div style={{ height: "300px", width: "300px" }}>
-              <Pie 
-                data={data} 
-                width={300}
-                height={300}
-                options={options}
-              />
+              <Pie data={data} width={300} height={300} options={options} />
             </div>
           </div>
 
@@ -249,13 +258,17 @@ export default function DashboardHomeClient() {
                 <h3 className="text-xl font-bold min-h-14">
                   Total Impresiones
                 </h3>
-                <span className="text-8xl">{formatNumber(totalImpressions)}</span>
+                <span className="text-8xl">
+                  {formatNumber(totalImpressions)}
+                </span>
               </div>
               <div className="w-full max-w-xs text-cp-primary bg-slate-800 p-8 rounded-lg hover:outline-3 text-center">
                 <h3 className="text-xl font-bold min-h-14">
                   Total Interacciones
                 </h3>
-                <span className="text-8xl">{formatNumber(totalInteractions)}</span>
+                <span className="text-8xl">
+                  {formatNumber(totalInteractions)}
+                </span>
               </div>
             </div>
 
@@ -272,7 +285,7 @@ export default function DashboardHomeClient() {
 
         <div className="mt-10 mb-4">
           <h3 className="font-bold mb-3">Publicaciones recientes</h3>
-          {entries && (
+          {entries && entries.rows.length > 0 && (
             <div>
               <Table data={entries} />
             </div>
