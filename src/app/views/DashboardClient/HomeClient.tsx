@@ -4,7 +4,7 @@ import TitleSection from "@/app/utilities/ui/TitleSection";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faGoogleDrive } from "@fortawesome/free-brands-svg-icons";
 // import { faUpRightFromSquare } from "@fortawesome/free-solid-svg-icons";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import Select from "@/app/utilities/ui/Select";
 import "chart.js/auto";
 import dynamic from "next/dynamic";
@@ -14,64 +14,44 @@ import { faEnvelope } from "@fortawesome/free-solid-svg-icons";
 import { faWhatsapp } from "@fortawesome/free-brands-svg-icons";
 import { ToastContainer} from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { useSelector } from "react-redux";
-import { RootState } from "@/app/store";
-import { useFetchCompanies } from "@/app/hooks/useFetchCompanies";
 import { formattedDate } from "@/app/utilities/helpers/formatters";
-import Button from "@/app/utilities/ui/Button";
 import type { Content } from "@/app/types";
-import { getContentsByServiceId } from "@/app/utilities/helpers/fetchers";
 import LinkCP from "@/app/utilities/ui/LinkCP";
 import { actionOptions } from "@/app/components/Form/FormCreateContent";
-import { truncateText } from "@/app/utilities/helpers/formatters";
+import { truncateText, formatNumber } from "@/app/utilities/helpers/formatters";
+import useFetchContents from "@/app/hooks/useFetchContents";
+import Spinner from "@/app/utilities/ui/Spinner";
 
 const Pie = dynamic(() => import("react-chartjs-2").then((mod) => mod.Pie), {
   ssr: false,
 });
 
-const Line = dynamic(() => import("react-chartjs-2").then((mod) => mod.Line), {
-  ssr: false,
-});
-
 export default function DashboardHomeClient() {
-  // const [userServices, setUserServices] = useState<Service[] | null>(null)
-  const [alertMessage, setAlertMessage] = useState({
-    message: "",
-    date: "",
-    active: false
-  });
-  const [filterContents, setFilterContents] = useState<Content[] | null>(null);
-  const [dataPie] = useState([65, 59]) //Tipos de publicaciones
-  // const notify = (message: string) => toast(message);
-  const { userData } = useSelector(
-    (state: RootState) => state.user
-  );
+  const [entries, setEntries] = useState<TableDataProps>();
+  const [totalScope, setTotalScope] = useState<number>(0);
+  const [totalImpressions, setTotalImpressions] = useState<number>(0);
+  const [totalInteractions, setTotalInteractions] = useState<number>(0);
+  const [totalWeb, setTotalWeb] = useState<number>(0);
+  const [totalSocialMedia, setTotalSocialMedia] = useState<number>(0);
+  const { contents, loading } = useFetchContents();
 
   const headsTable: TableDataProps['heads'] = [
     "Compañía",
-    "Servicio",
     "Tipo acción",
     "Titular",
     "Fecha Publicación",
-    "Url Web",
-    "Url IG",
-    "Url FB",
-    "Url LK",
-    "Url X",
-    "Url TK",
-    "Url YT",
-    "Url TH",
+    "Alcance",
+    "Impresiones",
+    "Interacciones",
+    "Web",
+    "IG",
+    "FB",
+    "LK",
+    "X",
+    "TK",
+    "YT",
+    "TH",
   ]
-
-  const fetchContentsByServiceId = async (serviceId: string) => {
-    try {
-      const response = await getContentsByServiceId(serviceId);
-      return response;
-    } catch (error) {
-      console.error("Error fetching contents by service id:", error);
-      return [];
-    }
-  }
 
   const showSocialLink = (link?: string) => {
       if (link) {
@@ -86,185 +66,100 @@ export default function DashboardHomeClient() {
   };
 
   const data = {
-    labels: ["Posts en Social Media", "Articulos web y posts en Social Media",],
+    labels: [`Posts en Social Media (${totalSocialMedia})`, `Articulos web y posts en Social Media (${totalWeb})`],
     datasets: [
       {
         label: "Tipos de publicaciones",
-        data: dataPie, // Estos datos deben representar partes de un todo
+        data: [totalWeb, totalSocialMedia], // Estos datos deben representar partes de un todo
         backgroundColor: [
-          "rgba(75, 192, 192, 0.2)",
-          "rgba(54, 162, 235, 0.2)",
-          "rgba(255, 206, 86, 0.2)",
+          "#FFD00B",
+          "#815AFF",
         ],
         borderColor: [
-          "rgba(75, 192, 192, 1)",
-          "rgba(54, 162, 235, 1)",
-          "rgba(255, 206, 86, 1)",
+          "#FFD00B",
+          "#815AFF",
         ],
         borderWidth: 1,
       },
     ],
   };
 
-  const rowsTable = (data: Content[]) => {
-      const result = data.map((content) => [
-        content.companyName || "Sin compañía",
-        content.serviceName || "Sin servicio",
-        actionOptions.find((option) => option.value === content.type)?.name,
-        <p title={content.headline} key={content.id}>{truncateText(content.headline || "", 30)}</p>,
-        formattedDate(content.publicationDate),
-        showSocialLink(
-          content.socialMediaInfo?.find((social) => social.id === "webcopu")?.link
-        ),
-        showSocialLink(
-          content.socialMediaInfo?.find((social) => social.id === "instagram")
-            ?.link
-        ),
-        showSocialLink(
-          content.socialMediaInfo?.find((social) => social.id === "facebook")
-            ?.link
-        ),
-        showSocialLink(
-          content.socialMediaInfo?.find((social) => social.id === "linkedin")
-            ?.link
-        ),
-        showSocialLink(
-          content.socialMediaInfo?.find((social) => social.id === "xtwitter")
-            ?.link
-        ),
-        showSocialLink(
-          content.socialMediaInfo?.find((social) => social.id === "tiktok")
-            ?.link
-        ),
-        showSocialLink(
-          content.socialMediaInfo?.find((social) => social.id === "youtube")
-            ?.link
-        ),
-        showSocialLink(
-          content.socialMediaInfo?.find((social) => social.id === "threads")
-            ?.link
-        ),
-        <LinkCP key={content.id}>Editar</LinkCP>,
-      ]);
-  
-      return result;
+  const options = {
+    plugins: {
+      legend: {
+        labels: {
+          color: '#D7D7D7', // Color de los labels
+          font: {
+            size: 14, // Tamaño de la fuente
+            family: 'Arial', // Familia de la fuente
+            style: 'italic' as "italic", // Estilo de la fuente
+          },
+        },
+      },
+    },
   };
-  
 
-  const fetchServicesByCompany = useCallback(async (companyId: string) => {
-    try {
-      const response = await fetch(
-        `/api/getServicesByCompany?companyId=${companyId}`
-      );
-      const data = await response.json();
-      return Array.isArray(data) ? data : [];
-    } catch (error) {
-      console.error("Error fetching services by company:", error);
-      return [];
-    }
-  }, []);
+  const rowsTable = (data: Content[]) => {
+    const result = data.map((content) => [
+      content.companyName || "Sin compañía",
+      actionOptions.find((option) => option.value === content.type)?.name,
+      <p title={content.headline} key={content.id}>
+        {truncateText(content.headline || "", 30)}
+      </p>,
+      formattedDate(content.publicationDate),
+      (content.scope && formatNumber(content.scope)) || "--",
+      (content.impressions && formatNumber(content.impressions)) || "--",
+      (content.interactions && formatNumber(content.interactions)) || "--",
+      ...["webcopu", "instagram", "facebook", "linkedin", "xtwitter", "tiktok", "youtube", "threads"].map(
+        (id) =>
+          showSocialLink(
+            content.socialMediaInfo?.find((social) => social.id === id)?.link
+          )
+      ),
+    ]);
 
-  const { originalData: companiesData } = useFetchCompanies(
-    userData,
-    fetchServicesByCompany
-  );
+    return result;
+  };
 
   useEffect(() => {
-    if (companiesData) {
-      console.log("companiesData", companiesData);
-      // Extraer todos los servicios en un solo array
-      const allServices = companiesData.flatMap((company) => company.services);
+    if(contents) {
+      setEntries({
+        rows: rowsTable(contents),
+        heads: headsTable,
+      })
 
-      const allContents: Content[] = [];
+      const totalScope = contents.reduce((acc, content) => acc + (content.scope ?? 0), 0);
+      setTotalScope(totalScope)
+      
+      const totalImpressions = contents.reduce((acc, content) => acc + (content.impressions ?? 0), 0);
+      setTotalImpressions(totalImpressions)
 
-      allServices.map(async (service) => {
-        if(!service?.id) return;
-        const contents = await fetchContentsByServiceId(service.id);
-        
-        if(contents) {
-          console.log("contents", contents);
-          allContents.push(...contents)
-        }
-      });
+      const totalInteractions = contents.reduce((acc, content) => acc + (content.interactions ?? 0), 0);
+      setTotalInteractions(totalInteractions)
 
-      if(allContents.length > 0) {
-        console.log("allContents", allContents);
-        setFilterContents(allContents);
-      }
+      const totalWebPosts = contents.reduce((acc, content) => acc + (content.type === 'web' ? 1 : 0), 0);
+      setTotalWeb(totalWebPosts)
 
-      if (allServices.length > 0) {
-        allServices.map((service) => {
-          if (service) {
-            const dateString = service.endDate || "";
-            const [year, month, day] = dateString.split("-").map(Number);
-            const dateObject = new Date(year, month - 1, day);
-
-            const currentDate = new Date();
-
-            // Calcular la diferencia en milisegundos
-            const differenceInMilliseconds =
-              dateObject.getTime() - currentDate.getTime();
-
-            // Convertir a días
-            const differenceInDays = Math.ceil(
-              differenceInMilliseconds / (1000 * 60 * 60 * 24)
-            );
-
-            if (differenceInDays <= 20) {
-              setAlertMessage((prevState) => ({
-                ...prevState,
-                message: `Tu servicio "${service.name}" está próximo a vencer`,
-                date: `El día ${formattedDate(service.endDate)}`,
-                active: true
-              }));
-            }
-          }
-        });
-      }
+      const totalSocialMediaPosts = contents.reduce((acc, content) => acc + (content.type === 'post' ? 1 : 0), 0);
+      setTotalSocialMedia(totalSocialMediaPosts)
     }
-  }, [companiesData]);
+  }, [contents]);
 
-  // const handleCopyText = async (textToCopy: string) => {
-  //   try {
-  //     await navigator.clipboard.writeText(textToCopy);
-  //     notify("Enlace copiado al portapapeles");
-  //   } catch (err) {
-  //     console.error("Error al copiar: ", err);
-  //   }
-  // };
+  if(loading) {
+    return (
+      <div>
+        <div className="mb-5">
+          <TitleSection title="Home" />
+        </div>
+        <div className="w-full h-[70vh] flex justify-center items-center">
+          <span className="text-8xl">
+            <Spinner />
+          </span>
+        </div>
+      </div>
+    );
+  }
 
-  // const actionLinkButtons = (link: string | null) => {
-  //   if (!link) {
-  //     return <p>Sin enlace</p>;
-  //   }
-
-  //   return (
-  //     <div className="flex gap-3 text-xl">
-  //       <button
-  //         onClick={() => handleCopyText(link)}
-  //         className="inline-block text-cp-primary hover:text-cp-primary-hover"
-  //         title="Copiar Url"
-  //       >
-  //         <FontAwesomeIcon icon={faClone} />
-  //       </button>
-  //       <a
-  //         className="inline-block text-cp-primary hover:text-cp-primary-hover"
-  //         title="Abrir enlace"
-  //         target="_blank"
-  //         href={link}
-  //       >
-  //         <FontAwesomeIcon icon={faUpRightFromSquare} />
-  //       </a>
-  //     </div>
-  //   );
-  // };
-
-  const initialDataTable: TableDataProps = {
-    heads: headsTable,
-    rows: rowsTable(filterContents || []),
-  };
-  
-  const [entries] = useState<TableDataProps>(initialDataTable);
 
   return (
     <div>
@@ -276,28 +171,7 @@ export default function DashboardHomeClient() {
         <TitleSection title="Home" />
       </div>
       <div className=" flex gap-3">
-      {alertMessage.active && (
-        <div className="bg-slate-800 p-6 rounded-md w-1/2">
-          <p>
-            {alertMessage.message}
-          </p>
-          <p className="font-bold text-lg my-3 text-cp-primary">
-            {alertMessage.date}
-          </p>
-          <div className="flex gap-3 items-center mt-5">
-            <a
-              className="cursor-pointer underline"
-              // onClick={() => setShowNotice(false)}
-            >
-              Descartar mensaje
-            </a>
-            <div>
-              <Button mode="cp-green">Renovar servicio</Button>
-            </div>
-          </div>
-        </div>
-      )}
-      <div className="bg-slate-800 p-6 rounded-md flex-grow">
+      <div className="bg-slate-800 p-6 rounded-md flex-grow max-w-sm">
         <div className=" flex flex-col gap-3 justify-center items-center">
           <div className="w-20">
             <img
@@ -354,23 +228,34 @@ export default function DashboardHomeClient() {
         <div className=" flex gap-3">
           <div className="w-1/4">
             <h3 className="font-bold mb-3">CONTENIDOS</h3>
-            <Pie data={data} />
+            <div style={{ height: "300px", width: "300px" }}>
+              <Pie 
+                data={data} 
+                width={300}
+                height={300}
+                options={options}
+              />
+            </div>
           </div>
 
           <div className="w-3/4">
             <h3 className="font-bold mb-3">ESTADÍSTICAS</h3>
             <div className=" flex gap-2">
-              <div className=" w-1/3 bg-slate-800 p-4">
-                <h4>Alcance</h4>
-                <Line data={data} />
+              <div className="w-full max-w-xs text-cp-primary bg-slate-800 p-8 rounded-lg hover:outline-3 text-center">
+                <h3 className="text-xl font-bold min-h-14">Total Alcance</h3>
+                <span className="text-8xl">{formatNumber(totalScope)}</span>
               </div>
-
-              <div className=" w-1/3 bg-slate-800 p-4">
-                <h4>Impresiones</h4>
+              <div className="w-full max-w-xs text-cp-primary bg-slate-800 p-8 rounded-lg hover:outline-3 text-center">
+                <h3 className="text-xl font-bold min-h-14">
+                  Total Impresiones
+                </h3>
+                <span className="text-8xl">{formatNumber(totalImpressions)}</span>
               </div>
-
-              <div className=" w-1/3 bg-slate-800 p-4">
-                <h4>Interacciones</h4>
+              <div className="w-full max-w-xs text-cp-primary bg-slate-800 p-8 rounded-lg hover:outline-3 text-center">
+                <h3 className="text-xl font-bold min-h-14">
+                  Total Interacciones
+                </h3>
+                <span className="text-8xl">{formatNumber(totalInteractions)}</span>
               </div>
             </div>
 
