@@ -4,15 +4,13 @@ import TitleSection from "@/app/utilities/ui/TitleSection";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faGoogleDrive } from "@fortawesome/free-brands-svg-icons";
 // import { faUpRightFromSquare } from "@fortawesome/free-solid-svg-icons";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Select from "@/app/utilities/ui/Select";
-import "chart.js/auto";
-import dynamic from "next/dynamic";
 import Table from "@/app/components/Table/Table";
 import type { TableDataProps } from "@/app/types";
 import { faEnvelope } from "@fortawesome/free-solid-svg-icons";
 import { faWhatsapp } from "@fortawesome/free-brands-svg-icons";
-import { ToastContainer} from "react-toastify";
+import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { formattedDate } from "@/app/utilities/helpers/formatters";
 import type { Content } from "@/app/types";
@@ -23,10 +21,9 @@ import useFetchContents from "@/app/hooks/useFetchContents";
 import Spinner from "@/app/utilities/ui/Spinner";
 import { getUsersByCompanyId } from "@/app/utilities/helpers/fetchers";
 import { Entry } from "contentful-management";
-
-const Pie = dynamic(() => import("react-chartjs-2").then((mod) => mod.Pie), {
-  ssr: false,
-});
+import { useFetchCompanies } from "@/app/hooks/useFetchCompanies";
+import { useSelector } from "react-redux";
+import { RootState } from "@/app/store";
 
 export default function DashboardHomeClient() {
   const [entries, setEntries] = useState<TableDataProps>();
@@ -37,8 +34,15 @@ export default function DashboardHomeClient() {
   const [totalSocialMedia, setTotalSocialMedia] = useState<number>(0);
   const { contents, loading } = useFetchContents();
   const [userManager, setUserManager] = useState<Entry | null>(null);
+  const [selectedCompany, setSelectedCompany] = useState<string | null>(null);
+  const [companyName, setCompanyName] = useState<string | null>(null)
 
-  const headsTable: TableDataProps['heads'] = [
+  const handleCompanyClick = (companyId?: string) => {
+    if (!companyId) return;
+    companyId === selectedCompany ? setSelectedCompany(null) : setSelectedCompany(companyId);
+  };
+
+  const headsTable: TableDataProps["heads"] = [
     "Compañía",
     "Tipo acción",
     "Titular",
@@ -54,53 +58,39 @@ export default function DashboardHomeClient() {
     "TK",
     "YT",
     "TH",
-  ]
+  ];
 
   const showSocialLink = (link?: string) => {
-      if (link) {
-        return (
-          <LinkCP target="_blank" href={link}>
-            Link
-          </LinkCP>
-        );
-      }
-  
-      return <p className="text-slate-400">N/A</p>;
+    if (link) {
+      return (
+        <LinkCP target="_blank" href={link}>
+          Link
+        </LinkCP>
+      );
+    }
+
+    return <p className="text-slate-400">N/A</p>;
   };
 
-  const data = {
-    labels: [`Posts en Social Media (${totalSocialMedia})`, `Articulos web y posts en Social Media (${totalWeb})`],
-    datasets: [
-      {
-        label: "Tipos de publicaciones",
-        data: [totalWeb, totalSocialMedia], // Estos datos deben representar partes de un todo
-        backgroundColor: [
-          "#FFD00B",
-          "#815AFF",
-        ],
-        borderColor: [
-          "#FFD00B",
-          "#815AFF",
-        ],
-        borderWidth: 1,
-      },
-    ],
-  };
+  const { userData } = useSelector((state: RootState) => state.user);
+  const fetchServicesByCompany = useCallback(async (companyId: string) => {
+    try {
+      const response = await fetch(
+        `/api/getServicesByCompany?companyId=${companyId}`
+      );
+      const data = await response.json();
+      return Array.isArray(data) ? data : [];
+    } catch (error) {
+      console.error("Error fetching services by company:", error);
+      return [];
+    }
+  }, []);
 
-  const options = {
-    plugins: {
-      legend: {
-        labels: {
-          color: '#D7D7D7', // Color de los labels
-          font: {
-            size: 14, // Tamaño de la fuente
-            family: 'Arial', // Familia de la fuente
-            style: 'italic' as "italic", // Estilo de la fuente
-          },
-        },
-      },
-    },
-  };
+  const { originalData: companies } = useFetchCompanies(
+    userData,
+    fetchServicesByCompany,
+    false
+  );
 
   const rowsTable = (data: Content[]) => {
     const result = data.map((content) => [
@@ -113,53 +103,130 @@ export default function DashboardHomeClient() {
       (content.scope && formatNumber(content.scope)) || "--",
       (content.impressions && formatNumber(content.impressions)) || "--",
       (content.interactions && formatNumber(content.interactions)) || "--",
-      ...["webcopu", "instagram", "facebook", "linkedin", "xtwitter", "tiktok", "youtube", "threads"].map(
-        (id) =>
-          showSocialLink(
-            content.socialMediaInfo?.find((social) => social.id === id)?.link
-          )
+      ...[
+        "webcopu",
+        "instagram",
+        "facebook",
+        "linkedin",
+        "xtwitter",
+        "tiktok",
+        "youtube",
+        "threads",
+      ].map((id) =>
+        showSocialLink(
+          content.socialMediaInfo?.find((social) => social.id === id)?.link
+        )
       ),
     ]);
 
     return result;
   };
 
+  const filteredContents = selectedCompany
+    ? contents.filter((content) => content.companyId === selectedCompany)
+    : contents;
+
   useEffect(() => {
-    if(contents) {
+    if (filteredContents) {
+      setEntries({
+        rows: rowsTable(filteredContents),
+        heads: headsTable,
+      });
+
+      const totalScope = filteredContents.reduce(
+        (acc, content) => acc + (content.scope ?? 0),
+        0
+      );
+      setTotalScope(totalScope);
+
+      const totalImpressions = filteredContents.reduce(
+        (acc, content) => acc + (content.impressions ?? 0),
+        0
+      );
+      setTotalImpressions(totalImpressions);
+
+      const totalInteractions = filteredContents.reduce(
+        (acc, content) => acc + (content.interactions ?? 0),
+        0
+      );
+      setTotalInteractions(totalInteractions);
+
+      const totalWebPosts = filteredContents.reduce(
+        (acc, content) => acc + (content.type === "web" ? 1 : 0),
+        0
+      );
+      setTotalWeb(totalWebPosts);
+
+      const totalSocialMediaPosts = filteredContents.reduce(
+        (acc, content) => acc + (content.type === "post" ? 1 : 0),
+        0
+      );
+      setTotalSocialMedia(totalSocialMediaPosts);
+    }
+  }, [filteredContents]);
+
+  useEffect(() => {
+    if (contents) {
       setEntries({
         rows: rowsTable(contents),
         heads: headsTable,
-      })
+      });
 
       const firstContent = contents[0];
-      if(firstContent && firstContent.companyId) {
-        getUsersByCompanyId(firstContent.companyId).then((users:Entry[]) => {
-          const manager = users.find((user: Entry) => user.fields.role["en-US"] === 'admin');
-          if(manager) {
-            console.log('manager',manager);
+      if (firstContent && firstContent.companyId) {
+        getUsersByCompanyId(firstContent.companyId).then((users: Entry[]) => {
+          const manager = users.find(
+            (user: Entry) => user.fields.role["en-US"] === "admin"
+          );
+          if (manager) {
+            console.log("manager", manager);
             setUserManager(manager);
           }
         });
       }
 
-      const totalScope = contents.reduce((acc, content) => acc + (content.scope ?? 0), 0);
-      setTotalScope(totalScope)
-      
-      const totalImpressions = contents.reduce((acc, content) => acc + (content.impressions ?? 0), 0);
-      setTotalImpressions(totalImpressions)
+      const totalScope = contents.reduce(
+        (acc, content) => acc + (content.scope ?? 0),
+        0
+      );
+      setTotalScope(totalScope);
 
-      const totalInteractions = contents.reduce((acc, content) => acc + (content.interactions ?? 0), 0);
-      setTotalInteractions(totalInteractions)
+      const totalImpressions = contents.reduce(
+        (acc, content) => acc + (content.impressions ?? 0),
+        0
+      );
+      setTotalImpressions(totalImpressions);
 
-      const totalWebPosts = contents.reduce((acc, content) => acc + (content.type === 'web' ? 1 : 0), 0);
-      setTotalWeb(totalWebPosts)
+      const totalInteractions = contents.reduce(
+        (acc, content) => acc + (content.interactions ?? 0),
+        0
+      );
+      setTotalInteractions(totalInteractions);
 
-      const totalSocialMediaPosts = contents.reduce((acc, content) => acc + (content.type === 'post' ? 1 : 0), 0);
-      setTotalSocialMedia(totalSocialMediaPosts)
+      const totalWebPosts = contents.reduce(
+        (acc, content) => acc + (content.type === "web" ? 1 : 0),
+        0
+      );
+      setTotalWeb(totalWebPosts);
+
+      const totalSocialMediaPosts = contents.reduce(
+        (acc, content) => acc + (content.type === "post" ? 1 : 0),
+        0
+      );
+      setTotalSocialMedia(totalSocialMediaPosts);
     }
   }, [contents]);
 
-  if(loading) {
+  useEffect(() => {
+    if (companies && selectedCompany) {
+      const companyName = companies.find((company) => company.id === selectedCompany)?.name
+      if(companyName){
+        setCompanyName(companyName)
+      }
+    }
+  }, [companies, selectedCompany]);
+
+  if (loading) {
     return (
       <div>
         <div className="mb-5">
@@ -173,7 +240,6 @@ export default function DashboardHomeClient() {
       </div>
     );
   }
-
 
   return (
     <div>
@@ -230,24 +296,79 @@ export default function DashboardHomeClient() {
             </div>
           </div>
         )}
+
+        {companies &&
+          companies.length > 0 &&
+          companies.map((company) => (
+            <div
+              onClick={() => handleCompanyClick(company.id)}
+              key={company.id}
+              className={`p-6 rounded-md text-center cursor-pointer transition ${
+                company.id === selectedCompany
+                  ? "bg-cp-primary"
+                  : "bg-slate-800 hover:bg-slate-700"
+              }`}
+            >
+              <div className="w-40 h-40 rounded-full overflow-hidden mb-4 bg-slate-400 border border-slate-700">
+                {company.logo && (
+                  <img className="w-full h-full" src={company.logo} alt="" />
+                )}
+              </div>
+              <div>
+                <h2
+                  className={`text-sm font-bold ${
+                    company.id === selectedCompany
+                      ? "text-cp-dark"
+                      : "text-white"
+                  }`}
+                >
+                  {company.name}
+                </h2>
+              </div>
+            </div>
+          ))}
       </div>
       <div>
-        <div className="py-3 mt-2 flex items-center gap-3 justify-end">
-          <span>Filtrar por fecha:</span>
+        <div className="flex items-center justify-between">
           <div>
-            <Select options={[{ value: "1", name: "Último mes" }]} />
+            {!selectedCompany ? (
+              <span className="bg-slate-200 text-cp-dark font-bold text-sm p-1 px-2 rounded-sm inline-block">Todas las compañías</span>
+            ) : (
+              <span className="bg-slate-200 text-cp-dark font-bold text-sm p-1 px-2 rounded-sm inline-block">{companyName}</span>
+            )}
+          </div>
+
+          <div className="py-3 mt-2 flex items-center gap-3 justify-end">
+            <span>Filtrar por fecha:</span>
+            <div>
+              <Select options={[{ value: "1", name: "Último mes" }]} />
+            </div>
           </div>
         </div>
 
         <div className=" flex gap-3">
-          <div className="w-1/4">
+          <div className="w-2/5">
             <h3 className="font-bold mb-3">CONTENIDOS</h3>
-            <div style={{ height: "300px", width: "300px" }}>
-              <Pie data={data} width={300} height={300} options={options} />
+            <div className="flex gap-2">
+              <div className="w-full text-cp-dark bg-slate-200 p-8 rounded-lg hover:outline-3 text-center">
+                <h3 className="text-lg font-bold min-h-14">
+                  Post Social Media
+                </h3>
+                <span className="text-8xl">
+                  {formatNumber(totalSocialMedia)}
+                </span>
+              </div>
+
+              <div className="w-full text-cp-dark bg-slate-200 p-8 rounded-lg hover:outline-3 text-center">
+                <h3 className="text-lg font-bold min-h-14">
+                  Artículo web y Post Social Media
+                </h3>
+                <span className="text-8xl">{formatNumber(totalWeb)}</span>
+              </div>
             </div>
           </div>
 
-          <div className="w-3/4">
+          <div className="w-3/5">
             <h3 className="font-bold mb-3">ESTADÍSTICAS</h3>
             <div className=" flex gap-2">
               <div className="w-full max-w-xs text-cp-primary bg-slate-800 p-8 rounded-lg hover:outline-3 text-center">
@@ -271,16 +392,17 @@ export default function DashboardHomeClient() {
                 </span>
               </div>
             </div>
-
-            <a
-              className="my-4 inline-block bg-cp-primary text-cp-dark p-2 rounded-md px-3 hover:bg-cp-primary-hover"
-              target="_blank"
-              href="#"
-            >
-              <FontAwesomeIcon icon={faGoogleDrive} />
-              <span className="ml-2">Estadísticas anteriores</span>
-            </a>
           </div>
+        </div>
+        <div>
+          <a
+            className="my-4 inline-block bg-cp-primary text-cp-dark p-2 rounded-md px-3 hover:bg-cp-primary-hover"
+            target="_blank"
+            href="#"
+          >
+            <FontAwesomeIcon icon={faGoogleDrive} />
+            <span className="ml-2">Estadísticas anteriores</span>
+          </a>
         </div>
 
         <div className="mt-10 mb-4">
