@@ -11,111 +11,94 @@ import type { RootState } from "@/app/store";
 import { getServicesByCompanyId } from "@/app/utilities/helpers/fetchers";
 import { Entry } from "contentful-management";
 
-const serviceStatus = (status: boolean) => {
-  if (status) {
-    return (
-      <>
-        <span className="w-2 h-2 bg-cp-primary inline-block rounded-full mr-1"></span>
-        <span>Activo</span>
-      </>
-    );
-  }
+const serviceStatus = (status: boolean) => (
+  <div className="flex items-center">
+    <span
+      className={`w-2 h-2 rounded-full mr-1 ${
+        status ? "bg-cp-primary" : "bg-gray-400"
+      }`}
+    ></span>
+    <span>{status ? "Activo" : "Inactivo"}</span>
+  </div>
+);
 
-  return (
-    <>
-      <span className="w-2 h-2 bg-gray-400 inline-block rounded-full mr-1"></span>
-      <span>Inactivo</span>
-    </>
-  );
-};
-
-const initialData: TableDataProps = {
-  heads: [
-    "ID",
-    "Nombre servicio",
-    "Fecha inicio",
-    "Fecha vencimiento",
-    "Compañia",
-    "Estado",
-  ],
-  rows: [
-    [
-      "1",
-      "Servicio 1",
-      "10 oct 2024",
-      "10 oct 2025",
-      "Sancho BBDO",
-      serviceStatus(true),
-    ],
-    [
-      "2",
-      "Servicio 2",
-      "10 oct 2024",
-      "10 oct 2025",
-      "Sancho BBDO",
-      serviceStatus(false),
-    ],
-    // Otras filas...
-  ],
-};
+const headsTable = [
+  "Nombre servicio",
+  "Fecha inicio",
+  "Fecha vencimiento",
+  "Estado",
+];
 
 export default function ServicesClient() {
   const [searchValue, setSearchValue] = useState("");
-  const [originalData, setOriginalData] = useState<Service[] | null>(null)
-  const [services, setServices] = useState<TableDataProps | null>(initialData);
-
+  const [originalData, setOriginalData] = useState<Service[]>([]);
+  const [services, setServices] = useState<TableDataProps | null>(null);
   const { userData } = useSelector((state: RootState) => state.user);
 
-
-  const fetchServices = async (companyId: string) => {
+  const fetchServices = async (companyIds: string[]) => {
     try {
-      const res = await getServicesByCompanyId(companyId)
-      if(res){
-        const transformData:Service[] = res.map((service:Entry) => ({
-          name: service.fields.name["en-US"],
-          description: service.fields.description["en-US"],
-          startDate: service.fields.startDate["en-US"],
-          endDate: service.fields.endDate["en-US"],
-          status: service.fields.status["en-US"],
-          plan: service.fields.plan["en-US"],
-        }))
+      const allServices = await Promise.all(
+        companyIds.map(async (companyId) => {
+          const res = await getServicesByCompanyId(companyId);
+          return res.map((service: Entry) => ({
+            name: service.fields.name["en-US"],
+            description: service.fields.description["en-US"],
+            startDate: service.fields.startDate["en-US"],
+            endDate: service.fields.endDate["en-US"],
+            status: service.fields.status["en-US"],
+            plan: service.fields.plan["en-US"],
+          }));
+        })
+      );
 
-        if(transformData){
-          setOriginalData(transformData)
-          console.log(originalData)
-        }
-      }
+      const mergedServices = allServices.flat();
+      setOriginalData(mergedServices);
+      setServices({
+        heads: headsTable,
+        rows: mergedServices.map((service) => [
+          service.name,
+          service.startDate,
+          service.endDate,
+          serviceStatus(service.status),
+        ]),
+      });
     } catch (error) {
       console.error("Error al obtener los servicios:", error);
     }
   };
 
   useEffect(() => {
-    if(userData && userData.companiesId){
-      console.log(userData)
-      const companiesId = userData.companiesId
-      companiesId.map((companyId) => fetchServices(companyId))
+    if (userData?.companiesId?.length) {
+      fetchServices(userData.companiesId);
     }
   }, [userData]);
 
   useEffect(() => {
-    if (initialData && searchValue.trim()) {
-      const filteredRows = initialData.rows.filter((row) =>
-        row.some(
-          (cell) =>
-            typeof cell === "string" &&
-            cell.toLowerCase().includes(searchValue.toLowerCase())
-        )
-      );
-      setServices(
-        filteredRows.length > 0
-          ? { heads: initialData.heads, rows: filteredRows }
-          : null
-      );
+    if (!searchValue.trim()) {
+      setServices({
+        heads: headsTable,
+        rows: originalData.map((service) => [
+          service.name,
+          service.startDate,
+          service.endDate,
+          service.status && serviceStatus(service.status),
+        ]),
+      });
     } else {
-      setServices(initialData);
+      const filteredRows = originalData
+        .filter((service) =>
+          service.name.toLowerCase().includes(searchValue.toLowerCase())
+        )
+        .map((service) => [
+          service.name,
+          service.startDate,
+          service.endDate,
+          service.status && serviceStatus(service.status),
+        ]);
+
+      setServices(filteredRows.length ? { heads: headsTable, rows: filteredRows } : null);
     }
-  }, [searchValue, initialData]);
+  }, [searchValue, originalData]);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     setSearchValue(e.target.value);
@@ -129,7 +112,6 @@ export default function ServicesClient() {
 
       <div className="flex gap-3 items-center justify-end">
         <div className="flex gap-6 items-center">
-          {/* <LinkCP href="#">Exportar CSV</LinkCP> */}
           <Search onChange={handleChange} value={searchValue} />
         </div>
       </div>
