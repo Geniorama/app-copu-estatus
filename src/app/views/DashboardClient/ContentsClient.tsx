@@ -6,215 +6,136 @@ import Search from "@/app/utilities/ui/Search";
 import LinkCP from "@/app/utilities/ui/LinkCP";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faGoogleDrive } from "@fortawesome/free-brands-svg-icons";
-import type { TableDataProps } from "@/app/types";
+import type { Content, TableDataProps } from "@/app/types";
 import type { ChangeEvent } from "react";
 import TitleSection from "@/app/utilities/ui/TitleSection";
 import FilterContentBar from "../FilterContentBar";
 import type { FilterDataProps } from "@/app/types";
-
-const initialData: TableDataProps = {
-  heads: [
-    "ID",
-    "Tipo acción",
-    "Titular",
-    "Fecha Publicación",
-    "Url Web",
-    "Url IG",
-    "Url FB",
-    "Url LK",
-    "",
-  ],
-  rows: [
-    [
-      "1",
-      "Post en social media",
-      "Titular del post",
-      "1 feb 2024",
-      <a
-        href="#"
-        key={"link_1"}
-        className="underline text-cp-primary hover:text-cp-primary-hover inline-block whitespace-nowrap"
-      >
-        Link
-      </a>,
-      <a
-        href="#"
-        key={"link_2"}
-        className="underline text-cp-primary hover:text-cp-primary-hover inline-block whitespace-nowrap"
-      >
-        Link
-      </a>,
-      <a
-        href="#"
-        key={"link_3"}
-        className="underline text-cp-primary hover:text-cp-primary-hover inline-block whitespace-nowrap"
-      >
-        Link
-      </a>,
-      "Sin enlace",
-      <a
-        href="#"
-        key="editar"
-        className="underline text-cp-primary hover:text-cp-primary-hover inline-block whitespace-nowrap"
-      >
-        Editar
-      </a>,
-    ],
-    [
-      "2",
-      "Post en social media",
-      "Titular del post",
-      "1 feb 2024",
-      <a
-        href="#"
-        key={"link_1"}
-        className="underline text-cp-primary hover:text-cp-primary-hover inline-block whitespace-nowrap"
-      >
-        Link
-      </a>,
-      <a
-        href="#"
-        key={"link_2"}
-        className="underline text-cp-primary hover:text-cp-primary-hover inline-block whitespace-nowrap"
-      >
-        Link
-      </a>,
-      <a
-        href="#"
-        key={"link_3"}
-        className="underline text-cp-primary hover:text-cp-primary-hover inline-block whitespace-nowrap"
-      >
-        Link
-      </a>,
-      "Sin enlace",
-      <a
-        href="#"
-        key="editar"
-        className="underline text-cp-primary hover:text-cp-primary-hover inline-block whitespace-nowrap"
-      >
-        Editar
-      </a>,
-    ],
-    [
-      "3",
-      "Post en social media",
-      "Titular del post",
-      "1 feb 2024",
-      <a
-        href="#"
-        key={"link_1"}
-        className="underline text-cp-primary hover:text-cp-primary-hover inline-block whitespace-nowrap"
-      >
-        Link
-      </a>,
-      <a
-        href="#"
-        key={"link_2"}
-        className="underline text-cp-primary hover:text-cp-primary-hover inline-block whitespace-nowrap"
-      >
-        Link
-      </a>,
-      <a
-        href="#"
-        key={"link_3"}
-        className="underline text-cp-primary hover:text-cp-primary-hover inline-block whitespace-nowrap"
-      >
-        Link
-      </a>,
-      "Sin enlace",
-      <a
-        href="#"
-        key="editar"
-        className="underline text-cp-primary hover:text-cp-primary-hover inline-block whitespace-nowrap"
-      >
-        Editar
-      </a>,
-    ],
-    [
-      "4",
-      "Post en social media",
-      "Titular del post",
-      "1 feb 2024",
-      <a
-        key={"link"}
-        target="_blank"
-        href="https://facebook.com"
-        className="underline text-cp-primary hover:text-cp-primary-hover inline-block whitespace-nowrap"
-      >
-        Link
-      </a>,
-      <a
-        href="#"
-        key={"link_2"}
-        className="underline text-cp-primary hover:text-cp-primary-hover inline-block whitespace-nowrap"
-      >
-        Link
-      </a>,
-      <a
-        href="#"
-        key={"link_3"}
-        className="underline text-cp-primary hover:text-cp-primary-hover inline-block whitespace-nowrap"
-      >
-        Link
-      </a>,
-      "Sin enlace",
-      <a
-        href="#"
-        key="editar"
-        className="underline text-cp-primary hover:text-cp-primary-hover inline-block whitespace-nowrap"
-      >
-        Editar
-      </a>,
-    ],
-    // Otras filas...
-  ],
-};
+import useFetchContents from "@/app/hooks/useFetchContents";
+import {
+  formattedDate,
+  truncateText,
+  formatNumber,
+} from "@/app/utilities/helpers/formatters";
+import { actionOptions } from "@/app/components/Form/FormCreateContent";
 
 const companiesData = [
-  {
-    value: "company1",
-    name: "Company 1",
-  },
-  {
-    value: "company2",
-    name: "Company 2",
-  },
-  {
-    value: "company3",
-    name: "Company 3",
-  },
-  {
-    value: "company4",
-    name: "Company 4",
-  },
-  {
-    value: "company5",
-    name: "Company 5",
-  },
+  { value: "company1", name: "Company 1" },
+  { value: "company2", name: "Company 2" },
+  { value: "company3", name: "Company 3" },
+  { value: "company4", name: "Company 4" },
+  { value: "company5", name: "Company 5" },
 ];
 
 export default function ContentsClient() {
   const [searchValue, setSearchValue] = useState("");
-  const [services, setSevices] = useState<TableDataProps | null>(initialData);
+  const [tableContents, setTableContents] = useState<TableDataProps | null>(
+    null
+  );
+  const [socialMediaCount, setSocialMediaCount] = useState(0);
+  const [webSocialMediaCount, setWebSocialMediaCount] = useState(0);
+
+  const { contents } = useFetchContents();
+
+  const headsTable = [
+    "Compañía",
+    "Tipo acción",
+    "Titular",
+    "Fecha Publicación",
+    "Alcance",
+    "Impresiones",
+    "Interacciones",
+    "Web",
+    "IG",
+    "FB",
+    "LK",
+    "X",
+    "TK",
+    "YT",
+    "TH",
+  ];
+
+  const showSocialLink = (link?: string) => {
+    if (link) {
+      return (
+        <LinkCP target="_blank" href={link}>
+          Link
+        </LinkCP>
+      );
+    }
+    return <p className="text-slate-400">N/A</p>;
+  };
+
+  const rowsTable = (data: Content[]) => {
+    return data.map((content) => [
+      content.companyName || "Sin compañía",
+      actionOptions.find((option) => option.value === content.type)?.name,
+      <p title={content.headline} key={content.id}>
+        {truncateText(content.headline || "", 30)}
+      </p>,
+      formattedDate(content.publicationDate),
+      (content.scope && formatNumber(content.scope)) || "--",
+      (content.impressions && formatNumber(content.impressions)) || "--",
+      (content.interactions && formatNumber(content.interactions)) || "--",
+      ...[
+        "webcopu",
+        "instagram",
+        "facebook",
+        "linkedin",
+        "xtwitter",
+        "tiktok",
+        "youtube",
+        "threads",
+      ].map((id) =>
+        showSocialLink(
+          content.socialMediaInfo?.find((social) => social.id === id)?.link
+        )
+      ),
+    ]);
+  };
 
   useEffect(() => {
-    if (initialData && searchValue.trim()) {
-      const filteredRows = initialData.rows.filter((row) =>
-        row.some(
-          (cell) =>
-            typeof cell === "string" &&
-            cell.toLowerCase().includes(searchValue.toLowerCase())
-        )
-      );
-      setSevices(
-        filteredRows.length > 0
-          ? { heads: initialData.heads, rows: filteredRows }
-          : null
-      );
-    } else {
-      setSevices(initialData);
+    if (contents) {
+      let filteredData = contents;
+
+      if (searchValue.trim() !== "") {
+        const searchLower = searchValue.toLowerCase();
+        filteredData = contents.filter(
+          (content) =>
+            content.companyName?.toLowerCase().includes(searchLower) ||
+            content.type?.toLowerCase().includes(searchLower) ||
+            content.headline?.toLowerCase().includes(searchLower)
+        );
+      }
+
+      // Contar tipos de publicaciones visibles
+      const countSocialMedia = filteredData.filter(
+        (content) => content.type === "post"
+      ).length;
+      const countWebArticles = filteredData.filter(
+        (content) => content.type === "web"
+      ).length;
+
+      setSocialMediaCount(countSocialMedia);
+      setWebSocialMediaCount(countWebArticles);
+
+      const transformData = filteredData.map((content: Content) => ({
+        companyName: content.companyName || "",
+        type: content.type || "",
+        headline: content.headline || "",
+        publicationDate: content.publicationDate || "",
+        scope: content.scope || 0,
+        impressions: content.impressions || 0,
+        interactions: content.interactions || 0,
+        socialMediaInfo: content.socialMediaInfo,
+      }));
+
+      setTableContents({
+        heads: headsTable,
+        rows: rowsTable(transformData),
+      });
     }
-  }, [searchValue, initialData]);
+  }, [contents, searchValue]);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     setSearchValue(e.target.value);
@@ -236,11 +157,11 @@ export default function ContentsClient() {
       <div className="flex gap-4 mb-8 justify-center">
         <div className="w-full max-w-xs text-cp-primary bg-slate-800 p-8 rounded-lg hover:outline-3 hover:outline hover:outline-offset-1 text-center">
           <h3 className="text-xl font-bold">Post en social media</h3>
-          <span className="text-8xl">190</span>
+          <span className="text-8xl">{socialMediaCount}</span>
         </div>
         <div className="w-full max-w-xs text-cp-primary bg-slate-800 p-8 rounded-lg hover:outline-3 hover:outline hover:outline-offset-1 text-center">
           <h3 className="text-xl font-bold">Artículos web</h3>
-          <span className="text-8xl">190</span>
+          <span className="text-8xl">{webSocialMediaCount}</span>
         </div>
       </div>
       <div className="flex gap-3 items-center justify-end">
@@ -253,8 +174,8 @@ export default function ContentsClient() {
         </div>
       </div>
 
-      {services ? (
-        <Table data={services} />
+      {tableContents ? (
+        <Table data={tableContents} />
       ) : (
         <div className="text-center p-5 mt-10 flex justify-center items-center">
           <p className="text-slate-400">

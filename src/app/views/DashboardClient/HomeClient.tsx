@@ -5,9 +5,8 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faGoogleDrive } from "@fortawesome/free-brands-svg-icons";
 // import { faUpRightFromSquare } from "@fortawesome/free-solid-svg-icons";
 import { useState, useEffect, useCallback } from "react";
-import Select from "@/app/utilities/ui/Select";
 import Table from "@/app/components/Table/Table";
-import type { TableDataProps } from "@/app/types";
+import type { Company, TableDataProps } from "@/app/types";
 import { faEnvelope } from "@fortawesome/free-solid-svg-icons";
 import { faWhatsapp } from "@fortawesome/free-brands-svg-icons";
 import { ToastContainer } from "react-toastify";
@@ -34,12 +33,11 @@ export default function DashboardHomeClient() {
   const [totalSocialMedia, setTotalSocialMedia] = useState<number>(0);
   const { contents, loading } = useFetchContents();
   const [userManager, setUserManager] = useState<Entry | null>(null);
-  const [selectedCompany, setSelectedCompany] = useState<string | null>(null);
-  const [companyName, setCompanyName] = useState<string | null>(null)
+  const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
 
-  const handleCompanyClick = (companyId?: string) => {
-    if (!companyId) return;
-    companyId === selectedCompany ? setSelectedCompany(null) : setSelectedCompany(companyId);
+  const handleCompanyClick = (company: Company) => {
+    if (!company.id) return;
+    company.id === selectedCompany?.id ? setSelectedCompany(null) : setSelectedCompany(company);
   };
 
   const headsTable: TableDataProps["heads"] = [
@@ -123,7 +121,7 @@ export default function DashboardHomeClient() {
   };
 
   const filteredContents = selectedCompany
-    ? contents.filter((content) => content.companyId === selectedCompany)
+    ? contents.filter((content) => content.companyId === selectedCompany.id)
     : contents;
 
   useEffect(() => {
@@ -218,13 +216,10 @@ export default function DashboardHomeClient() {
   }, [contents]);
 
   useEffect(() => {
-    if (companies && selectedCompany) {
-      const companyName = companies.find((company) => company.id === selectedCompany)?.name
-      if(companyName){
-        setCompanyName(companyName)
-      }
+    if (companies) {
+      console.log('companies', companies)
     }
-  }, [companies, selectedCompany]);
+  }, [companies]);
 
   if (loading) {
     return (
@@ -301,10 +296,10 @@ export default function DashboardHomeClient() {
           companies.length > 0 &&
           companies.map((company) => (
             <div
-              onClick={() => handleCompanyClick(company.id)}
+              onClick={() => handleCompanyClick(company)}
               key={company.id}
               className={`p-6 rounded-md text-center cursor-pointer transition ${
-                company.id === selectedCompany
+                company.id === selectedCompany?.id
                   ? "bg-cp-primary"
                   : "bg-slate-800 hover:bg-slate-700"
               }`}
@@ -317,7 +312,7 @@ export default function DashboardHomeClient() {
               <div>
                 <h2
                   className={`text-sm font-bold ${
-                    company.id === selectedCompany
+                    company.id === selectedCompany?.id
                       ? "text-cp-dark"
                       : "text-white"
                   }`}
@@ -329,21 +324,21 @@ export default function DashboardHomeClient() {
           ))}
       </div>
       <div>
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between my-5">
           <div>
             {!selectedCompany ? (
               <span className="bg-slate-200 text-cp-dark font-bold text-sm p-1 px-2 rounded-sm inline-block">Todas las compañías</span>
             ) : (
-              <span className="bg-slate-200 text-cp-dark font-bold text-sm p-1 px-2 rounded-sm inline-block">{companyName}</span>
+              <span className="bg-slate-200 text-cp-dark font-bold text-sm p-1 px-2 rounded-sm inline-block">{selectedCompany.name}</span>
             )}
           </div>
 
-          <div className="py-3 mt-2 flex items-center gap-3 justify-end">
+          {/* <div className="py-3 mt-2 flex items-center gap-3 justify-end">
             <span>Filtrar por fecha:</span>
             <div>
               <Select options={[{ value: "1", name: "Último mes" }]} />
             </div>
-          </div>
+          </div> */}
         </div>
 
         <div className=" flex gap-3">
@@ -394,16 +389,18 @@ export default function DashboardHomeClient() {
             </div>
           </div>
         </div>
-        <div>
-          <a
-            className="my-4 inline-block bg-cp-primary text-cp-dark p-2 rounded-md px-3 hover:bg-cp-primary-hover"
-            target="_blank"
-            href="#"
-          >
-            <FontAwesomeIcon icon={faGoogleDrive} />
-            <span className="ml-2">Estadísticas anteriores</span>
-          </a>
-        </div>
+        {selectedCompany && selectedCompany.driveLink && (
+          <div>
+            <a
+              className="my-4 inline-block bg-cp-primary text-cp-dark p-2 rounded-md px-3 hover:bg-cp-primary-hover"
+              target="_blank"
+              href="#"
+            >
+              <FontAwesomeIcon icon={faGoogleDrive} />
+              <span className="ml-2">Estadísticas anteriores</span>
+            </a>
+          </div>
+        )}
 
         <div className="mt-10 mb-4">
           <h3 className="font-bold mb-3">Publicaciones recientes</h3>
