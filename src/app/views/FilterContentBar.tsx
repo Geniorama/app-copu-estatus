@@ -59,7 +59,6 @@ export default function FilterContentBar({
   }, [services]);
 
   useEffect(() => {
-    console.log(selectedValues.company)
     if (services && selectedValues.company) {
       const filterOptions = services.filter(
         (service) => service.companyId === selectedValues.company
@@ -73,7 +72,7 @@ export default function FilterContentBar({
   ) => {
     const value = e.target.value;
     const name = e.target.name;
-
+    
     setSelectedValues({
       ...selectedValues,
       [name]: value,

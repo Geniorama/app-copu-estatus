@@ -1,12 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Table from "@/app/components/Table/Table";
 import Search from "@/app/utilities/ui/Search";
 import LinkCP from "@/app/utilities/ui/LinkCP";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faGoogleDrive } from "@fortawesome/free-brands-svg-icons";
-import type { Content, TableDataProps } from "@/app/types";
+import type { Content, OptionSelect, TableDataProps } from "@/app/types";
 import type { ChangeEvent } from "react";
 import TitleSection from "@/app/utilities/ui/TitleSection";
 import FilterContentBar from "../FilterContentBar";
@@ -18,14 +16,11 @@ import {
   formatNumber,
 } from "@/app/utilities/helpers/formatters";
 import { actionOptions } from "@/app/components/Form/FormCreateContent";
-
-const companiesData = [
-  { value: "company1", name: "Company 1" },
-  { value: "company2", name: "Company 2" },
-  { value: "company3", name: "Company 3" },
-  { value: "company4", name: "Company 4" },
-  { value: "company5", name: "Company 5" },
-];
+import { useSelector } from "react-redux";
+import { RootState } from "@/app/store";
+import { useFetchCompanies } from "@/app/hooks/useFetchCompanies";
+import Spinner from "@/app/utilities/ui/Spinner";
+import { ServiceOptionsProps } from "../FilterContentBar";
 
 export default function ContentsClient() {
   const [searchValue, setSearchValue] = useState("");
@@ -34,8 +29,31 @@ export default function ContentsClient() {
   );
   const [socialMediaCount, setSocialMediaCount] = useState(0);
   const [webSocialMediaCount, setWebSocialMediaCount] = useState(0);
+  const [companiesData, setCompaniesData] = useState<OptionSelect[]>();
+  const [servicesData, setServicesData] = useState<ServiceOptionsProps[]>();
 
-  const { contents } = useFetchContents();
+  const { contents, loading } = useFetchContents();
+
+  const { userData } = useSelector((state: RootState) => state.user);
+
+  const fetchServicesByCompany = useCallback(async (companyId: string) => {
+    try {
+      const response = await fetch(
+        `/api/getServicesByCompany?companyId=${companyId}`
+      );
+      const data = await response.json();
+      return Array.isArray(data) ? data : [];
+    } catch (error) {
+      console.error("Error fetching services by company:", error);
+      return [];
+    }
+  }, []);
+
+  const { originalData: companies } = useFetchCompanies(
+    userData,
+    fetchServicesByCompany,
+    false
+  );
 
   const headsTable = [
     "Compañía",
@@ -95,6 +113,30 @@ export default function ContentsClient() {
   };
 
   useEffect(() => {
+    if (companies) {
+      const dataForServicesOptions: ServiceOptionsProps[] = companies.flatMap(
+        (company) =>
+          company.services?.map((service) => ({
+            name: service.name || "",
+            value: service.id || "",
+            companyId: company.id,
+          })) || []
+      );
+
+      if (dataForServicesOptions) {
+        setServicesData(dataForServicesOptions);
+      }
+
+      const dataForOptions = companies.map((company) => ({
+        name: company.name || "",
+        value: company.id || "",
+      }));
+
+      setCompaniesData(dataForOptions);
+    }
+  }, [companies]);
+
+  useEffect(() => {
     if (contents) {
       let filteredData = contents;
 
@@ -142,18 +184,126 @@ export default function ContentsClient() {
   };
 
   const handleFilterBar = (data: FilterDataProps) => {
-    console.log(data);
+    if (contents) {
+      let filteredData = contents;
+
+      // Filtrar por compañía
+      if (data.company) {
+        filteredData = filteredData.filter(
+          (content) => content.companyId === data.company
+        );
+      }
+
+      // Filtrar por servicio
+      if (data.service) {
+        // Buscar compañías que tienen el servicio seleccionado
+        const companiesWithService = companies?.filter((company) =>
+          company.services?.some((service) => service.id === data.service)
+        );
+
+        // Obtener los IDs de esas compañías
+        const companyIds = companiesWithService?.map((company) => company.id);
+
+        // Filtrar los contenidos que pertenecen a esas compañías
+        filteredData = filteredData.filter((content) =>
+          companyIds?.includes(content.companyId)
+        );
+      }
+
+      // Filtrar por fecha de publicación
+      if (data.publicationDate) {
+        filteredData = filteredData.filter(
+          (content) => content.publicationDate === data.publicationDate
+        );
+      }
+
+      // Contar tipos de publicaciones visibles
+      const countSocialMedia = filteredData.filter(
+        (content) => content.type === "post"
+      ).length;
+      const countWebArticles = filteredData.filter(
+        (content) => content.type === "web"
+      ).length;
+
+      setSocialMediaCount(countSocialMedia);
+      setWebSocialMediaCount(countWebArticles);
+
+      const transformData = filteredData.map((content: Content) => ({
+        companyName: content.companyName || "",
+        type: content.type || "",
+        headline: content.headline || "",
+        publicationDate: content.publicationDate || "",
+        scope: content.scope || 0,
+        impressions: content.impressions || 0,
+        interactions: content.interactions || 0,
+        socialMediaInfo: content.socialMediaInfo,
+      }));
+
+      setTableContents({
+        heads: headsTable,
+        rows: rowsTable(transformData),
+      });
+    }
   };
+
+  const resetFilters = () => {
+    if (contents) {
+      // Transformar los datos originales para la tabla
+      const transformData = contents.map((content: Content) => ({
+        companyName: content.companyName || "",
+        type: content.type || "",
+        headline: content.headline || "",
+        publicationDate: content.publicationDate || "",
+        scope: content.scope || 0,
+        impressions: content.impressions || 0,
+        interactions: content.interactions || 0,
+        socialMediaInfo: content.socialMediaInfo,
+      }));
+
+      // Restaurar la tabla con los datos originales
+      setTableContents({
+        heads: headsTable,
+        rows: rowsTable(transformData),
+      });
+
+      // Restaurar contadores de publicaciones
+      setSocialMediaCount(
+        contents.filter((content) => content.type === "post").length
+      );
+      setWebSocialMediaCount(
+        contents.filter((content) => content.type === "web").length
+      );
+    }
+  };
+
+  if (loading) {
+    return (
+      <div>
+        <div className="mb-5">
+          <TitleSection title="Contenidos" />
+        </div>
+        <div className="w-full h-[70vh] flex justify-center items-center">
+          <span className="text-8xl">
+            <Spinner />
+          </span>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div>
       <div className="mb-5">
         <TitleSection title="Contenidos" />
       </div>
-      <FilterContentBar
-        companies={companiesData}
-        onFilter={(data) => handleFilterBar(data)}
-      />
+      {companiesData && (
+        <FilterContentBar
+          companies={companiesData}
+          services={servicesData}
+          onFilter={(data) => handleFilterBar(data)}
+          onCleanForm={resetFilters}
+        />
+      )}
       <div className="flex gap-4 mb-8 justify-center">
         <div className="w-full max-w-xs text-cp-primary bg-slate-800 p-8 rounded-lg hover:outline-3 hover:outline hover:outline-offset-1 text-center">
           <h3 className="text-xl font-bold">Post en social media</h3>
@@ -166,10 +316,6 @@ export default function ContentsClient() {
       </div>
       <div className="flex gap-3 items-center justify-end">
         <div className="flex gap-6 items-center">
-          <LinkCP href="#">
-            <FontAwesomeIcon icon={faGoogleDrive} />
-            <span className="ml-1">Estadísticas anteriores</span>
-          </LinkCP>
           <Search onChange={handleChange} value={searchValue} />
         </div>
       </div>
