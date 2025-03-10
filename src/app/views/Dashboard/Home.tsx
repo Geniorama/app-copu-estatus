@@ -93,14 +93,14 @@ export default function DashboardHome() {
       </div>
       <div className="grid grid-cols-4 gap-5">
         <CardAction
-          onClick={() => router.push("/dashboard/usuarios?action=create")}
-          title="Crear usuario"
-          icon="user"
-        />
-        <CardAction
           onClick={() => router.push("/dashboard/companias?action=create")}
           title="Crear compañía"
           icon="company"
+        />
+        <CardAction
+          onClick={() => router.push("/dashboard/usuarios?action=create")}
+          title="Crear usuario"
+          icon="user"
         />
         <CardAction
           onClick={() => router.push("/dashboard/servicios?action=create")}
