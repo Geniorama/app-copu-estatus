@@ -1,5 +1,5 @@
 import { useSelector } from "react-redux";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { RootState } from "@/app/store";
 import CardAction from "@/app/components/CardAction/CardAction";
 import Table from "@/app/components/Table/Table";
@@ -13,6 +13,8 @@ import { useFetchCompanies } from "@/app/hooks/useFetchCompanies";
 import BoxLogo from "@/app/utilities/ui/BoxLogo";
 import ListServices from "@/app/utilities/ui/ListServices";
 import LinkCP from "@/app/utilities/ui/LinkCP";
+import { useFetchServicesByCompany } from "@/app/hooks/useFetchServicesByCompany";
+import Pagination from "@/app/components/Pagination/Pagination";
 
 const headsTable = [
   "Logo",
@@ -22,30 +24,38 @@ const headsTable = [
   "Última modificación"
 ];
 
+const initialData: TableDataProps = {
+  heads: headsTable,
+  rows: [],
+}
+
 export default function DashboardHome() {
   const [searchValue, setSearchValue] = useState("");
   const { userData } = useSelector((state: RootState) => state.user);
-  const [tableData, setTableData] = useState<TableDataProps | null>(null);
-  const [hasFetchedData, setHasFetchedData] = useState(false); // Control de si los datos fueron cargados
+  const [tableData, setTableData] = useState<TableDataProps | null>(initialData);
+  const [hasFetchedData, setHasFetchedData] = useState(false);
   const router = useRouter();
 
-  const fetchServicesByCompany = useCallback(async (companyId: string) => {
-    try {
-      const response = await fetch(
-        `/api/getServicesByCompany?companyId=${companyId}`
-      );
-      const data = await response.json();
-      return Array.isArray(data) ? data : [];
-    } catch (error) {
-      console.error("Error fetching services by company:", error);
-      return [];
-    }
-  }, []);
+  const fetchServicesByCompany = useFetchServicesByCompany();
 
-  const { originalData, loading } = useFetchCompanies(
+  const { originalData, loading, currentPage, totalPages, setCurrentPage } = useFetchCompanies(
     userData,
-    fetchServicesByCompany
+    fetchServicesByCompany,
+    false, // fetchAll
+    6 // itemsPerPage
   );
+
+  const nextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  }
+
+  const prevPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  } 
 
   useEffect(() => {
     if (!loading && originalData.length > 0) {
@@ -74,7 +84,7 @@ export default function DashboardHome() {
       };
 
       setTableData(filteredData.length > 0 ? dataTable : null);
-      setHasFetchedData(true); // Marcar que los datos han sido cargados
+      setHasFetchedData(true);
     }
   }, [loading, originalData, searchValue]);
 
@@ -133,7 +143,19 @@ export default function DashboardHome() {
             </span>
           </div>
         ) : tableData ? (
-          <Table data={tableData} />
+          <>
+            <Table data={tableData} />
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                setCurrentPage={setCurrentPage}
+                onNext={nextPage}
+                onPrev={prevPage}
+              />
+            )}
+          </>
         ) : (
           <div className="text-center p-5 mt-10 flex justify-center items-center">
             <p className="text-slate-400">

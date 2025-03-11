@@ -7,14 +7,17 @@ import { RootState, AppDispatch } from "../store";
 import { fetchCompaniesOptions } from "../store/features/companiesSlice";
 
 interface FetchServicesProps {
-  hasUpdate?: boolean
+  hasUpdate?: boolean,
+  itemsPerPage?: number
 }
 
-export function useFetchServices({hasUpdate}: FetchServicesProps) {
+export function useFetchServices({hasUpdate, itemsPerPage = 6}: FetchServicesProps) {
   const [dataServices, setDataServices] = useState<Service[]>([])
   const [loading, setLoading] = useState(true)
   const dispatch = useDispatch<AppDispatch>()
   const {options} = useSelector((state: RootState) => state.companies)
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
   useEffect(() => {
     dispatch(fetchCompaniesOptions())
@@ -30,9 +33,10 @@ export function useFetchServices({hasUpdate}: FetchServicesProps) {
   useEffect(() => {
     const fetchServices = async () => {
         setLoading(true)
-        const res = await getAllServices();
+        const res = await getAllServices(itemsPerPage, currentPage);
+        const services = res.items;
 
-        const transformData = res.map((service: Entry) => ({
+        const transformData = services.map((service: Entry) => ({
           id: service.sys.id,
           name: service.fields.name["en-US"],
           description: service.fields.description["en-US"],
@@ -47,10 +51,11 @@ export function useFetchServices({hasUpdate}: FetchServicesProps) {
         }));
         setDataServices(transformData)
         setLoading(false)
+        setTotalPages(res.totalPages)
       };
 
     fetchServices()
-  },[options, hasUpdate])
+  },[options, hasUpdate, itemsPerPage, currentPage])
 
-  return {dataServices, loading}
+  return {dataServices, loading, setCurrentPage, totalPages}
 }

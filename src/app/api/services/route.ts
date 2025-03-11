@@ -3,13 +3,20 @@ import { getContentfulEnvironment } from "@/app/lib/contentfulManagement";
 import type { Service } from "@/app/types";
 
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     const environment = await getContentfulEnvironment();
 
+    const { searchParams } = new URL(request.url);
+    const page = parseInt(searchParams.get("page") || "1", 10);
+    const limit = parseInt(searchParams.get("limit") || "9", 10);
+    const skip = (page - 1) * limit;
+
     const entries = await environment.getEntries({
       content_type: 'service',
-      include: 4
+      include: 4,
+      limit,
+      skip
     });
 
     const items = entries.items;
@@ -18,7 +25,7 @@ export async function GET() {
       return NextResponse.json({ message: 'No entries found' }, { status: 404 });
     }
     
-    return NextResponse.json(items, { status: 200 });
+    return NextResponse.json({items, totalPages: Math.ceil(entries.total / limit)}, { status: 200 });
   } catch (error) {
     console.error('Error fetching data from Contentful:', error);
     return NextResponse.json({ error: 'Error fetching data from Contentful' }, { status: 500 });

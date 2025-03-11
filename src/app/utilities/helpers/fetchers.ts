@@ -118,7 +118,7 @@ export const getUserByAuth0Id = async (auth0Id: string) => {
   }
 };
 
-export const getCompaniesByIds = async (companiesIds: string[]) => {
+export const getCompaniesByIds = async (companiesIds: string[], page: number = 1, limit: number = 6) => {
   if (!Array.isArray(companiesIds) || companiesIds.length === 0) {
     console.error("companiesIds debe ser un array con al menos un ID.");
     return null;
@@ -130,12 +130,17 @@ export const getCompaniesByIds = async (companiesIds: string[]) => {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ ids: companiesIds }),
+      body: JSON.stringify({ ids: companiesIds, page, limit }),
     });
 
     if (response.ok) {
       const data = await response.json();
-      return data;
+      return {
+        companies: Array.isArray(data.companies) ? data.companies : [],
+        total: data.total || 0,
+        totalPages: data.totalPages || 1,
+        currentPage: data.currentPage || 1,
+      };
     } else {
       console.error("Error al obtener los datos:", response.statusText);
       return null;
@@ -193,9 +198,9 @@ export const updateCompany = async (data: Company) => {
   }
 };
 
-export const getAllServices = async () => {
+export const getAllServices = async (limit:number = 6, page:number = 1) => {
   try {
-    const res = await fetch("/api/services");
+    const res = await fetch(`/api/services?limit=${limit}&page=${page}`);
     if (res.ok) {
       const data = await res.json();
       return data;

@@ -16,6 +16,7 @@ export async function GET(request: NextRequest) {
     const response = await environment.getEntries({
       content_type: "service",
       "fields.company.sys.id": companyId,
+      limit: 3,
     });
 
     if (response.items.length === 0) {
@@ -23,8 +24,6 @@ export async function GET(request: NextRequest) {
         status: 404,
       });
     }
-
-    // const services = response.items.map((item) => item.fields);
 
     return new Response(JSON.stringify(response.items), { status: 200 });
   } catch (error) {

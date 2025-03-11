@@ -21,6 +21,7 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { formattedDate } from "@/app/utilities/helpers/formatters";
 import { useSearchParams } from "next/navigation";
+import Pagination from "@/app/components/Pagination/Pagination";
 
 const headsTable = [
   "Nombre servicio",
@@ -116,7 +117,6 @@ export default function Services() {
 
   useEffect(() => {
     if (dataServices) {
-      console.log('dataServices', dataServices);
       setServices({
         heads: headsTable,
         rows: rowsTable(dataServices),

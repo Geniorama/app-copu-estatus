@@ -2,31 +2,42 @@ import { NextRequest, NextResponse } from "next/server";
 import { getContentfulEnvironment } from "@/app/lib/contentfulManagement";
 import type { Company } from "@/app/types";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     const environment = await getContentfulEnvironment();
+    const { searchParams } = new URL(request.url);
+    const page = parseInt(searchParams.get("page") || "1", 10);
+    const limit = parseInt(searchParams.get("limit") || "9", 10);
+    const skip = (page - 1) * limit;
 
     const entries = await environment.getEntries({
       content_type: "company",
       "sys.publishedAt[exists]": true,
+      limit,
+      skip,
     });
 
-    const items = entries.items;
-
-    if (!items || items.length === 0) {
-      return NextResponse.json(
-        { message: "No entries found" },
-        { status: 404 }
-      );
+    if (!entries.items || entries.items.length === 0) {
+      return NextResponse.json({ message: "No companies found" }, { status: 404 });
     }
 
-    return NextResponse.json(items, { status: 200 });
+    // const companies = entries.items.map((item) => ({
+    //   id: item.sys.id,
+    //   name: item.fields.name?.["en-US"] || "",
+    //   logo: item.fields.logo?.["en-US"] || "",
+    //   address: item.fields.address?.["en-US"] || "",
+    //   phone: item.fields.phone?.["en-US"] || "",
+    //   linkWhatsApp: item.fields.whatsappLink?.["en-US"] || "",
+    //   nit: item.fields.nit?.["en-US"] || "",
+    //   businessName: item.fields.businessName?.["en-US"] || "",
+    //   driveLink: item.fields.driveLink?.["en-US"] || "",
+    //   superiorId: item.fields.superior?.["en-US"]?.sys?.id || null,
+    // }));
+
+    return NextResponse.json({ companies: entries.items, total: entries.total, totalPages: Math.ceil(entries.total / limit)}, { status: 200 });
   } catch (error) {
     console.error("Error fetching data from Contentful:", error);
-    return NextResponse.json(
-      { error: "Error fetching data from Contentful" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Error fetching data from Contentful" }, { status: 500 });
   }
 }
 
@@ -37,51 +48,30 @@ export async function POST(request: NextRequest) {
 
     const newEntry = await environment.createEntry("company", {
       fields: {
-        name: {
-          "en-US": company.name,
-        },
-        logo: {
-          "en-US": company.logo || undefined,
-        },
-        address: {
-          "en-US": company.address,
-        },
-        phone: {
-          "en-US": company.phone,
-        },
-        whatsappLink: {
-          "en-US": company.linkWhatsApp || undefined,
-        },
-        nit: {
-          "en-US": company.nit || undefined,
-        },
-        businessName: {
-          "en-US": company.businessName || undefined,
-        },
-        driveLink: {
-          "en-US": company.driveLink || undefined,
-        },
-        superior: {
-          "en-US": {
-            sys: {
-              type: "Link",
-              linkType: "Entry",
-              id: company.superiorId,
-            },
-          },
-        },
+        name: { "en-US": company.name },
+        logo: { "en-US": company.logo || "" },
+        address: { "en-US": company.address },
+        phone: { "en-US": company.phone },
+        whatsappLink: { "en-US": company.linkWhatsApp || "" },
+        nit: { "en-US": company.nit || "" },
+        businessName: { "en-US": company.businessName || "" },
+        driveLink: { "en-US": company.driveLink || "" },
+        superior: company.superiorId
+          ? {
+              "en-US": {
+                sys: { type: "Link", linkType: "Entry", id: company.superiorId },
+              },
+            }
+          : undefined,
       },
     });
 
-    newEntry.publish();
+    await newEntry.publish();
 
     return NextResponse.json(newEntry, { status: 201 });
   } catch (error) {
     console.error("Error creating entry in Contentful:", error);
-    return NextResponse.json(
-      { error: "Error creating entry in Contentful" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Error creating entry in Contentful" }, { status: 500 });
   }
 }
 
@@ -89,92 +79,26 @@ export async function PATCH(request: NextRequest) {
   try {
     const environment = await getContentfulEnvironment();
     const updateCompany = await request.json();
-    const {
-      id,
-      name,
-      businessName,
-      linkWhatsApp,
-      logo,
-      status,
-      email,
-      phone,
-      address,
-      nit,
-      superiorId,
-      driveLink,
-    } = updateCompany;
+    const { id, ...fieldsToUpdate } = updateCompany;
 
     if (!id) {
-      throw new Error("Company id is required!");
+      return NextResponse.json({ error: "Company ID is required!" }, { status: 400 });
     }
 
     const entry = await environment.getEntry(id);
 
-    // Actualiza los campos, permitiendo valores vacíos o null
-    if (name !== undefined) {
-      entry.fields.name = entry.fields.name || {};
-      entry.fields.name["en-US"] = name || null;
-    }
-    if (businessName !== undefined) {
-      entry.fields.businessName = entry.fields.businessName || {};
-      entry.fields.businessName["en-US"] = businessName || null;
-    }
-    if (linkWhatsApp !== undefined) {
-      entry.fields.whatsappLink = entry.fields.whatsappLink || {};
-      entry.fields.whatsappLink["en-US"] = linkWhatsApp || null;
-    }
-    if (logo !== undefined) {
-      entry.fields.logo = entry.fields.logo || {};
-      entry.fields.logo["en-US"] = logo || null;
-    }
-    if (typeof status === "boolean") {
-      entry.fields.status = entry.fields.status || {};
-      entry.fields.status["en-US"] = status;
-    }
-    if (email !== undefined) {
-      entry.fields.email = entry.fields.email || {};
-      entry.fields.email["en-US"] = email || null;
-    }
-    if (phone !== undefined) {
-      entry.fields.phone = entry.fields.phone || {};
-      entry.fields.phone["en-US"] = phone || null;
-    }
-    if (address !== undefined) {
-      entry.fields.address = entry.fields.address || {};
-      entry.fields.address["en-US"] = address || null;
-    }
-    if (nit !== undefined) {
-      entry.fields.nit = entry.fields.nit || {};
-      entry.fields.nit["en-US"] = nit || null;
-    }
-    if (driveLink !== undefined) {
-      entry.fields.driveLink = entry.fields.driveLink || {};
-      entry.fields.driveLink["en-US"] = driveLink || null;
-    }
-    if (superiorId !== undefined) {
-      entry.fields.superior = entry.fields.superior || {};
-      entry.fields.superior["en-US"] = superiorId
-        ? {
-            sys: {
-              type: "Link",
-              linkType: "Entry",
-              id: superiorId,
-            },
-          }
-        : null;
-    }
+    Object.entries(fieldsToUpdate).forEach(([key, value]) => {
+      entry.fields[key] = entry.fields[key] || {};
+      entry.fields[key]["en-US"] = value || null;
+    });
 
-    // Guardar la entrada actualizada y publicarla
     const updatedEntry = await entry.update();
     await updatedEntry.publish();
 
     return NextResponse.json(updatedEntry, { status: 200 });
   } catch (error) {
     console.error("Error updating entry in Contentful:", error);
-    return NextResponse.json(
-      { error: "Error updating entry in Contentful" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Error updating entry in Contentful" }, { status: 500 });
   }
 }
 
@@ -183,17 +107,15 @@ export async function DELETE(request: NextRequest) {
     const environment = await getContentfulEnvironment();
     const { id } = await request.json();
 
+    if (!id) {
+      return NextResponse.json({ error: "Company ID is required!" }, { status: 400 });
+    }
+
     await environment.deleteEntry(id);
 
-    return NextResponse.json(
-      { message: "Entry deleted successfully" },
-      { status: 200 }
-    );
+    return NextResponse.json({ message: "Entry deleted successfully" }, { status: 200 });
   } catch (error) {
     console.error("Error deleting entry in Contentful:", error);
-    return NextResponse.json(
-      { error: "Error deleting entry in Contentful" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Error deleting entry in Contentful" }, { status: 500 });
   }
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import Button from "@/app/utilities/ui/Button";
 import Table from "@/app/components/Table/Table";
 import Search from "@/app/utilities/ui/Search";
@@ -26,6 +26,8 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import useExportCSV from "@/app/hooks/useExportCSV";
 import { useSearchParams } from "next/navigation";
+import Pagination from "@/app/components/Pagination/Pagination";
+import { useFetchServicesByCompany } from "@/app/hooks/useFetchServicesByCompany";
 
 export default function Companies() {
   const [searchValue, setSearchValue] = useState("");
@@ -48,24 +50,31 @@ export default function Companies() {
     "Acciones",
   ];
 
-  const fetchServicesByCompany = useCallback(async (companyId: string) => {
-    try {
-      const response = await fetch(
-        `/api/getServicesByCompany?companyId=${companyId}`
-      );
-      const data = await response.json();
-      return Array.isArray(data) ? data : [];
-    } catch (error) {
-      console.error("Error fetching services by company:", error);
-      return [];
-    }
-  }, [success]);
+  const fetchServicesByCompany = useFetchServicesByCompany()
 
-  const { originalData, loading } = useFetchCompanies(
+  const { originalData, loading, currentPage, setCurrentPage, totalPages } = useFetchCompanies(
     userData,
     fetchServicesByCompany,
-    true
+    true,
+    6
   );
+
+  const nextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  }
+
+  const prevPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  } 
+
+  useEffect(() => {
+    console.log('currentPage', currentPage)
+    console.log('totalPages', totalPages)
+  }, [totalPages, currentPage])
 
   useEffect(() => {
     if (!loading) {
@@ -76,7 +85,7 @@ export default function Companies() {
       
       setTableData(originalData.length > 0 ? dataTable : null);
     }
-  }, [loading, originalData]);
+  }, [loading, originalData, currentPage, success]);
 
   useEffect(() => {
     if(actionUrl === "create"){
@@ -231,7 +240,16 @@ export default function Companies() {
       </div>
 
       {tableData ? (
-        <Table data={tableData} />
+        <>
+          <Table data={tableData} />
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            setCurrentPage={setCurrentPage}
+            onNext={nextPage}
+            onPrev={prevPage}
+          />
+        </>
       ) : (
         <div className="text-center p-5 mt-10 flex justify-center items-center">
           <p className="text-slate-400">
