@@ -57,5 +57,5 @@ export function useFetchServices({hasUpdate, itemsPerPage = 6}: FetchServicesPro
     fetchServices()
   },[options, hasUpdate, itemsPerPage, currentPage])
 
-  return {dataServices, loading, setCurrentPage, totalPages}
+  return {dataServices, loading, setCurrentPage, totalPages, currentPage}
 }

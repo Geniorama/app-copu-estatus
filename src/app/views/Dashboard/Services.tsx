@@ -39,8 +39,9 @@ export default function Services() {
   const [services, setServices] = useState<TableDataProps | null>(null);
   const [serviceForEdit, setServiceForEdit] = useState<Service | null>(null);
   const [hasUpdate, setHasUpdate] = useState(false)
-  const { dataServices, loading } = useFetchServices({
-    hasUpdate: hasUpdate
+  const { dataServices, loading, totalPages, setCurrentPage, currentPage } = useFetchServices({
+    hasUpdate: hasUpdate,
+    itemsPerPage: 8
   });
   const notify = (message: string) => toast(message);
   const searchParams = useSearchParams();
@@ -84,6 +85,18 @@ export default function Services() {
       setOpenModal(true);
     }
   };  
+
+  const nextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  }
+
+  const prevPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  } 
 
   const rowsTable = (data: Service[]) => {
     const filteredData = data.map((service) => [
@@ -207,7 +220,18 @@ export default function Services() {
           </span>
         </div>
       ) : services ? (
-        <Table data={services} />
+        <>
+          <Table data={services} />
+          {totalPages > 1 && (
+            <Pagination 
+              totalPages={totalPages} 
+              currentPage={currentPage} 
+              setCurrentPage={setCurrentPage}
+              onNext={nextPage}
+              onPrev={prevPage}
+            />
+          )}
+        </>
       ) : (
         <div className="text-center p-5 mt-10 flex justify-center items-center">
           <p className="text-slate-400">
