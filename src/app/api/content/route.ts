@@ -2,13 +2,19 @@ import { NextRequest, NextResponse } from "next/server";
 import { getContentfulEnvironment } from "@/app/lib/contentfulManagement";
 import type { Content } from "@/app/types";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     const environment = await getContentfulEnvironment();
+    const { searchParams } = new URL(request.url);
+    const page = parseInt(searchParams.get("page") || "1", 10);
+    const limit = parseInt(searchParams.get("limit") || "9", 10);
+    const skip = (page - 1) * limit;
 
     const entries = await environment.getEntries({
       content_type: "content",
       "sys.publishedAt[exists]": true,
+      limit,
+      skip,
     });
 
     const items = entries.items;
@@ -20,7 +26,14 @@ export async function GET() {
       );
     }
 
-    return NextResponse.json(items, { status: 200 });
+    return NextResponse.json(
+      {
+        contents: entries.items,
+        total: entries.total,
+        totalPages: Math.ceil(entries.total / limit),
+      },
+      { status: 200 }
+    );
   } catch (error) {
     console.error("Error fetching data from Contentful:", error);
     return NextResponse.json(
@@ -87,18 +100,12 @@ export async function POST(request: NextRequest) {
   }
 }
 
-
 export async function PATCH(request: NextRequest) {
   try {
     const environment = await getContentfulEnvironment();
     const updateContent = await request.json();
-    const {
-      id,
-      headline,
-      type,
-      publicationDate,
-      socialMediaInfo,
-    } = updateContent;
+    const { id, headline, type, publicationDate, socialMediaInfo } =
+      updateContent;
 
     if (!id) {
       throw new Error("Content id is required!");
@@ -120,7 +127,8 @@ export async function PATCH(request: NextRequest) {
       entry.fields.publicationDate["en-US"] = publicationDate || null;
     }
     if (socialMediaInfo !== undefined) {
-      entry.fields.socialLinksAndStatistics = entry.fields.socialLinksAndStatistics || {};
+      entry.fields.socialLinksAndStatistics =
+        entry.fields.socialLinksAndStatistics || {};
       entry.fields.socialLinksAndStatistics["en-US"] = socialMediaInfo || null;
     }
 

@@ -13,12 +13,6 @@ import type { ChangeEvent } from "react";
 import TitleSection from "@/app/utilities/ui/TitleSection";
 import FilterContentBar from "../FilterContentBar";
 import FormCreateContent from "@/app/components/Form/FormCreateContent";
-import {
-  getAllContents,
-  getServiceById,
-  getCompanyById,
-} from "@/app/utilities/helpers/fetchers";
-import { Entry } from "contentful-management";
 import Spinner from "@/app/utilities/ui/Spinner";
 import { actionOptions } from "@/app/components/Form/FormCreateContent";
 import { formattedDate } from "@/app/utilities/helpers/formatters";
@@ -32,46 +26,46 @@ import useExportCSV from "@/app/hooks/useExportCSV";
 import { truncateText } from "@/app/utilities/helpers/formatters";
 import { useSearchParams } from "next/navigation";
 import { formatNumber } from "@/app/utilities/helpers/formatters";
-
-const headsTable = [
-  "Compañía",
-  // "Servicio",
-  "Tipo acción",
-  "Titular",
-  "Fecha Publicación",
-  "Alcance",
-  "Impresiones",
-  "Interacciones",
-  "Web",
-  "IG",
-  "FB",
-  "LK",
-  "X",
-  "TK",
-  "YT",
-  "TH",
-  "",
-];
+import { useFetchAllContents } from "@/app/hooks/useFetchAllContents";
+import Pagination from "@/app/components/Pagination/Pagination";
 
 export default function Contents() {
   const [searchValue, setSearchValue] = useState("");
   const [openModal, setOpenModal] = useState(false);
-  const [contents, setContents] = useState<TableDataProps | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [contents, setContents] = useState<TableDataProps | null>({ heads: [], rows: [] });
   const [hasUpdate, setHasUpdate] = useState(false);
   const [postWebCount, setPostWebCount] = useState(0);
   const [postSocialCount, setPostSocialCount] = useState(0);
-  const [optionsServices, setOptionsServices] = useState<
-    ServiceOptionsProps[] | null
-  >(null);
+  const [optionsServices, setOptionsServices] = useState<ServiceOptionsProps[] | null>(null);
   const [originalData, setOriginalData] = useState<Content[] | null>(null);
   const [filters, setFilters] = useState<Partial<FilterDataProps>>({});
   const [filteredData, setFilteredData] = useState<Content[] | null>(null);
   const [editContent, setEditContent] = useState<Content | null>(null);
 
+
   const dispatch = useDispatch<AppDispatch>();
   const searchParams = useSearchParams();
   const actionUrl = searchParams.get("action");
+
+  const headsTable = [
+    "Compañía",
+    // "Servicio",
+    "Tipo acción",
+    "Titular",
+    "Fecha Publicación",
+    "Alcance",
+    "Impresiones",
+    "Interacciones",
+    "Web",
+    "IG",
+    "FB",
+    "LK",
+    "X",
+    "TK",
+    "YT",
+    "TH",
+    "",
+  ];
 
   const showSocialLink = (link?: string) => {
     if (link) {
@@ -85,9 +79,7 @@ export default function Contents() {
     return <p className="text-slate-400">N/A</p>;
   };
 
-  const { options: companiesData } = useSelector(
-    (state: RootState) => state.companies
-  );
+  const { options: companiesData } = useSelector((state: RootState) => state.companies);
   const { dataServices, loading: loadingServices } = useFetchServices({
     hasUpdate,
   });
@@ -177,70 +169,32 @@ export default function Contents() {
     return result;
   };
 
-  const fetchAllContents = async () => {
-    setLoading(true);
-    const res = await getAllContents();
+  const { contents: data, loading: loadingContents, currentPage, totalPages, setCurrentPage } = useFetchAllContents(
+    hasUpdate
+  );
 
-    if (res) {
-      console.log(res);
-      const transformData: Content[] = await Promise.all(
-        res.map(async (content: Entry) => {
-          const serviceInfo = await getServiceById(
-            content.fields.service["en-US"].sys.id
-          );
-          const companyInfo = await getCompanyById(
-            serviceInfo.fields.company["en-US"].sys.id
-          );
-
-          let scope = 0;
-          let impressions = 0;
-          let interactions = 0;
-
-          content.fields.socialLinksAndStatistics["en-US"].forEach(
-            (social: {
-              statistics: {
-                scope: number;
-                impressions: number;
-                interactions: number;
-              };
-            }) => {
-              scope += social.statistics.scope;
-              impressions += social.statistics.impressions;
-              interactions += social.statistics.interactions;
-            }
-          );
-
-          return {
-            id: content.sys.id,
-            headline: content.fields.headline["en-US"],
-            type: content.fields.type["en-US"],
-            publicationDate: content.fields.publicationDate["en-US"],
-            socialMediaInfo: content.fields.socialLinksAndStatistics["en-US"],
-            serviceId: content.fields.service["en-US"].sys.id,
-            companyName: companyInfo.fields.name["en-US"],
-            serviceName: serviceInfo.fields.name["en-US"],
-            scope,
-            impressions,
-            interactions,
-          };
-        })
-      );
-
-      const tableData: TableDataProps = {
-        heads: headsTable,
-        rows: rowsTable(transformData),
-      };
-
-      console.log("transformData", transformData);
-      setContents(tableData);
-      setOriginalData(transformData);
-      setLoading(false);
+  const nextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
     }
-  };
+  }
+
+  const prevPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  } 
 
   useEffect(() => {
-    fetchAllContents();
-  }, [hasUpdate]);
+    if (data && !loadingContents) {
+      setOriginalData(data);
+      const tableData: TableDataProps = {
+        heads: headsTable,
+        rows: rowsTable(data),
+      };
+      setContents(tableData);
+    }
+  }, [data, loadingContents]);
 
   useEffect(() => {
     if (filteredData) {
@@ -331,8 +285,6 @@ export default function Contents() {
     setContents(tableDataOriginal);
   };
 
-  
-
   useEffect(() => {
     if (!originalData) return;
 
@@ -374,7 +326,7 @@ export default function Contents() {
     `contents-${new Date().toISOString()}`
   );
 
-  if (loading) {
+  if (loadingServices || loadingContents) {
     return (
       <div>
         <div className="mb-5">
@@ -477,7 +429,16 @@ export default function Contents() {
       </div>
 
       {contents && contents.rows.length > 0 ? (
-        <Table data={contents} />
+        <>
+          <Table data={contents} />
+          <Pagination 
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onNext={nextPage}
+            onPrev={prevPage}
+            setCurrentPage={setCurrentPage}
+          />
+        </>
       ) : (
         <div className="text-center p-5 mt-10 flex justify-center items-center">
           <p className="text-slate-400">

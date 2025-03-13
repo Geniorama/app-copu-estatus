@@ -319,9 +319,9 @@ export const updateContent = async (content: Content) => {
   }
 };
 
-export const getAllContents = async () => {
+export const getAllContents = async (limit: number = 6, page: number = 1) => {
   try {
-    const res = await fetch("/api/content");
+    const res = await fetch(`/api/content?limit=${limit}&page=${page}`);
     if (res.ok) {
       const data = await res.json();
       return data;

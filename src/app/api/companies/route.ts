@@ -18,7 +18,10 @@ export async function GET(request: NextRequest) {
     });
 
     if (!entries.items || entries.items.length === 0) {
-      return NextResponse.json({ message: "No companies found" }, { status: 404 });
+      return NextResponse.json(
+        { message: "No companies found" },
+        { status: 404 }
+      );
     }
 
     // const companies = entries.items.map((item) => ({
@@ -34,10 +37,20 @@ export async function GET(request: NextRequest) {
     //   superiorId: item.fields.superior?.["en-US"]?.sys?.id || null,
     // }));
 
-    return NextResponse.json({ companies: entries.items, total: entries.total, totalPages: Math.ceil(entries.total / limit)}, { status: 200 });
+    return NextResponse.json(
+      {
+        companies: entries.items,
+        total: entries.total,
+        totalPages: Math.ceil(entries.total / limit),
+      },
+      { status: 200 }
+    );
   } catch (error) {
     console.error("Error fetching data from Contentful:", error);
-    return NextResponse.json({ error: "Error fetching data from Contentful" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Error fetching data from Contentful" },
+      { status: 500 }
+    );
   }
 }
 
@@ -59,7 +72,11 @@ export async function POST(request: NextRequest) {
         superior: company.superiorId
           ? {
               "en-US": {
-                sys: { type: "Link", linkType: "Entry", id: company.superiorId },
+                sys: {
+                  type: "Link",
+                  linkType: "Entry",
+                  id: company.superiorId,
+                },
               },
             }
           : undefined,
@@ -71,7 +88,10 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(newEntry, { status: 201 });
   } catch (error) {
     console.error("Error creating entry in Contentful:", error);
-    return NextResponse.json({ error: "Error creating entry in Contentful" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Error creating entry in Contentful" },
+      { status: 500 }
+    );
   }
 }
 
@@ -82,7 +102,10 @@ export async function PATCH(request: NextRequest) {
     const { id, ...fieldsToUpdate } = updateCompany;
 
     if (!id) {
-      return NextResponse.json({ error: "Company ID is required!" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Company ID is required!" },
+        { status: 400 }
+      );
     }
 
     const entry = await environment.getEntry(id);
@@ -98,7 +121,10 @@ export async function PATCH(request: NextRequest) {
     return NextResponse.json(updatedEntry, { status: 200 });
   } catch (error) {
     console.error("Error updating entry in Contentful:", error);
-    return NextResponse.json({ error: "Error updating entry in Contentful" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Error updating entry in Contentful" },
+      { status: 500 }
+    );
   }
 }
 
@@ -108,14 +134,23 @@ export async function DELETE(request: NextRequest) {
     const { id } = await request.json();
 
     if (!id) {
-      return NextResponse.json({ error: "Company ID is required!" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Company ID is required!" },
+        { status: 400 }
+      );
     }
 
     await environment.deleteEntry(id);
 
-    return NextResponse.json({ message: "Entry deleted successfully" }, { status: 200 });
+    return NextResponse.json(
+      { message: "Entry deleted successfully" },
+      { status: 200 }
+    );
   } catch (error) {
     console.error("Error deleting entry in Contentful:", error);
-    return NextResponse.json({ error: "Error deleting entry in Contentful" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Error deleting entry in Contentful" },
+      { status: 500 }
+    );
   }
 }
