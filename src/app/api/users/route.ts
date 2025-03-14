@@ -2,12 +2,18 @@ import { NextRequest, NextResponse } from "next/server";
 import { getContentfulEnvironment } from "@/app/lib/contentfulManagement";
 import type { User } from "@/app/types";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     const environment = await getContentfulEnvironment();
+    const { searchParams } = new URL(request.url);
+    const page = parseInt(searchParams.get("page") || "1", 10);
+    const limit = parseInt(searchParams.get("limit") || "9", 10);
+    const skip = (page - 1) * limit;
 
     const entries = await environment.getEntries({
       content_type: "user",
+      limit,
+      skip,
     });
 
     const items = entries.items;
@@ -19,7 +25,10 @@ export async function GET() {
       );
     }
 
-    return NextResponse.json(items, { status: 200 });
+    return NextResponse.json({
+      users: entries.items,
+      totalPages: Math.ceil(entries.total / limit)      
+    }, { status: 200 });
   } catch (error) {
     console.error("Error fetching data from Contentful:", error);
     return NextResponse.json(
@@ -64,11 +73,11 @@ export async function POST(request: NextRequest) {
           "en-US": user.linkWhatsApp,
         },
         company: {
-          "en-US": user.companies?.map((company) => ({
+          "en-US": user.companiesId?.map((companyId) => ({
             sys: {
               type: 'Link',
               linkType: 'Entry',
-              id: company.sys.id
+              id: companyId
             }
           }))
         }

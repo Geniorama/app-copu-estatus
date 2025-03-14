@@ -12,22 +12,18 @@ import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import type { TableDataProps, User } from "@/app/types";
 import type { ChangeEvent } from "react";
 import TitleSection from "@/app/utilities/ui/TitleSection";
-import type { Entry } from "contentful";
-import { useSelector } from "react-redux";
-import type { RootState } from "@/app/store";
 import type { MouseEvent } from "react";
 import Spinner from "@/app/utilities/ui/Spinner";
 import { usePathname, useSearchParams } from "next/navigation";
 import Switch from "@/app/utilities/ui/Switch";
 import BoxLogo from "@/app/utilities/ui/BoxLogo";
-import {
-  getAllUsers,
-  updatedUserInContentful,
-} from "@/app/utilities/helpers/fetchers";
+import { updatedUserInContentful } from "@/app/utilities/helpers/fetchers";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import useExportCSV from "@/app/hooks/useExportCSV";
 import Swal from "sweetalert2";
+import useFetchUsers from "@/app/hooks/useFetchUsers";
+import Pagination from "@/app/components/Pagination/Pagination";
 
 export default function Users() {
   const [searchValue, setSearchValue] = useState("");
@@ -41,9 +37,7 @@ export default function Users() {
   const notify = (message: string) => toast(message);
   const searchParams = useSearchParams();
   const actionUrl = searchParams.get("action");
-
-  const { currentUser } = useSelector((state: RootState) => state.user);
-  const currentUserId = currentUser?.user.sub;
+  const [hasUpdate, setHasUpdate] = useState(false);
   const pathname = usePathname();
 
   const headsTable = [
@@ -62,50 +56,44 @@ export default function Users() {
     `usuarios-${new Date().toISOString()}`
   );
 
-  const fetchUsers = async () => {
-    const res = await getAllUsers();
-
-    if (res) {
-      const transformData: User[] = res.map((user: Entry) => {
-        return {
-          id: user.sys.id,
-          fname:
-            (user.fields.firstName as { "en-US": string })?.["en-US"] || null,
-          lname:
-            (user.fields.lastName as { "en-US": string })?.["en-US"] || null,
-          email: (user.fields.email as { "en-US": string })?.["en-US"] || null,
-          role: (user.fields.role as { "en-US": string })?.["en-US"] || null,
-          phone: (user.fields.phone as { "en-US": string })?.["en-US"] || null,
-          imageProfile:
-            (user.fields.imageProfile as { "en-US": string })?.["en-US"] ||
-            null,
-          status:
-            (user.fields.status as { "en-US": string })?.["en-US"] || null,
-          auth0Id:
-            (user.fields.auth0Id as { "en-US": string })?.["en-US"] || null,
-          companiesId:
-            (user.fields.company as { "en-US": Entry[] })?.["en-US"].map(
-              (company) => company.sys.id
-            ) || null,
-          position:
-            (user.fields.position as { "en-US": string })?.["en-US"] || null,
-        };
-      });
-
-      const filteredData = transformData.filter(
-        (user) => user.auth0Id !== currentUserId
-      );
+  const {
+    originalData: fetchUsers,
+    loading: loadingUsers,
+    currentPage,
+    totalPages,
+    setCurrentPage
+  } = useFetchUsers({
+    itemsPerPage: 8,
+  });
+  
+  useEffect(() => {
+    if (!loadingUsers) {
+      // const filteredData = fetchUsers.filter(
+      //   (user) => user.auth0Id !== currentUserId
+      // );
 
       const dataTable: TableDataProps = {
         heads: headsTable,
-        rows: rowsTable(filteredData),
+        rows: rowsTable(fetchUsers),
       };
 
       setTableData(dataTable);
-      setOriginalData(filteredData);
+      setOriginalData(fetchUsers);
       setLoading(false);
     }
-  };
+  },[fetchUsers, loadingUsers, currentPage, totalPages, hasUpdate]);
+
+  const nextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  }
+
+  const prevPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  } 
 
   const sentEmailUserCreated = async (email: string, url: string) => {
     if (!email || email.trim() === "" || !url || url.trim() === "") {
@@ -225,7 +213,8 @@ export default function Users() {
         if (response.ok) {
           const data = await response.json();
           console.log("Usuario eliminado", data);
-          fetchUsers();
+          // fetchUsers();
+          setHasUpdate(true);
           Swal.fire({
             icon: "success",
             title: "Éxito",
@@ -290,8 +279,6 @@ export default function Users() {
   }, [actionUrl]);
 
   useEffect(() => {
-    fetchUsers();
-
     if (userCreated && userCreated.email) {
       handleReset(userCreated.email);
     }
@@ -401,7 +388,18 @@ export default function Users() {
       </div>
 
       {tableData && tableData.rows.length > 0 ? (
-        <Table data={tableData} />
+        <>
+          <Table data={tableData} />
+          {totalPages > 1 && (
+            <Pagination 
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onNext={nextPage}
+              onPrev={prevPage}
+              setCurrentPage={setCurrentPage}
+            />
+          )}
+        </>
       ) : (
         <div className="text-center p-5 mt-10 flex justify-center items-center">
           <p className="text-slate-400">

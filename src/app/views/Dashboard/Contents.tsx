@@ -330,7 +330,7 @@ export default function Contents() {
     return (
       <div>
         <div className="mb-5">
-          <TitleSection title="Compañías" />
+          <TitleSection title="Contenidos" />
         </div>
         <div className="w-full h-[70vh] flex justify-center items-center">
           <span className="text-8xl">

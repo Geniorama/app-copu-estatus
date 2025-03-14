@@ -126,7 +126,7 @@ export default function DashboardHome() {
 
       <div className="mt-8">
         <div className="flex justify-between items-center">
-          <h3 className="text-xl font-bold">Mis empresas asignadas</h3>
+          <h3 className="text-xl font-bold">Mis compañías asignadas</h3>
           <div>
             <Search
               onReset={handleClearSearch}

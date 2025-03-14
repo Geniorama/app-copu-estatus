@@ -151,9 +151,9 @@ export const getCompaniesByIds = async (companiesIds: string[], page: number = 1
   }
 };
 
-export const getAllUsers = async () => {
+export const getAllUsers = async (limit: number = 6, page: number = 1) => {
   try {
-    const fetchUsers = await fetch("/api/users");
+    const fetchUsers = await fetch(`/api/users?limit=${limit}&page=${page}`);
     if (fetchUsers.ok) {
       const res = await fetchUsers.json();
       return res;
