@@ -121,6 +121,9 @@ export default function Companies() {
     
     if(companyId){
       const filterCompany = originalData.find((company) => company.id === companyId)
+
+      console.log('originalData', originalData)
+      console.log('filterCompany', filterCompany)
       if(filterCompany){
         setEditCompany(filterCompany)
         setOpenModal(true)

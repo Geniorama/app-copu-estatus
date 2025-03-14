@@ -171,10 +171,6 @@ export default function FormCreateUser({
 
     const password = generatePassword();
 
-    console.log('user', user)
-
-    // return
-
     Swal.fire({
       title: "¿Estás seguro?",
       text: "Estás a punto de crear un nuevo usuario. ¿Deseas continuar?",

@@ -74,6 +74,7 @@ export default function FormCreateCompany({
 
   useEffect(() => {
     if (currentCompany) {
+      console.log('currentCompany', currentCompany);
       setCompany(currentCompany);
       if (currentCompany.logo) {
         setLogoPreview(currentCompany.logo);
@@ -141,8 +142,16 @@ export default function FormCreateCompany({
           }
 
           const bodyCompany = ({
-            ...company,
-            logo: finalLogoUrl
+            id: company.id,
+            name: company.name,
+            address: company.address,
+            phone: company.phone,
+            whatsAppLink: company.linkWhatsApp,
+            nit: company.nit,
+            businessName: company.businessName,
+            driveLink: company.driveLink,
+            superiorId: company.superiorId,
+            logo: finalLogoUrl,
           })
 
           await updateCompany(bodyCompany)

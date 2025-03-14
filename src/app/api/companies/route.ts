@@ -99,7 +99,7 @@ export async function PATCH(request: NextRequest) {
   try {
     const environment = await getContentfulEnvironment();
     const updateCompany = await request.json();
-    const { id, ...fieldsToUpdate } = updateCompany;
+    const { id, superiorId, whatsAppLink, ...fieldsToUpdate } = updateCompany;
 
     if (!id) {
       return NextResponse.json(
@@ -114,6 +114,26 @@ export async function PATCH(request: NextRequest) {
       entry.fields[key] = entry.fields[key] || {};
       entry.fields[key]["en-US"] = value || null;
     });
+    
+    if(whatsAppLink !== undefined) {
+      entry.fields.whatsappLink = {
+        "en-US": whatsAppLink
+      }
+    }
+
+    if (superiorId !== undefined) {
+      entry.fields.superior = {
+        "en-US": superiorId
+          ? {
+              sys: {
+                type: "Link",
+                linkType: "Entry",
+                id: superiorId,
+              },
+            }
+          : null,
+      };
+    }
 
     const updatedEntry = await entry.update();
     await updatedEntry.publish();

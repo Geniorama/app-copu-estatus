@@ -47,8 +47,6 @@ export const useFetchCompanies = (
             },
           }));
 
-          console.log('companies', companies);
-
           setTotalPages(data.totalPages);
         }
       } else if (userData && userData.companiesId) {
@@ -75,7 +73,7 @@ export const useFetchCompanies = (
               name: company.fields.name,
               address: company.fields.address,
               phone: company.fields.phone,
-              linkWhatsApp: company.fields.whatsappLink,
+              linkWhatsApp: company.fields.linkWhatsApp,
               nit: company.fields.nit,
               businessName: company.fields.businessName,
               driveLink: company.fields.driveLink,
