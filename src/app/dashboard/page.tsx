@@ -5,7 +5,7 @@ import { withPageAuthRequired } from "@auth0/nextjs-auth0";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: 'Dashboard',
+  title: 'Copu estatus | Dashboard',
   viewport: 'width=device-width, initial-scale=1',
 };
 

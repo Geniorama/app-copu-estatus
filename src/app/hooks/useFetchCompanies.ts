@@ -51,7 +51,17 @@ export const useFetchCompanies = (
         }
       } else if (userData && userData.companiesId) {
         const data = await getCompaniesByIds(userData.companiesId as string[], page, itemsPerPage);
-        companies = data?.companies;
+        const companiesMap = data?.companies;
+        const companiesUpdated = companiesMap.map((company: Entry) => ({
+          ...company,
+          fields: {
+            ...company.fields,
+            linkWhatsApp: company.fields.whatsappLink,
+          }
+        }))
+
+        companies = companiesUpdated;
+
         setTotalPages(data?.totalPages || 1);
       }
 

@@ -109,12 +109,13 @@ export default function Contents() {
   }, [actionUrl]);
 
   const handleEditContent = (contentId?: string) => {
-    if(!contentId){
-      console.log("No content id");
+    if(!contentId || !originalData){
+      console.log("No content ID or originalData is not available");
       return;
     }
     const content = originalData?.find((content) => content.id === contentId);
 
+    console.log('content for edit', content);
     if (content) {
       setEditContent(content);
       setOpenModal(true);
@@ -285,6 +286,11 @@ export default function Contents() {
     setContents(tableDataOriginal);
   };
 
+  const handleOpenCreateModal = () => {
+    setOpenModal(true);
+    setEditContent(null);
+  };
+
   useEffect(() => {
     if (!originalData) return;
 
@@ -326,7 +332,7 @@ export default function Contents() {
     `contents-${new Date().toISOString()}`
   );
 
-  if (loadingServices || loadingContents) {
+  if (loadingContents) {
     return (
       <div>
         <div className="mb-5">
@@ -415,7 +421,7 @@ export default function Contents() {
       </div>
 
       <div className="flex gap-3 items-center justify-between">
-        <Button onClick={() => setOpenModal(true)} mode="cp-green">
+        <Button onClick={handleOpenCreateModal} mode="cp-green">
           <span className="mr-3">Nuevo contenido</span>
           <FontAwesomeIcon icon={faPlus} />
         </Button>

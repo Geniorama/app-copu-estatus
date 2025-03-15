@@ -117,7 +117,7 @@ export async function PATCH(request: NextRequest) {
     
     if(whatsAppLink !== undefined) {
       entry.fields.whatsappLink = {
-        "en-US": whatsAppLink
+        "en-US": whatsAppLink.trim() ? whatsAppLink : null
       }
     }
 

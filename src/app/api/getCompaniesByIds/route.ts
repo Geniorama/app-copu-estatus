@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
 
     // Obtener las entradas de Contentful con los IDs especificados
     const response = await contentfulClient.getEntries({
-      content_type: "company", // Asegúrate de que este sea el nombre correcto del tipo de contenido
+      content_type: "company",
       "sys.id[in]": ids,
       limit,
       skip

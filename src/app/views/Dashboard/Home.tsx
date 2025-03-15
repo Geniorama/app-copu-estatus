@@ -59,6 +59,7 @@ export default function DashboardHome() {
 
   useEffect(() => {
     if (!loading && originalData.length > 0) {
+      console.log("originalData", originalData);
       const filteredData = originalData.filter((company) =>
         company?.name?.toLowerCase().includes(searchValue.toLowerCase())
       );
