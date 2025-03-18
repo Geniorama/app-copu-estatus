@@ -29,6 +29,12 @@ import { useSearchParams } from "next/navigation";
 import Pagination from "@/app/components/Pagination/Pagination";
 import { useFetchServicesByCompany } from "@/app/hooks/useFetchServicesByCompany";
 import { faFilter } from "@fortawesome/free-solid-svg-icons";
+import { getUsersByCompanyId } from "@/app/utilities/helpers/fetchers";
+import { Entry } from "contentful-management";
+
+interface FiltersProps {
+  users?: {id: string, name: string}[]
+}
 
 export default function Companies() {
   const [searchValue, setSearchValue] = useState("");
@@ -40,9 +46,8 @@ export default function Companies() {
   const notify = (message: string) => toast(message);
   const searchParams = useSearchParams();
   const actionUrl = searchParams.get('action')
-  // const [filters, setFilters] = useState({
-  //   executives: []
-  // })
+  const [filters, setFilters] = useState<FiltersProps>()
+  const [usersAdmin, setUsersAdmin] = useState<Entry[]>([])
   const [openMenuFilter, setOpenMenuFilter] = useState(false)
 
   const headsTable = [
@@ -76,22 +81,114 @@ export default function Companies() {
     }
   } 
 
+  const toggleUserFilter = (userId: string) => {
+    const user = usersAdmin.find((user) => user.sys.id === userId);
+    if (user) {
+      const userFilter = filters?.users?.find((userMap) => userMap.id === userId);
+      if (userFilter) {
+        setFilters({
+          ...filters,
+          users: filters?.users?.filter((userMap) => userMap.id !== userId) || []
+        });
+      } else {
+        setFilters({
+          ...filters,
+          users: [...(filters?.users || []), { id: user.sys.id, name: `${user.fields.firstName["en-US"]} ${user.fields.lastName["en-US"]}` }]
+        });
+      }
+    }
+  };
+
+  const fetchUsersByCompany = async (companyId: string) => {
+    const response = await getUsersByCompanyId(companyId); 
+    if(response){
+      return response
+    }
+  }
+
   useEffect(() => {
     if (!loading) {
       const dataTable: TableDataProps = {
         heads: headsTable,
-        rows: rowsTable(originalData)
+        rows: rowsTable(originalData),
       };
-
+  
       setTableData(originalData.length > 0 ? dataTable : null);
+  
+      console.log("originalData", originalData);
+  
+      if (originalData.length > 0) {
+        const fetchUsers = async () => {
+          const usersByCompany = await Promise.all(
+            originalData.map(async (company) =>
+              company.id ? fetchUsersByCompany(company.id) : null
+            )
+          );
+  
+          // Flatten the array and filter out duplicates
+          const allUsers = usersByCompany.flat().filter(Boolean);
+          console.log("allUsers", allUsers);
+  
+          // Use a Map to remove duplicates
+          const userMap = new Map();
+          allUsers.forEach(user => {
+            if (user && user.sys.id) {
+              userMap.set(user.sys.id, user);
+            }
+          });
+  
+          const uniqueUsers = Array.from(userMap.values());
+          if(uniqueUsers.length > 0){
+            const uniqueUsersAdmin = uniqueUsers.filter((user) => user.fields.role["en-US"].includes("admin"));
+            setUsersAdmin(uniqueUsersAdmin);
+          }
+        };
+  
+        fetchUsers();
+      }
     }
   }, [loading, originalData, currentPage, success]);
+  
 
   useEffect(() => {
     if(actionUrl === "create"){
       setOpenModal(true)
     }
   }, [actionUrl])
+
+  useEffect(() => {
+    if (filters?.users && filters.users.length > 0) {
+      console.log('filters', filters);
+      const usersSelected = filters.users.map((user) => user.id);
+      const mapUsers = usersAdmin.filter((user) => usersSelected.includes(user.sys.id));
+      console.log('mapUsers', mapUsers);
+  
+      // Obtener los IDs de las compañías de los usuarios seleccionados
+      const companyIds = new Set(
+        mapUsers.flatMap((user) => user.fields.company["en-US"].map((company:Entry) => company.sys.id))
+      );
+  
+      // Filtrar las compañías originales utilizando los IDs obtenidos
+      const filteredCompanies = originalData.filter((company) => companyIds.has(company.id));
+      console.log('filteredCompanies', filteredCompanies);
+  
+      // Actualizar los datos de la tabla con las compañías filtradas
+      const dataTable: TableDataProps = {
+        heads: headsTable,
+        rows: rowsTable(filteredCompanies),
+      };
+  
+      setTableData(filteredCompanies.length > 0 ? dataTable : null);
+    } else {
+      // Si no hay filtros, mostrar todas las compañías
+      const dataTable: TableDataProps = {
+        heads: headsTable,
+        rows: rowsTable(originalData),
+      };
+  
+      setTableData(originalData.length > 0 ? dataTable : null);
+    }
+  }, [filters, originalData, currentPage]);
 
   useEffect(() => {
     const filteredData = originalData.filter((company) =>
@@ -240,28 +337,27 @@ export default function Companies() {
             value={searchValue}
           />
           <div className="relative">
-            <Button onClick={() => setOpenMenuFilter(!openMenuFilter)} mode="cp-dark">
+            <Button onClick={() => setOpenMenuFilter(!openMenuFilter)} mode={`${filters?.users && filters?.users?.length > 0 ? 'cp-green' : 'cp-dark'}`}>
               <FontAwesomeIcon className="mr-2" icon={faFilter}/>
               <span className="block">Filtros</span>
-              <span className="w-5 h-5 bg-black inline-flex justify-center items-center ml-2 text-xs rounded-[50%]">3</span>
+              {/* <span className="w-5 h-5 bg-black inline-flex justify-center items-center ml-2 text-xs rounded-[50%]">3</span> */}
             </Button>
             {openMenuFilter && (
               <div className="bg-cp-light absolute right-0 p-4 min-w-64 rounded-md text-cp-dark text-sm z-50 top-12">
-                <div>
-                  <span className="font-bold text-slate-600 text-md">Ejecutiva/o</span>
-                  <hr className="my-2" />
-                  <div className="space-y-2">
-                    <div className=" flex items-center gap-2 cursor-pointer hover:opacity-60">
-                      <span className="w-3 h-3 block border border-slate-400 rounded-sm shadow-sm"></span>
-                      <span>Venus maría</span>
-                    </div>
-
-                    <div className=" flex items-center gap-2 cursor-pointer hover:opacity-60">
-                      <span className="w-3 h-3 block border border-slate-400 rounded-sm shadow-sm"></span>
-                      <span>Venus maría</span>
+                {usersAdmin.length > 0 && (
+                  <div>
+                    <span className="font-bold text-slate-600 text-md">Ejecutiva/o</span>
+                    <hr className="my-2" />
+                    <div className="space-y-2">
+                      {usersAdmin.map((user) => (
+                        <div onClick={() => toggleUserFilter(user.sys.id)} key={user.sys.id} className=" flex items-center gap-2 cursor-pointer hover:opacity-60">
+                          <span className={`w-3 h-3 block border  rounded-sm shadow-sm ${filters?.users?.find((userMap) => userMap.id === user.sys.id) ? "bg-cp-primary border-cp-primary" : "border-slate-400"}`}></span>
+                          <span>{user.fields.firstName["en-US"]} {user.fields.lastName["en-US"]}</span>
+                        </div>
+                      ))}
                     </div>
                   </div>
-                </div>
+                )}
               </div>
             )}
           </div>
