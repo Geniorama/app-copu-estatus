@@ -70,10 +70,10 @@ const socialList: SocialListsProps[] = [
 ];
 
 interface FormCreateContentProps {
-    onSubmit?: (contentId?:string) => void;
-    onClose: () => void;
-    action?: "create" | "edit";
-    currentContent?: Content | null;
+  onSubmit?: (contentId?: string) => void;
+  onClose: () => void;
+  action?: "create" | "edit";
+  currentContent?: Content | null;
 }
 
 const initialData: Content = {
@@ -92,14 +92,18 @@ const initialData: Content = {
   })),
 };
 
-export default function FormCreateContent({onSubmit, onClose, currentContent, action}:FormCreateContentProps) {
+export default function FormCreateContent({
+  onSubmit,
+  onClose,
+  currentContent,
+  action,
+}: FormCreateContentProps) {
   const [activeStep, setActiveStep] = useState(1);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [optionsServices, setOptionsServices] = useState<OptionSelect[] | null>(
     null
   );
   const [infoContent, setInfoContent] = useState<Content | null>(initialData);
-
 
   const { dataServices, loading } = useFetchServices({ hasUpdate: undefined });
 
@@ -122,12 +126,12 @@ export default function FormCreateContent({onSubmit, onClose, currentContent, ac
   useEffect(() => {
     if (!loading && dataServices) {
       const convertToOption: OptionSelect[] = dataServices.map((service) => ({
-        name: service.name || '',
-        value: service.id || ''
-      }))
+        name: service.name || "",
+        value: service.id || "",
+      }));
 
-      if(convertToOption){
-        setOptionsServices(convertToOption)
+      if (convertToOption) {
+        setOptionsServices(convertToOption);
       }
     }
   }, [dataServices, loading]);
@@ -142,17 +146,19 @@ export default function FormCreateContent({onSubmit, onClose, currentContent, ac
   }, [currentContent, action]);
 
   const handleChangeService = (e: ChangeEvent<HTMLSelectElement>) => {
-    const {value} = e.target
+    const { value } = e.target;
 
-    if(value){
-      const filterService = dataServices.find((service) => service.id === value)
+    if (value) {
+      const filterService = dataServices.find(
+        (service) => service.id === value
+      );
 
       setInfoContent((prevState) => ({
         ...prevState,
-        service: filterService
-      }))
+        service: filterService,
+      }));
     }
-  }
+  };
 
   const handleChange = (
     e: ChangeEvent<HTMLSelectElement> | ChangeEvent<HTMLInputElement>
@@ -205,8 +211,8 @@ export default function FormCreateContent({onSubmit, onClose, currentContent, ac
     });
   };
 
-  const handleSubmitUpdateContent = async (e:FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
+  const handleSubmitUpdateContent = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
 
     Swal.fire({
       title: "¿Estás seguro?",
@@ -217,14 +223,14 @@ export default function FormCreateContent({onSubmit, onClose, currentContent, ac
       cancelButtonColor: "#d33",
       confirmButtonText: "Sí, editar contenido",
       cancelButtonText: "Cancelar",
-    }).then( async (result) => {
+    }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          if(infoContent){
-            const res = await updateContent(infoContent)
-            if(res){
-              onSubmit && onSubmit(res.sys.id)
-              
+          if (infoContent) {
+            const res = await updateContent(infoContent);
+            if (res) {
+              onSubmit && onSubmit(res.sys.id);
+
               Swal.fire({
                 title: "Contenido editado",
                 text: "El contenido se ha editado exitosamente",
@@ -236,16 +242,16 @@ export default function FormCreateContent({onSubmit, onClose, currentContent, ac
             }
           }
         } catch (error) {
-          console.log(error)
+          console.log(error);
         }
       } else {
         console.log("Edición de contenido cancelada");
       }
     });
-  }
+  };
 
-  const handleSubmitCreate = async (e:FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
+  const handleSubmitCreate = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
 
     Swal.fire({
       title: "¿Estás seguro?",
@@ -256,14 +262,14 @@ export default function FormCreateContent({onSubmit, onClose, currentContent, ac
       cancelButtonColor: "#d33",
       confirmButtonText: "Sí, crear contenido",
       cancelButtonText: "Cancelar",
-    }).then( async (result) => {
+    }).then(async (result) => {
       if (result.isConfirmed) {
         try {
-          if(infoContent){
-            const res = await createContent(infoContent)
-            if(res){
-              onSubmit && onSubmit(res.sys.id)
-              
+          if (infoContent) {
+            const res = await createContent(infoContent);
+            if (res) {
+              onSubmit && onSubmit(res.sys.id);
+
               Swal.fire({
                 title: "Contenido creado",
                 text: "El contenido se ha creado exitosamente",
@@ -275,14 +281,13 @@ export default function FormCreateContent({onSubmit, onClose, currentContent, ac
             }
           }
         } catch (error) {
-          console.log(error)
+          console.log(error);
         }
       } else {
         console.log("Creación de contenido cancelada");
       }
     });
-    
-  }
+  };
 
   return (
     <form
@@ -323,7 +328,7 @@ export default function FormCreateContent({onSubmit, onClose, currentContent, ac
               onChange={(e) => handleChange(e)}
               mode="cp-dark"
               options={actionOptions}
-              value={infoContent?.type || ''}
+              value={infoContent?.type || ""}
               defaultOptionText="Selecciona una opción"
             />
           </div>
@@ -354,7 +359,7 @@ export default function FormCreateContent({onSubmit, onClose, currentContent, ac
                 onChange={(e) => handleChangeService(e)}
                 mode="cp-dark"
                 options={optionsServices}
-                value={infoContent?.service?.id || infoContent?.serviceId  || ''}
+                value={infoContent?.service?.id || infoContent?.serviceId || ""}
                 defaultOptionText="Selecciona una opción"
               />
             </div>
@@ -409,7 +414,9 @@ export default function FormCreateContent({onSubmit, onClose, currentContent, ac
                     />
                     <div className="flex gap-2 mt-2">
                       <div>
-                        <label htmlFor="scope" className="text-cp-dark text-xs">Alcance</label>
+                        <label htmlFor="scope" className="text-cp-dark text-xs">
+                          Alcance
+                        </label>
                         <input
                           id="scope"
                           name="statistics.scope"
@@ -426,7 +433,12 @@ export default function FormCreateContent({onSubmit, onClose, currentContent, ac
                         />
                       </div>
                       <div>
-                        <label htmlFor="impressions" className="text-cp-dark text-xs">Impresiones</label>
+                        <label
+                          htmlFor="impressions"
+                          className="text-cp-dark text-xs"
+                        >
+                          Impresiones
+                        </label>
                         <input
                           id="impressions"
                           name="statistics.impressions"
@@ -443,7 +455,12 @@ export default function FormCreateContent({onSubmit, onClose, currentContent, ac
                         />
                       </div>
                       <div>
-                        <label htmlFor="interactions" className="text-cp-dark text-xs">Interacciones</label>
+                        <label
+                          htmlFor="interactions"
+                          className="text-cp-dark text-xs"
+                        >
+                          Interacciones
+                        </label>
                         <input
                           id="interactions"
                           name="statistics.interactions"
@@ -467,7 +484,10 @@ export default function FormCreateContent({onSubmit, onClose, currentContent, ac
         </fieldset>
       )}
       <div className="mt-4 flex gap-2 justify-between items-center">
-        <button className="text-cp-dark text-sm underline hover:opacity-60 transition" onClick={onClose}>
+        <button
+          className="text-cp-dark text-sm underline hover:opacity-60 transition"
+          onClick={onClose}
+        >
           Cancelar
         </button>
         <div className="flex gap-2 justify-end">
@@ -480,11 +500,15 @@ export default function FormCreateContent({onSubmit, onClose, currentContent, ac
             Anterior
           </Button>
           {activeStep === 1 ? (
-            <Button type="button" mode="cp-green" onClick={(e) => {
-              e.preventDefault()
-              e.stopPropagation()
-              handleNextStep()
-            }}>
+            <Button
+              type="button"
+              mode="cp-green"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                handleNextStep();
+              }}
+            >
               Siguiente
             </Button>
           ) : (

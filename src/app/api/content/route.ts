@@ -113,7 +113,6 @@ export async function PATCH(request: NextRequest) {
 
     const entry = await environment.getEntry(id);
 
-    // Actualiza los campos, permitiendo valores vacíos o null
     if (headline !== undefined) {
       entry.fields.headline = entry.fields.headline || {};
       entry.fields.headline["en-US"] = headline || null;
@@ -127,8 +126,7 @@ export async function PATCH(request: NextRequest) {
       entry.fields.publicationDate["en-US"] = publicationDate || null;
     }
     if (socialMediaInfo !== undefined) {
-      entry.fields.socialLinksAndStatistics =
-        entry.fields.socialLinksAndStatistics || {};
+      entry.fields.socialLinksAndStatistics = entry.fields.socialLinksAndStatistics || {};
       entry.fields.socialLinksAndStatistics["en-US"] = socialMediaInfo || null;
     }
 

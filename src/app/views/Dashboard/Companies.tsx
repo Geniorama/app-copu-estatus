@@ -28,6 +28,7 @@ import useExportCSV from "@/app/hooks/useExportCSV";
 import { useSearchParams } from "next/navigation";
 import Pagination from "@/app/components/Pagination/Pagination";
 import { useFetchServicesByCompany } from "@/app/hooks/useFetchServicesByCompany";
+import { faFilter } from "@fortawesome/free-solid-svg-icons";
 
 export default function Companies() {
   const [searchValue, setSearchValue] = useState("");
@@ -39,6 +40,10 @@ export default function Companies() {
   const notify = (message: string) => toast(message);
   const searchParams = useSearchParams();
   const actionUrl = searchParams.get('action')
+  // const [filters, setFilters] = useState({
+  //   executives: []
+  // })
+  const [openMenuFilter, setOpenMenuFilter] = useState(false)
 
   const headsTable = [
     "Logo",
@@ -72,17 +77,12 @@ export default function Companies() {
   } 
 
   useEffect(() => {
-    console.log('currentPage', currentPage)
-    console.log('totalPages', totalPages)
-  }, [totalPages, currentPage])
-
-  useEffect(() => {
     if (!loading) {
       const dataTable: TableDataProps = {
         heads: headsTable,
         rows: rowsTable(originalData)
       };
-      
+
       setTableData(originalData.length > 0 ? dataTable : null);
     }
   }, [loading, originalData, currentPage, success]);
@@ -239,6 +239,32 @@ export default function Companies() {
             onChange={handleChange}
             value={searchValue}
           />
+          <div className="relative">
+            <Button onClick={() => setOpenMenuFilter(!openMenuFilter)} mode="cp-dark">
+              <FontAwesomeIcon className="mr-2" icon={faFilter}/>
+              <span className="block">Filtros</span>
+              <span className="w-5 h-5 bg-black inline-flex justify-center items-center ml-2 text-xs rounded-[50%]">3</span>
+            </Button>
+            {openMenuFilter && (
+              <div className="bg-cp-light absolute right-0 p-4 min-w-64 rounded-md text-cp-dark text-sm z-50 top-12">
+                <div>
+                  <span className="font-bold text-slate-600 text-md">Ejecutiva/o</span>
+                  <hr className="my-2" />
+                  <div className="space-y-2">
+                    <div className=" flex items-center gap-2 cursor-pointer hover:opacity-60">
+                      <span className="w-3 h-3 block border border-slate-400 rounded-sm shadow-sm"></span>
+                      <span>Venus maría</span>
+                    </div>
+
+                    <div className=" flex items-center gap-2 cursor-pointer hover:opacity-60">
+                      <span className="w-3 h-3 block border border-slate-400 rounded-sm shadow-sm"></span>
+                      <span>Venus maría</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
