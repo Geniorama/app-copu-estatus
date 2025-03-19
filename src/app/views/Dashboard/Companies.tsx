@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Button from "@/app/utilities/ui/Button";
 import Table from "@/app/components/Table/Table";
 import Search from "@/app/utilities/ui/Search";
@@ -29,7 +29,7 @@ import { useSearchParams } from "next/navigation";
 import Pagination from "@/app/components/Pagination/Pagination";
 import { useFetchServicesByCompany } from "@/app/hooks/useFetchServicesByCompany";
 import { faFilter } from "@fortawesome/free-solid-svg-icons";
-import { getUsersByCompanyId } from "@/app/utilities/helpers/fetchers";
+import { getAllUsers } from "@/app/utilities/helpers/fetchers";
 import { Entry } from "contentful-management";
 
 interface FiltersProps {
@@ -49,6 +49,7 @@ export default function Companies() {
   const [filters, setFilters] = useState<FiltersProps>()
   const [usersAdmin, setUsersAdmin] = useState<Entry[]>([])
   const [openMenuFilter, setOpenMenuFilter] = useState(false)
+  const menuFilterRef = useRef<HTMLDivElement>(null)
 
   const headsTable = [
     "Logo",
@@ -99,13 +100,6 @@ export default function Companies() {
     }
   };
 
-  const fetchUsersByCompany = async (companyId: string) => {
-    const response = await getUsersByCompanyId(companyId); 
-    if(response){
-      return response
-    }
-  }
-
   useEffect(() => {
     if (!loading) {
       const dataTable: TableDataProps = {
@@ -114,38 +108,6 @@ export default function Companies() {
       };
   
       setTableData(originalData.length > 0 ? dataTable : null);
-  
-      console.log("originalData", originalData);
-  
-      if (originalData.length > 0) {
-        const fetchUsers = async () => {
-          const usersByCompany = await Promise.all(
-            originalData.map(async (company) =>
-              company.id ? fetchUsersByCompany(company.id) : null
-            )
-          );
-  
-          // Flatten the array and filter out duplicates
-          const allUsers = usersByCompany.flat().filter(Boolean);
-          console.log("allUsers", allUsers);
-  
-          // Use a Map to remove duplicates
-          const userMap = new Map();
-          allUsers.forEach(user => {
-            if (user && user.sys.id) {
-              userMap.set(user.sys.id, user);
-            }
-          });
-  
-          const uniqueUsers = Array.from(userMap.values());
-          if(uniqueUsers.length > 0){
-            const uniqueUsersAdmin = uniqueUsers.filter((user) => user.fields.role["en-US"].includes("admin"));
-            setUsersAdmin(uniqueUsersAdmin);
-          }
-        };
-  
-        fetchUsers();
-      }
     }
   }, [loading, originalData, currentPage, success]);
   
@@ -157,11 +119,21 @@ export default function Companies() {
   }, [actionUrl])
 
   useEffect(() => {
+    const fetchUsers = async () => {
+      const result = await getAllUsers();
+      if(result.users){
+        const users = result.users;
+        const usersAdmin = users.filter((user: Entry) => user.fields.role["en-US"] === "admin");
+        setUsersAdmin(usersAdmin);
+      }
+    }
+    fetchUsers();
+  },[]);
+
+  useEffect(() => {
     if (filters?.users && filters.users.length > 0) {
-      console.log('filters', filters);
       const usersSelected = filters.users.map((user) => user.id);
       const mapUsers = usersAdmin.filter((user) => usersSelected.includes(user.sys.id));
-      console.log('mapUsers', mapUsers);
   
       // Obtener los IDs de las compañías de los usuarios seleccionados
       const companyIds = new Set(
@@ -290,6 +262,24 @@ export default function Companies() {
     setEditCompany(null)
   }
 
+  useEffect(() => {
+    const handleClickOutside = (event: Event) => {
+      if (menuFilterRef.current && !menuFilterRef.current.contains(event.target as Node)) {
+        setOpenMenuFilter(false);
+      }
+    };
+
+    if (openMenuFilter) {
+      document.addEventListener("mousedown", handleClickOutside);
+    } else {
+      document.removeEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [openMenuFilter]);
+
   if (loading) {
     return (
       <div>
@@ -336,7 +326,7 @@ export default function Companies() {
             onChange={handleChange}
             value={searchValue}
           />
-          <div className="relative">
+          <div className="relative" ref={menuFilterRef}>
             <Button onClick={() => setOpenMenuFilter(!openMenuFilter)} mode={`${filters?.users && filters?.users?.length > 0 ? 'cp-green' : 'cp-dark'}`}>
               <FontAwesomeIcon className="mr-2" icon={faFilter}/>
               <span className="block">Filtros</span>
