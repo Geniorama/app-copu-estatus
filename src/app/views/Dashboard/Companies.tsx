@@ -142,7 +142,6 @@ export default function Companies() {
   
       // Filtrar las compañías originales utilizando los IDs obtenidos
       const filteredCompanies = originalData.filter((company) => companyIds.has(company.id));
-      console.log('filteredCompanies', filteredCompanies);
   
       // Actualizar los datos de la tabla con las compañías filtradas
       const dataTable: TableDataProps = {

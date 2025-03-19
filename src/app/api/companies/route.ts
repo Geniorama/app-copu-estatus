@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getContentfulEnvironment } from "@/app/lib/contentfulManagement";
 import type { Company } from "@/app/types";
+import { Entry } from "contentful-management";
 
 export async function GET(request: NextRequest) {
   try {
@@ -59,29 +60,33 @@ export async function POST(request: NextRequest) {
     const environment = await getContentfulEnvironment();
     const company: Company = await request.json();
 
-    const newEntry = await environment.createEntry("company", {
-      fields: {
-        name: { "en-US": company.name },
-        logo: { "en-US": company.logo || "" },
-        address: { "en-US": company.address },
-        phone: { "en-US": company.phone },
-        whatsappLink: { "en-US": company.linkWhatsApp || "" },
-        nit: { "en-US": company.nit || "" },
-        businessName: { "en-US": company.businessName || "" },
-        driveLink: { "en-US": company.driveLink || "" },
-        superior: company.superiorId
-          ? {
-              "en-US": {
-                sys: {
-                  type: "Link",
-                  linkType: "Entry",
-                  id: company.superiorId,
-                },
-              },
-            }
-          : undefined,
-      },
-    });
+    const fields: Entry['fields'] = {
+      name: { "en-US": company.name },
+      logo: { "en-US": company.logo || "" },
+      address: { "en-US": company.address },
+      phone: { "en-US": company.phone },
+      whatsappLink: { "en-US": company.linkWhatsApp || "" },
+      nit: { "en-US": company.nit || "" },
+      businessName: { "en-US": company.businessName || "" },
+    };
+
+    if (company.driveLink) {
+      fields.driveLink = { "en-US": company.driveLink };
+    }
+
+    if (company.superiorId) {
+      fields.superior = {
+        "en-US": {
+          sys: {
+            type: "Link",
+            linkType: "Entry",
+            id: company.superiorId,
+          },
+        },
+      };
+    }
+
+    const newEntry = await environment.createEntry("company", { fields });
 
     await newEntry.publish();
 

@@ -196,20 +196,22 @@ export default function FormCreateCompany({
             setUploadFileUrl(finalLogoUrl);
           }
         }
-
+  
         const newCompanyContentful = await createCompanyInContentful({
           ...company,
           logo: finalLogoUrl,
         });
-
+  
         if (onSubmit && newCompanyContentful) {
+          console.log('newCompanyContentful', newCompanyContentful);
           dispatch(addCompanyOption({
             value:  newCompanyContentful.sys.id,
             name: newCompanyContentful.fields.name['en-US']
           }))
+          console.log('options', options);
           onSubmit(newCompanyContentful.sys.id);
         }
-
+  
         Swal.fire({
           title: "Compañía creada",
           text: "La compañía ha sido creada exitosamente",
