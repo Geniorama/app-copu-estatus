@@ -20,7 +20,8 @@ export async function POST(request: NextRequest) {
       content_type: "company",
       "sys.id[in]": ids,
       limit,
-      skip
+      skip,
+      order: ["fields.name"],
     });
 
     // Mapear y extraer solo los campos necesarios

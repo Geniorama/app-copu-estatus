@@ -137,5 +137,6 @@ export const useFetchCompanies = (
     currentPage,
     totalPages,
     setCurrentPage,
+    fetchAllCompanyServices
   };
 };

@@ -7,7 +7,7 @@ interface Props extends React.SelectHTMLAttributes<HTMLSelectElement> {
   mode?: "cp-light" | "cp-dark";
 }
 
-export function Select({ options, defaultOptionText = 'Selecciona una opción', mode, ...props }: Props) {
+export function Select({ options, defaultOptionText, mode, ...props }: Props) {
   const classMode =
     mode === "cp-dark"
       ? "border-gray-400 text-cp-dark placeholder:text-gray-400"
@@ -21,7 +21,7 @@ export function Select({ options, defaultOptionText = 'Selecciona una opción', 
       className={`text-md min-h-11 block bg-transparent w-full rounded-md outline-none border-2 focus-visible:border-cp-primary py-2 px-4 ${classMode}`}
       {...props}
     >
-      <option className={`${classOptions}`} value="">{defaultOptionText}</option>
+      {defaultOptionText && <option className={`${classOptions}`} value="">{defaultOptionText}</option>}
       {options.map(option => <option key={option.value} className={`${classOptions}`} value={option.value}>{option.name}</option>)}
 
     </select>

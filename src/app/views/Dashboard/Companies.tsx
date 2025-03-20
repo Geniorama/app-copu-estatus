@@ -63,7 +63,7 @@ export default function Companies() {
 
   const fetchServicesByCompany = useFetchServicesByCompany()
 
-  const { originalData, loading, currentPage, setCurrentPage, totalPages } = useFetchCompanies(
+  const { originalData, loading, currentPage, setCurrentPage, totalPages, fetchAllCompanyServices } = useFetchCompanies(
     userData,
     fetchServicesByCompany,
     true,
@@ -109,7 +109,7 @@ export default function Companies() {
   
       setTableData(originalData.length > 0 ? dataTable : null);
     }
-  }, [loading, originalData, currentPage, success]);
+  }, [loading, originalData, currentPage, success, headsTable]);
   
 
   useEffect(() => {
@@ -124,6 +124,13 @@ export default function Companies() {
       if(result.users){
         const users = result.users;
         const usersAdmin = users.filter((user: Entry) => user.fields.role["en-US"] === "admin");
+
+        usersAdmin.sort((a: Entry, b: Entry) => {
+          const nameA = `${a.fields.firstName["en-US"]} ${a.fields.lastName["en-US"]}`.toLowerCase();
+          const nameB = `${b.fields.firstName["en-US"]} ${b.fields.lastName["en-US"]}`.toLowerCase();
+          return nameA.localeCompare(nameB);
+        });
+
         setUsersAdmin(usersAdmin);
       }
     }
@@ -174,6 +181,14 @@ export default function Companies() {
     setTableData(filteredData.length > 0 ? dataTable : null);
   }, [searchValue, originalData]);
 
+  useEffect(() => {
+    if (success) {
+      fetchAllCompanyServices(currentPage);
+      setSuccess(false);
+    }
+  }, [success, fetchAllCompanyServices, currentPage]);
+  
+
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     setSearchValue(e.target.value);
   };
@@ -190,8 +205,6 @@ export default function Companies() {
     if(companyId){
       const filterCompany = originalData.find((company) => company.id === companyId)
 
-      console.log('originalData', originalData)
-      console.log('filterCompany', filterCompany)
       if(filterCompany){
         setEditCompany(filterCompany)
         setOpenModal(true)
@@ -246,13 +259,15 @@ export default function Companies() {
     console.log("New company id", idCompany);
     if(idCompany){
       setSuccess(true)
+      console.log("Company created")
     }
   };
   
   const onSubmitEditCompany = (idCompany: string) => {
-    console.log("New company id", idCompany);
+    console.log("Edit company id", idCompany);
     if(idCompany){
       setSuccess(true)
+      console.log("success", success)
     }
   }
 

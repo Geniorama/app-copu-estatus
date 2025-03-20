@@ -336,6 +336,7 @@ export default function FormCreateCompany({
             defaultCountry="co"
             onChange={(phone) => handlePhoneChange(phone)}
             value={company.phone}
+            required
           />
         </div>
 
@@ -398,7 +399,7 @@ export default function FormCreateCompany({
               ? [...filterCompaniesOptions(), { name: "Sin superior", value: "" }]
               : []
           }
-          defaultOptionText="Selecciona una opción"
+          // defaultOptionText="Selecciona una opción"
           value={company.superiorId || ""}
         />
       </div>

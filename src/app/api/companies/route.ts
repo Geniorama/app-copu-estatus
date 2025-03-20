@@ -16,6 +16,7 @@ export async function GET(request: NextRequest) {
       "sys.publishedAt[exists]": true,
       limit,
       skip,
+      order: "fields.name",
     });
 
     if (!entries.items || entries.items.length === 0) {
@@ -24,19 +25,6 @@ export async function GET(request: NextRequest) {
         { status: 404 }
       );
     }
-
-    // const companies = entries.items.map((item) => ({
-    //   id: item.sys.id,
-    //   name: item.fields.name?.["en-US"] || "",
-    //   logo: item.fields.logo?.["en-US"] || "",
-    //   address: item.fields.address?.["en-US"] || "",
-    //   phone: item.fields.phone?.["en-US"] || "",
-    //   linkWhatsApp: item.fields.whatsappLink?.["en-US"] || "",
-    //   nit: item.fields.nit?.["en-US"] || "",
-    //   businessName: item.fields.businessName?.["en-US"] || "",
-    //   driveLink: item.fields.driveLink?.["en-US"] || "",
-    //   superiorId: item.fields.superior?.["en-US"]?.sys?.id || null,
-    // }));
 
     return NextResponse.json(
       {
@@ -62,13 +50,19 @@ export async function POST(request: NextRequest) {
 
     const fields: Entry['fields'] = {
       name: { "en-US": company.name },
-      logo: { "en-US": company.logo || "" },
       address: { "en-US": company.address },
       phone: { "en-US": company.phone },
-      whatsappLink: { "en-US": company.linkWhatsApp || "" },
       nit: { "en-US": company.nit || "" },
       businessName: { "en-US": company.businessName || "" },
     };
+
+    if (company.logo) {
+      fields.logo = { "en-US": company.logo };
+    }
+
+    if(company.linkWhatsApp){
+      fields.whatsappLink = { "en-US": company.linkWhatsApp };
+    }
 
     if (company.driveLink) {
       fields.driveLink = { "en-US": company.driveLink };

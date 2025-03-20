@@ -14,6 +14,7 @@ export async function GET(request: NextRequest) {
       content_type: "user",
       limit,
       skip,
+      order: "fields.firstName",
     });
 
     const items = entries.items;
