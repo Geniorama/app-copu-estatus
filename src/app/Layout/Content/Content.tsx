@@ -8,7 +8,7 @@ interface ContentProps {
 
 export default function Content({children}:ContentProps) {
   return (
-    <main className="p-8 max-h-[calc(100vh_-_120px)] overflow-y-scroll custom-scroll">
+    <main className="p-8 lg:max-h-[calc(100vh_-_120px)] md:overflow-y-scroll custom-scroll">
         {children}
     </main>
   )

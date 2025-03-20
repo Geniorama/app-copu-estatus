@@ -198,8 +198,8 @@ export default function Services() {
       <div className="mb-5">
         <TitleSection title="Servicios" />
       </div>
-      <div className="flex gap-3 items-center justify-between">
-        <Button onClick={() => {
+      <div className="flex flex-col lg:flex-row gap-3 items-center justify-between">
+        <Button fullWidthMobile onClick={() => {
           setServiceForEdit(null)
           setOpenModal(true)
         }} mode="cp-green">

@@ -102,7 +102,7 @@ export default function DashboardHome() {
       <div className="mb-5">
         <TitleSection title="Home" />
       </div>
-      <div className="grid grid-cols-4 gap-5">
+      <div className="flex flex-col md:grid md:grid-cols-2 lg:grid-cols-4 gap-4">
         <CardAction
           onClick={() => router.push("/dashboard/companias?action=create")}
           title="Crear compañía"
@@ -126,7 +126,7 @@ export default function DashboardHome() {
       </div>
 
       <div className="mt-8">
-        <div className="flex justify-between items-center">
+        <div className="md:flex justify-between items-center space-y-4 md:space-y-0">
           <h3 className="text-xl font-bold">Mis compañías asignadas</h3>
           <div>
             <Search

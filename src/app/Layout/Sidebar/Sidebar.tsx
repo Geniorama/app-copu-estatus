@@ -8,21 +8,27 @@ import { useSelector } from "react-redux";
 import { RootState } from "@/app/store";
 import { useState, useEffect } from "react";
 import useLogout from "@/app/hooks/useLogout";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faClose } from "@fortawesome/free-solid-svg-icons";
+import { setSidebarShow } from "@/app/store/features/settingsSlice";
+import { useDispatch } from "react-redux";
 
 export default function Sidebar() {
   const [menuData, setMenuData] = useState(menuDashboard)
   const pathname = usePathname();
-  const { currentUser, userData } = useSelector((state: RootState) => state.user)
+  const dispatch = useDispatch()
+  const { currentUser } = useSelector((state: RootState) => state.user)
   
   const handleLogout = useLogout()
+
+  const closeSidebar = () => {
+    dispatch(setSidebarShow(false))
+  }
 
   useEffect(() => {
     if(currentUser){
       const userRoleUri = `${process.env.NEXT_PUBLIC_ROLE_URL}`;
       const role =  currentUser.user[userRoleUri]
-      console.log(userRoleUri)
-      console.log(currentUser)
-      console.log(userData)
       if(role === 'cliente'){
         const updatedMenu = menuDashboard.filter((item) => item.path !== '/dashboard/usuarios')
 
@@ -34,8 +40,11 @@ export default function Sidebar() {
   return (
     <div className="p-8 h-full flex flex-col justify-between">
       <div>
-        <div className="px-10">
+        <div className="px-10 relative">
           <Logo mode="cp-primary-light" />
+          <button className=" absolute -right-4 -top-4 text-2xl lg:hidden" onClick={closeSidebar}>
+            <FontAwesomeIcon icon={faClose} className="text-slate-300" />
+          </button>
         </div>
         <hr className="border-slate-600 my-5" />
 

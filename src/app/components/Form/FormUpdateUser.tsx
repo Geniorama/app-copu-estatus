@@ -96,8 +96,8 @@ export default function FormUpdateUser({
       onSubmit={handleSubmit}
       className="w-full flex flex-col gap-3 rounded-lg"
     >
-      <div className="flex gap-3">
-        <div className="w-1/2">
+      <div className="flex flex-col lg:flex-row gap-3">
+        <div className="w-full lg:w-1/2">
           <Label htmlFor="fname">Nombre(s) *</Label>
           <Input
             onChange={handleChange}
@@ -107,7 +107,7 @@ export default function FormUpdateUser({
             value={user?.fname || ""}
           />
         </div>
-        <div className="w-1/2">
+        <div className="w-full lg:w-1/2">
           <Label htmlFor="lname">Apellido(s) *</Label>
           <Input
             onChange={handleChange}
@@ -120,8 +120,8 @@ export default function FormUpdateUser({
         </div>
       </div>
 
-      <div className="flex gap-3">
-        <div className="w-1/3">
+      <div className="flex flex-col lg:flex-row gap-3">
+        <div className="lg:w-1/3">
           <Label htmlFor="email">Email *</Label>
           <Input
             readOnly
@@ -134,7 +134,7 @@ export default function FormUpdateUser({
           />
         </div>
 
-        <div className="w-1/3">
+        <div className="lg:w-1/3">
           <Label htmlFor="phone">Teléfono *</Label>
           <PhoneInput
             value={user?.phone || ""} // Asegúrate de pasar el valor inicial
@@ -162,7 +162,7 @@ export default function FormUpdateUser({
           /> */}
         </div>
 
-        <div className="w-1/3">
+        <div className="lg:w-1/3">
           <Label htmlFor="phone">Cargo *</Label>
           <Input
             onChange={handleChange}

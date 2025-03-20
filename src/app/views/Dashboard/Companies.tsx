@@ -31,7 +31,6 @@ import { useFetchServicesByCompany } from "@/app/hooks/useFetchServicesByCompany
 import { faFilter } from "@fortawesome/free-solid-svg-icons";
 import { getAllUsers } from "@/app/utilities/helpers/fetchers";
 import { Entry } from "contentful-management";
-import Select from "@/app/utilities/ui/Select";
 import Label from "@/app/utilities/ui/Label";
 
 interface FiltersProps {
@@ -372,19 +371,20 @@ export default function Companies() {
       <div className="mb-5">
         <TitleSection title="Compañías" />
       </div>
-      <div className="flex gap-3 items-center justify-between">
+      <div className="flex flex-col lg:flex-row gap-3 items-center justify-between">
         <Button
           onClick={() => {
             setEditCompany(null);
             setOpenModal(true);
           }}
           mode="cp-green"
+          fullWidthMobile
         >
           <span className="mr-3">Nueva compañía</span>
           <FontAwesomeIcon icon={faPlus} />
         </Button>
 
-        <div className="flex gap-6 items-center">
+        <div className="flex flex-col lg:flex-row gap-6 items-center mt-4 lg:mt-0">
           <LinkCP onClick={exportToCSV} href="#">
             Exportar CSV
           </LinkCP>
@@ -393,7 +393,7 @@ export default function Companies() {
             onChange={handleChange}
             value={searchValue}
           />
-          <div className="relative" ref={menuFilterRef}>
+          <div className="relative w-full lg:w-auto" ref={menuFilterRef}>
             <Button
               onClick={() => setOpenMenuFilter(!openMenuFilter)}
               mode={`${
@@ -401,6 +401,7 @@ export default function Companies() {
                   ? "cp-green"
                   : "cp-dark"
               }`}
+              fullWidthMobile
             >
               <FontAwesomeIcon className="mr-2" icon={faFilter} />
               <span className="block">Filtros</span>
@@ -448,7 +449,7 @@ export default function Companies() {
       {tableData ? (
         <>
           <Table data={tableData} />
-          <div className="flex justify-between items-center mt-4">
+          <div className="flex flex-col md:flex-row md:justify-between items-center mt-4 space-y-4 md:space-y-0">
             {totalPages > 1 &&
               (!filters?.users ||
                 (filters.users !== undefined && filters.users.length < 1)) && (

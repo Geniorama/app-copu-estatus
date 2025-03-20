@@ -12,6 +12,9 @@ import { useDispatch } from "react-redux";
 import { setUserData } from "@/app/store/features/userSlice";
 import { getUserByAuth0Id } from "@/app/utilities/helpers/fetchers";
 import { Entry } from "contentful-management";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faBars } from "@fortawesome/free-solid-svg-icons";
+import { setSidebarShow } from "@/app/store/features/settingsSlice";
 
 export default function NavBar() {
   const [openMenu, setOpenMenu] = useState(false);
@@ -22,6 +25,13 @@ export default function NavBar() {
   const { currentUser, userData } = useSelector(
     (state: RootState) => state.user
   );
+
+  const {sidebarShow} = useSelector((state: RootState) => state.settings);
+
+  const toggleSidebar = () => {
+    dispatch(setSidebarShow(!sidebarShow));
+  };
+
   const handleLogout = useLogout();
 
   useEffect(() => {
@@ -72,7 +82,12 @@ export default function NavBar() {
 
   return (
     <div className="p-3 flex justify-between items-center border-b-slate-700 border border-black">
-      <h1 className="text-md font-bold">Copu Estatus</h1>
+      <div className="flex items-center gap-4">
+        <button onClick={toggleSidebar} className="focus:outline-none lg:hidden">
+          <FontAwesomeIcon className="text-2xl" icon={faBars} />
+        </button>
+        <h1 className="text-md font-bold">Copu Estatus</h1>
+      </div>
       <div className="flex items-center gap-3">
         <span className="text-sm">{userData?.fname}</span>
         <div className="relative" ref={menuRef}>
