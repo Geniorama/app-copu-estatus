@@ -7,7 +7,7 @@ export const useFetchCompanies = (
   userData: User | undefined,
   fetchServicesByCompany: (companyId: string) => Promise<Entry[]>,
   fetchAll: boolean = false,
-  itemsPerPage: number = 6
+  itemsPerPage: number = 6,
 ) => {
   const [originalData, setOriginalData] = useState<Company[]>([]);
   const [loading, setLoading] = useState(true);

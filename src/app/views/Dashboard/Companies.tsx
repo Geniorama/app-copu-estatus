@@ -31,9 +31,11 @@ import { useFetchServicesByCompany } from "@/app/hooks/useFetchServicesByCompany
 import { faFilter } from "@fortawesome/free-solid-svg-icons";
 import { getAllUsers } from "@/app/utilities/helpers/fetchers";
 import { Entry } from "contentful-management";
+import Select from "@/app/utilities/ui/Select";
+import Label from "@/app/utilities/ui/Label";
 
 interface FiltersProps {
-  users?: {id: string, name: string}[]
+  users?: { id: string; name: string }[];
 }
 
 export default function Companies() {
@@ -41,15 +43,16 @@ export default function Companies() {
   const [openModal, setOpenModal] = useState(false);
   const { userData } = useSelector((state: RootState) => state.user);
   const [tableData, setTableData] = useState<TableDataProps | null>(null);
-  const [editCompany, setEditCompany] = useState<Company | null>(null)
-  const [success, setSuccess] = useState(false)
+  const [editCompany, setEditCompany] = useState<Company | null>(null);
+  const [success, setSuccess] = useState(false);
   const notify = (message: string) => toast(message);
   const searchParams = useSearchParams();
-  const actionUrl = searchParams.get('action')
-  const [filters, setFilters] = useState<FiltersProps>()
-  const [usersAdmin, setUsersAdmin] = useState<Entry[]>([])
-  const [openMenuFilter, setOpenMenuFilter] = useState(false)
-  const menuFilterRef = useRef<HTMLDivElement>(null)
+  const actionUrl = searchParams.get("action");
+  const [filters, setFilters] = useState<FiltersProps>();
+  const [usersAdmin, setUsersAdmin] = useState<Entry[]>([]);
+  const [openMenuFilter, setOpenMenuFilter] = useState(false);
+  const menuFilterRef = useRef<HTMLDivElement>(null);
+  const [showItems, setShowItems] = useState(5);
 
   const headsTable = [
     "Logo",
@@ -61,40 +64,51 @@ export default function Companies() {
     "Acciones",
   ];
 
-  const fetchServicesByCompany = useFetchServicesByCompany()
+  const fetchServicesByCompany = useFetchServicesByCompany();
 
-  const { originalData, loading, currentPage, setCurrentPage, totalPages, fetchAllCompanyServices } = useFetchCompanies(
-    userData,
-    fetchServicesByCompany,
-    true,
-    6
-  );
+  const {
+    originalData,
+    loading,
+    currentPage,
+    setCurrentPage,
+    totalPages,
+    fetchAllCompanyServices,
+  } = useFetchCompanies(userData, fetchServicesByCompany, true, showItems);
 
   const nextPage = () => {
     if (currentPage < totalPages) {
       setCurrentPage(currentPage + 1);
     }
-  }
+  };
 
   const prevPage = () => {
     if (currentPage > 1) {
       setCurrentPage(currentPage - 1);
     }
-  } 
+  };
 
   const toggleUserFilter = (userId: string) => {
     const user = usersAdmin.find((user) => user.sys.id === userId);
     if (user) {
-      const userFilter = filters?.users?.find((userMap) => userMap.id === userId);
+      const userFilter = filters?.users?.find(
+        (userMap) => userMap.id === userId
+      );
       if (userFilter) {
         setFilters({
           ...filters,
-          users: filters?.users?.filter((userMap) => userMap.id !== userId) || []
+          users:
+            filters?.users?.filter((userMap) => userMap.id !== userId) || [],
         });
       } else {
         setFilters({
           ...filters,
-          users: [...(filters?.users || []), { id: user.sys.id, name: `${user.fields.firstName["en-US"]} ${user.fields.lastName["en-US"]}` }]
+          users: [
+            ...(filters?.users || []),
+            {
+              id: user.sys.id,
+              name: `${user.fields.firstName["en-US"]} ${user.fields.lastName["en-US"]}`,
+            },
+          ],
         });
       }
     }
@@ -106,56 +120,62 @@ export default function Companies() {
         heads: headsTable,
         rows: rowsTable(originalData),
       };
-  
+
       setTableData(originalData.length > 0 ? dataTable : null);
     }
-  }, [loading, originalData, currentPage, success, headsTable]);
-  
+  }, [loading, originalData, currentPage]);
 
   useEffect(() => {
-    if(actionUrl === "create"){
-      setOpenModal(true)
+    if (actionUrl === "create") {
+      setOpenModal(true);
     }
-  }, [actionUrl])
+  }, [actionUrl]);
 
   useEffect(() => {
     const fetchUsers = async () => {
       const result = await getAllUsers();
-      if(result.users){
+      if (result.users) {
         const users = result.users;
-        const usersAdmin = users.filter((user: Entry) => user.fields.role["en-US"] === "admin");
+        const usersAdmin = users.filter(
+          (user: Entry) => user.fields.role["en-US"] === "admin"
+        );
 
         usersAdmin.sort((a: Entry, b: Entry) => {
-          const nameA = `${a.fields.firstName["en-US"]} ${a.fields.lastName["en-US"]}`.toLowerCase();
-          const nameB = `${b.fields.firstName["en-US"]} ${b.fields.lastName["en-US"]}`.toLowerCase();
+          const nameA =
+            `${a.fields.firstName["en-US"]} ${a.fields.lastName["en-US"]}`.toLowerCase();
+          const nameB =
+            `${b.fields.firstName["en-US"]} ${b.fields.lastName["en-US"]}`.toLowerCase();
           return nameA.localeCompare(nameB);
         });
 
         setUsersAdmin(usersAdmin);
       }
-    }
+    };
     fetchUsers();
-  },[]);
+  }, []);
 
   useEffect(() => {
     if (filters?.users && filters.users.length > 0) {
       const usersSelected = filters.users.map((user) => user.id);
-      const mapUsers = usersAdmin.filter((user) => usersSelected.includes(user.sys.id));
-  
-      // Obtener los IDs de las compañías de los usuarios seleccionados
-      const companyIds = new Set(
-        mapUsers.flatMap((user) => user.fields.company["en-US"].map((company:Entry) => company.sys.id))
+      const mapUsers = usersAdmin.filter((user) =>
+        usersSelected.includes(user.sys.id)
       );
-  
-      // Filtrar las compañías originales utilizando los IDs obtenidos
-      const filteredCompanies = originalData.filter((company) => companyIds.has(company.id));
-  
-      // Actualizar los datos de la tabla con las compañías filtradas
+
+      const companyIds = new Set(
+        mapUsers.flatMap((user) =>
+          user.fields.company["en-US"].map((company: Entry) => company.sys.id)
+        )
+      );
+
+      const filteredCompanies = originalData.filter((company) =>
+        companyIds.has(company.id)
+      );
+
       const dataTable: TableDataProps = {
         heads: headsTable,
         rows: rowsTable(filteredCompanies),
       };
-  
+
       setTableData(filteredCompanies.length > 0 ? dataTable : null);
     } else {
       // Si no hay filtros, mostrar todas las compañías
@@ -163,7 +183,7 @@ export default function Companies() {
         heads: headsTable,
         rows: rowsTable(originalData),
       };
-  
+
       setTableData(originalData.length > 0 ? dataTable : null);
     }
   }, [filters, originalData, currentPage]);
@@ -175,7 +195,7 @@ export default function Companies() {
 
     const dataTable: TableDataProps = {
       heads: headsTable,
-      rows: rowsTable(filteredData)
+      rows: rowsTable(filteredData),
     };
 
     setTableData(filteredData.length > 0 ? dataTable : null);
@@ -187,43 +207,58 @@ export default function Companies() {
       setSuccess(false);
     }
   }, [success, fetchAllCompanyServices, currentPage]);
-  
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     setSearchValue(e.target.value);
   };
 
-  const exportToCSV = useExportCSV(originalData as Record<string, string | number>[], ["name", "linkWhatsApp", "nit", "phone", "status"], `companies-${new Date().toISOString()}`)
+  const exportToCSV = useExportCSV(
+    originalData as Record<string, string | number>[],
+    ["name", "linkWhatsApp", "nit", "phone", "status"],
+    `companies-${new Date().toISOString()}`
+  );
 
   const handleClearSearch = () => {
     setSearchValue("");
   };
 
-  const handleEditCompany = (e:MouseEvent<HTMLAnchorElement, globalThis.MouseEvent>, companyId?:string) => {
-    e.preventDefault()
-    
-    if(companyId){
-      const filterCompany = originalData.find((company) => company.id === companyId)
+  const handleEditCompany = (
+    e: MouseEvent<HTMLAnchorElement, globalThis.MouseEvent>,
+    companyId?: string
+  ) => {
+    e.preventDefault();
 
-      if(filterCompany){
-        setEditCompany(filterCompany)
-        setOpenModal(true)
+    if (companyId) {
+      const filterCompany = originalData.find(
+        (company) => company.id === companyId
+      );
+
+      if (filterCompany) {
+        setEditCompany(filterCompany);
+        setOpenModal(true);
       }
     }
-  }
+  };
+
+  const handleShowItems = (value: string) => {
+    setShowItems(parseInt(value));
+    setCurrentPage(1);
+  };
 
   const handleSwitch = async (companyId?: string) => {
     if (companyId) {
-      const filterCompany = originalData.find((company) => company.id === companyId);
-      console.log(filterCompany)
+      const filterCompany = originalData.find(
+        (company) => company.id === companyId
+      );
+      console.log(filterCompany);
       if (filterCompany) {
         const updatedCompany = {
           id: filterCompany.id,
           status: !filterCompany.status,
         };
-        console.log(updatedCompany)
+        console.log(updatedCompany);
         const response = await updateCompany(updatedCompany);
-        console.log(response)
+        console.log(response);
         notify("Compañía actualizada");
       }
     }
@@ -246,39 +281,49 @@ export default function Companies() {
       ),
       <ListServices key={company.id} services={company.services} />,
       company.updatedAt,
-      <Switch onClick={() => handleSwitch(company.id)} key={company.id} active={company.status || false} />,
-      <LinkCP onClick={(e) => handleEditCompany(e, company.id)} key={company.id}>
+      <Switch
+        onClick={() => handleSwitch(company.id)}
+        key={company.id}
+        active={company.status || false}
+      />,
+      <LinkCP
+        onClick={(e) => handleEditCompany(e, company.id)}
+        key={company.id}
+      >
         Editar
-      </LinkCP>
+      </LinkCP>,
     ]);
 
-    return filteredData
+    return filteredData;
   };
 
   const handleCreateCompany = (idCompany: string) => {
     console.log("New company id", idCompany);
-    if(idCompany){
-      setSuccess(true)
-      console.log("Company created")
+    if (idCompany) {
+      setSuccess(true);
+      console.log("Company created");
     }
   };
-  
+
   const onSubmitEditCompany = (idCompany: string) => {
     console.log("Edit company id", idCompany);
-    if(idCompany){
-      setSuccess(true)
-      console.log("success", success)
+    if (idCompany) {
+      setSuccess(true);
+      console.log("success", success);
     }
-  }
+  };
 
   const handleCloseModal = () => {
-    setOpenModal(false)
-    setEditCompany(null)
-  }
+    setOpenModal(false);
+    setEditCompany(null);
+  };
 
   useEffect(() => {
     const handleClickOutside = (event: Event) => {
-      if (menuFilterRef.current && !menuFilterRef.current.contains(event.target as Node)) {
+      if (
+        menuFilterRef.current &&
+        !menuFilterRef.current.contains(event.target as Node)
+      ) {
         setOpenMenuFilter(false);
       }
     };
@@ -320,7 +365,7 @@ export default function Companies() {
           onClose={() => setOpenModal(false)}
           onSubmit={editCompany ? onSubmitEditCompany : handleCreateCompany}
           currentCompany={editCompany}
-          action={editCompany ? 'edit': 'create'}
+          action={editCompany ? "edit" : "create"}
         />
       </Modal>
 
@@ -328,21 +373,36 @@ export default function Companies() {
         <TitleSection title="Compañías" />
       </div>
       <div className="flex gap-3 items-center justify-between">
-        <Button onClick={() => { setEditCompany(null); setOpenModal(true);}} mode="cp-green">
+        <Button
+          onClick={() => {
+            setEditCompany(null);
+            setOpenModal(true);
+          }}
+          mode="cp-green"
+        >
           <span className="mr-3">Nueva compañía</span>
           <FontAwesomeIcon icon={faPlus} />
         </Button>
 
         <div className="flex gap-6 items-center">
-          <LinkCP onClick={exportToCSV} href="#">Exportar CSV</LinkCP>
+          <LinkCP onClick={exportToCSV} href="#">
+            Exportar CSV
+          </LinkCP>
           <Search
             onReset={handleClearSearch}
             onChange={handleChange}
             value={searchValue}
           />
           <div className="relative" ref={menuFilterRef}>
-            <Button onClick={() => setOpenMenuFilter(!openMenuFilter)} mode={`${filters?.users && filters?.users?.length > 0 ? 'cp-green' : 'cp-dark'}`}>
-              <FontAwesomeIcon className="mr-2" icon={faFilter}/>
+            <Button
+              onClick={() => setOpenMenuFilter(!openMenuFilter)}
+              mode={`${
+                filters?.users && filters?.users?.length > 0
+                  ? "cp-green"
+                  : "cp-dark"
+              }`}
+            >
+              <FontAwesomeIcon className="mr-2" icon={faFilter} />
               <span className="block">Filtros</span>
               {/* <span className="w-5 h-5 bg-black inline-flex justify-center items-center ml-2 text-xs rounded-[50%]">3</span> */}
             </Button>
@@ -350,13 +410,30 @@ export default function Companies() {
               <div className="bg-cp-light absolute right-0 p-4 min-w-64 rounded-md text-cp-dark text-sm z-50 top-12">
                 {usersAdmin.length > 0 && (
                   <div>
-                    <span className="font-bold text-slate-600 text-md">Ejecutiva/o</span>
+                    <span className="font-bold text-slate-600 text-md">
+                      Ejecutiva/o
+                    </span>
                     <hr className="my-2" />
                     <div className="space-y-2">
                       {usersAdmin.map((user) => (
-                        <div onClick={() => toggleUserFilter(user.sys.id)} key={user.sys.id} className=" flex items-center gap-2 cursor-pointer hover:opacity-60">
-                          <span className={`w-3 h-3 block border  rounded-sm shadow-sm ${filters?.users?.find((userMap) => userMap.id === user.sys.id) ? "bg-cp-primary border-cp-primary" : "border-slate-400"}`}></span>
-                          <span>{user.fields.firstName["en-US"]} {user.fields.lastName["en-US"]}</span>
+                        <div
+                          onClick={() => toggleUserFilter(user.sys.id)}
+                          key={user.sys.id}
+                          className=" flex items-center gap-2 cursor-pointer hover:opacity-60"
+                        >
+                          <span
+                            className={`w-3 h-3 block border  rounded-sm shadow-sm ${
+                              filters?.users?.find(
+                                (userMap) => userMap.id === user.sys.id
+                              )
+                                ? "bg-cp-primary border-cp-primary"
+                                : "border-slate-400"
+                            }`}
+                          ></span>
+                          <span>
+                            {user.fields.firstName["en-US"]}{" "}
+                            {user.fields.lastName["en-US"]}
+                          </span>
                         </div>
                       ))}
                     </div>
@@ -371,13 +448,38 @@ export default function Companies() {
       {tableData ? (
         <>
           <Table data={tableData} />
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            setCurrentPage={setCurrentPage}
-            onNext={nextPage}
-            onPrev={prevPage}
-          />
+          <div className="flex justify-between items-center mt-4">
+            {totalPages > 1 &&
+              (!filters?.users ||
+                (filters.users !== undefined && filters.users.length < 1)) && (
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onNext={nextPage}
+                  onPrev={prevPage}
+                  setCurrentPage={setCurrentPage}
+                />
+              )}
+
+            <div className="flex items-center gap-3">
+              <Label className="text-xs" mode="cp-light" htmlFor="showItems">
+                Mostrar
+              </Label>
+              <select
+                name="showItems"
+                id="showItems"
+                onChange={(e) => handleShowItems(e.target.value)}
+                value={showItems.toString()}
+                className="text-xs bg-black text-white p-1 rounded-sm border border-slate-300"
+              >
+                <option value="5">5</option>
+                <option value="10">10</option>
+                <option value="20">20</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
+              </select>
+            </div>
+          </div>
         </>
       ) : (
         <div className="text-center p-5 mt-10 flex justify-center items-center">

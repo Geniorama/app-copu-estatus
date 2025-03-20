@@ -36,6 +36,8 @@ export default function FilterContentBar({
     []
   );
 
+  const sortedCompanies = [...companies].sort((a, b) => a.name.localeCompare(b.name));
+
   useEffect(() => {
     if (
       selectedValues.publicationDate ||
@@ -104,12 +106,12 @@ export default function FilterContentBar({
           className="flex items-end gap-4"
         >
           <div>
-            <Label mode="cp-light" htmlFor="compny">
+            <Label mode="cp-light" htmlFor="company">
               Compañía
             </Label>
             <Select
               id="company"
-              options={companies}
+              options={sortedCompanies}
               value={selectedValues.company || ""}
               onChange={(e) => handleChange(e)}
               defaultOptionText="Todas las empresas"
@@ -117,6 +119,22 @@ export default function FilterContentBar({
               mode="cp-light"
             />
           </div>
+
+          <div>
+            <Label mode="cp-light" htmlFor="subcompany">
+              Subcompañía
+            </Label>
+            <Select
+              id="company"
+              options={sortedCompanies}
+              value={selectedValues.company || ""}
+              onChange={(e) => handleChange(e)}
+              defaultOptionText="Todas las empresas"
+              name="company"
+              mode="cp-light"
+            />
+          </div>
+
           <div>
             <Label mode="cp-light" htmlFor="compny">
               Servicio

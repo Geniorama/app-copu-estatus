@@ -115,7 +115,6 @@ export default function Contents() {
     }
     const content = originalData?.find((content) => content.id === contentId);
 
-    console.log('content for edit', content);
     if (content) {
       setEditContent(content);
       setOpenModal(true);
