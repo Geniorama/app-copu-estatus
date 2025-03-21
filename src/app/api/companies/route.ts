@@ -10,6 +10,7 @@ export async function GET(request: NextRequest) {
     const page = parseInt(searchParams.get("page") || "1", 10);
     const limit = parseInt(searchParams.get("limit") || "9", 10);
     const skip = (page - 1) * limit;
+    const companiesActive = searchParams.get("active") === "false";
 
     const entries = await environment.getEntries({
       content_type: "company",
@@ -17,6 +18,7 @@ export async function GET(request: NextRequest) {
       limit,
       skip,
       order: "fields.name",
+      "fields.status": companiesActive ? companiesActive : undefined, 
     });
 
     if (!entries.items || entries.items.length === 0) {

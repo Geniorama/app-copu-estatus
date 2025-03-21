@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Button from "@/app/utilities/ui/Button";
 import Table from "@/app/components/Table/Table";
 import Search from "@/app/utilities/ui/Search";
@@ -11,41 +11,48 @@ import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import type { Content, TableDataProps } from "@/app/types";
 import type { ChangeEvent } from "react";
 import TitleSection from "@/app/utilities/ui/TitleSection";
-import FilterContentBar from "../../components/FilterContentBar/FilterContentBar";
+// import FilterContentBar from "../../components/FilterContentBar/FilterContentBar";
 import FormCreateContent from "@/app/components/Form/FormCreateContent";
 import Spinner from "@/app/utilities/ui/Spinner";
 import { actionOptions } from "@/app/components/Form/FormCreateContent";
 import { formattedDate } from "@/app/utilities/helpers/formatters";
 import { fetchCompaniesOptions } from "@/app/store/features/companiesSlice";
-import { AppDispatch, RootState } from "@/app/store";
-import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch } from "@/app/store";
+import { useDispatch } from "react-redux";
 import { useFetchServices } from "@/app/hooks/useFetchServices";
 import type { ServiceOptionsProps } from "../../components/FilterContentBar/FilterContentBar";
-import type { FilterDataProps } from "@/app/types";
+// import type { FilterDataProps } from "@/app/types";
 import useExportCSV from "@/app/hooks/useExportCSV";
 import { truncateText } from "@/app/utilities/helpers/formatters";
 import { useSearchParams } from "next/navigation";
 import { formatNumber } from "@/app/utilities/helpers/formatters";
 import { useFetchAllContents } from "@/app/hooks/useFetchAllContents";
 import Pagination from "@/app/components/Pagination/Pagination";
+import { faFilter } from "@fortawesome/free-solid-svg-icons";
+import { RootState } from "@/app/store";
+import { useSelector } from "react-redux";
 
 export default function Contents() {
   const [searchValue, setSearchValue] = useState("");
   const [openModal, setOpenModal] = useState(false);
-  const [contents, setContents] = useState<TableDataProps | null>({ heads: [], rows: [] });
+  const [contents, setContents] = useState<TableDataProps | null>({
+    heads: [],
+    rows: [],
+  });
   const [hasUpdate, setHasUpdate] = useState(false);
   const [postWebCount, setPostWebCount] = useState(0);
   const [postSocialCount, setPostSocialCount] = useState(0);
-  const [optionsServices, setOptionsServices] = useState<ServiceOptionsProps[] | null>(null);
+  // const [optionsServices, setOptionsServices] = useState<ServiceOptionsProps[] | null>(null);
   const [originalData, setOriginalData] = useState<Content[] | null>(null);
-  const [filters, setFilters] = useState<Partial<FilterDataProps>>({});
+  // const [filters, setFilters] = useState({});
   const [filteredData, setFilteredData] = useState<Content[] | null>(null);
   const [editContent, setEditContent] = useState<Content | null>(null);
-
+  const [openMenuFilter, setOpenMenuFilter] = useState(false);
 
   const dispatch = useDispatch<AppDispatch>();
   const searchParams = useSearchParams();
   const actionUrl = searchParams.get("action");
+  const menuFilterRef = useRef<HTMLDivElement>(null);
 
   const headsTable = [
     "Compañía",
@@ -79,14 +86,23 @@ export default function Contents() {
     return <p className="text-slate-400">N/A</p>;
   };
 
-  const { options: companiesData } = useSelector((state: RootState) => state.companies);
+  const { options: companiesData } = useSelector(
+    (state: RootState) => state.companies
+  );
   const { dataServices, loading: loadingServices } = useFetchServices({
     hasUpdate,
+    itemsPerPage: 100,
   });
 
   useEffect(() => {
     dispatch(fetchCompaniesOptions());
   }, []);
+
+  useEffect(() => {
+    if (dataServices) {
+      console.log("dataServices", dataServices);
+    }
+  }, [dataServices]);
 
   useEffect(() => {
     if (dataServices && !loadingServices) {
@@ -97,7 +113,8 @@ export default function Contents() {
       }));
 
       if (options) {
-        setOptionsServices(options);
+        console.log("options services", options);
+        // setOptionsServices(options);
       }
     }
   }, [dataServices, loadingServices]);
@@ -109,7 +126,7 @@ export default function Contents() {
   }, [actionUrl]);
 
   const handleEditContent = (contentId?: string) => {
-    if(!contentId || !originalData){
+    if (!contentId || !originalData) {
       console.log("No content ID or originalData is not available");
       return;
     }
@@ -130,11 +147,9 @@ export default function Contents() {
         {truncateText(content.headline || "", 30)}
       </p>,
       formattedDate(content.publicationDate),
-      content.scope && formatNumber(content.scope) || "--",
-      (content.impressions && formatNumber(content.impressions)) ||
-        "--",
-      (content.interactions && formatNumber(content.interactions)) ||
-        "--",
+      (content.scope && formatNumber(content.scope)) || "--",
+      (content.impressions && formatNumber(content.impressions)) || "--",
+      (content.interactions && formatNumber(content.interactions)) || "--",
       showSocialLink(
         content.socialMediaInfo?.find((social) => social.id === "webcopu")?.link
       ),
@@ -163,27 +178,33 @@ export default function Contents() {
       showSocialLink(
         content.socialMediaInfo?.find((social) => social.id === "threads")?.link
       ),
-      <LinkCP onClick={() => handleEditContent(content.id)} key={content.id}>Editar</LinkCP>,
+      <LinkCP onClick={() => handleEditContent(content.id)} key={content.id}>
+        Editar
+      </LinkCP>,
     ]);
 
     return result;
   };
 
-  const { contents: data, loading: loadingContents, currentPage, totalPages, setCurrentPage } = useFetchAllContents(
-    hasUpdate
-  );
+  const {
+    contents: data,
+    loading: loadingContents,
+    currentPage,
+    totalPages,
+    setCurrentPage,
+  } = useFetchAllContents(hasUpdate);
 
   const nextPage = () => {
     if (currentPage < totalPages) {
       setCurrentPage(currentPage + 1);
     }
-  }
+  };
 
   const prevPage = () => {
     if (currentPage > 1) {
       setCurrentPage(currentPage - 1);
     }
-  } 
+  };
 
   useEffect(() => {
     if (data && !loadingContents) {
@@ -242,49 +263,6 @@ export default function Contents() {
     }
   };
 
-  const handleFilterBar = (newFilter: Partial<FilterDataProps>) => {
-    if (!originalData) return;
-
-    const updatedFilters = { ...filters, ...newFilter };
-    setFilters(updatedFilters);
-
-    const filtered = originalData.filter((content) => {
-      return Object.entries(updatedFilters).every(([key, value]) => {
-        if (!value) return true; // Ignora claves sin valor
-
-        if (key === "service") {
-          return content.serviceId === value;
-        }
-
-        if (key === "publicationDate") {
-          return content.publicationDate === value;
-        }
-
-        return true;
-      });
-    });
-
-    const tableDataFiltered: TableDataProps = {
-      heads: headsTable,
-      rows: rowsTable(filtered),
-    };
-
-    setContents(tableDataFiltered);
-    setFilteredData(filtered);
-  };
-
-  const handleClearFilter = () => {
-    if (!originalData) return;
-
-    setFilteredData(null);
-    setFilters({});
-    const tableDataOriginal: TableDataProps = {
-      heads: headsTable,
-      rows: rowsTable(originalData),
-    };
-    setContents(tableDataOriginal);
-  };
-
   const handleOpenCreateModal = () => {
     setOpenModal(true);
     setEditContent(null);
@@ -316,6 +294,27 @@ export default function Contents() {
     setContents(tableDataFiltered);
     setFilteredData(filtered);
   }, [searchValue, originalData]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: Event) => {
+      if (
+        menuFilterRef.current &&
+        !menuFilterRef.current.contains(event.target as Node)
+      ) {
+        setOpenMenuFilter(false);
+      }
+    };
+
+    if (openMenuFilter) {
+      document.addEventListener("mousedown", handleClickOutside);
+    } else {
+      document.removeEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [openMenuFilter]);
 
   const exportToCSV = useExportCSV(
     originalData as Record<string, string | number>[],
@@ -359,54 +358,15 @@ export default function Contents() {
       <div className="mb-5">
         <TitleSection title="Contenidos" />
       </div>
-      {companiesData && (
+      {/* {companiesData && (
         <FilterContentBar
           companies={companiesData}
           services={optionsServices}
           onFilter={handleFilterBar}
           onCleanForm={handleClearFilter}
         />
-      )}
+      )} */}
       <div className="flex flex-col md:flex-row md:flex-wrap gap-4 mb-8 justify-center">
-        {filters.service && filteredData && filteredData.length > 0 && (
-          <div className="w-full max-w-xs text-slate-300 bg-slate-800 p-8 rounded-lg hover:outline-3 text-left flex items-start flex-col justify-center">
-            <ul className=" gap-4 flex flex-col">
-              <li>
-                <b>Nombre paquete: </b>{" "}
-                {
-                  dataServices?.find(
-                    (service) => service.id === filters.service
-                  )?.name
-                }
-              </li>
-              <li>
-                <b>Fecha inicio: </b>
-                {formattedDate(
-                  dataServices?.find(
-                    (service) => service.id === filters.service
-                  )?.startDate
-                )}
-              </li>
-              <li>
-                <b>Fecha expiración: </b>
-                {formattedDate(
-                  dataServices?.find(
-                    (service) => service.id === filters.service
-                  )?.endDate
-                )}
-              </li>
-              <li>
-                <b>Tipo plan: </b>
-                {dataServices
-                  ?.find((service) => service.id === filters.service)
-                  ?.plan?.toUpperCase()}
-              </li>
-              {/* <li>
-                <b>Publicaciones restantes: </b>50
-              </li> */}
-            </ul>
-          </div>
-        )}
         <div className="w-full max-w-xs text-cp-primary bg-slate-800 p-8 rounded-lg hover:outline-3 text-center">
           <h3 className="text-xl font-bold min-h-14">Post en social media</h3>
           <span className="text-8xl">{postSocialCount}</span>
@@ -430,13 +390,70 @@ export default function Contents() {
             Exportar CSV
           </LinkCP>
           <Search onChange={handleChange} value={searchValue} />
+          <div className="relative w-full lg:w-auto" ref={menuFilterRef}>
+            <Button
+              onClick={() => setOpenMenuFilter(!openMenuFilter)}
+              mode={`cp-dark`}
+              fullWidthMobile
+            >
+              <FontAwesomeIcon className="mr-2" icon={faFilter} />
+              <span className="block">Filtros</span>
+            </Button>
+            {openMenuFilter && (
+              <div className="bg-cp-light absolute space-y-5 right-0 p-4 min-w-64 rounded-md text-cp-dark text-sm z-50 top-12">
+                <div>
+                  <span className="font-bold text-slate-600 text-md">
+                    Compañía ({companiesData?.length})
+                  </span>
+                  <hr className="my-2" />
+                  <div className="space-y-2 max-h-48 overflow-y-scroll custom-scroll">
+                    {companiesData &&
+                      companiesData.length > 0 &&
+                      companiesData.map((company) => (
+                        <div
+                          key={company.value}
+                          className=" flex items-center gap-2 cursor-pointer hover:opacity-60"
+                        >
+                          <span
+                            className={`w-3 h-3 block border  rounded-sm shadow-sm border-slate-400`}
+                          ></span>
+                          <span>{company.name}</span>
+                        </div>
+                      ))}
+                  </div>
+                </div>
+
+                <div>
+                  <span className="font-bold text-slate-600 text-md">
+                    Servicio ({dataServices?.length})
+                  </span>
+                  <hr className="my-2" />
+                  <div className="space-y-2 max-h-48 overflow-y-scroll custom-scroll">
+                    {dataServices &&
+                      dataServices.length > 0 &&
+                      dataServices.map((service) => (
+                        <div
+                          key={service.id}
+                          className=" flex items-center gap-2 cursor-pointer hover:opacity-60"
+                        >
+                          <span
+                            className={`w-3 h-3 block border  rounded-sm shadow-sm border-slate-400`}
+                          ></span>
+                          <span>{service.name}</span>
+                        </div>
+                      ))}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
       {contents && contents.rows.length > 0 ? (
         <>
           <Table data={contents} />
-          <Pagination 
+          <Pagination
             currentPage={currentPage}
             totalPages={totalPages}
             onNext={nextPage}

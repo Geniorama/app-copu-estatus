@@ -89,9 +89,9 @@ export const createCompanyInContentful = async (data: Company) => {
   }
 };
 
-export const getAllCompanies = async (limit: number = 100, page: number = 1) => {
+export const getAllCompanies = async (limit: number = 100, page: number = 1, active: boolean = false) => {
   try {
-    const res = await fetch(`/api/companies?limit=${limit}&page=${page}`);
+    const res = await fetch(`/api/companies?limit=${limit}&page=${page}&active=${active}`);
     if (res.ok) {
       const data = await res.json();
       return data;

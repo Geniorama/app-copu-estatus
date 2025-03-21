@@ -62,6 +62,26 @@ const companiesSlice = createSlice({
         localStorage.setItem("companiesOptions", JSON.stringify(state.options));
       }
     },
+
+    removeCompanyOption: (state, action) => {
+      const companyToRemove = action.payload as OptionSelect;
+      state.options = state.options.filter(
+        (option) => option.value !== companyToRemove.value
+      );
+
+      if(companyToRemove.value) {
+        
+        localStorage.setItem("companiesOptions", JSON.stringify(state.options));
+      }
+    },
+
+    resetCompaniesOptions: (state) => {
+      state.options = [];
+      state.loading = false;
+      state.error = null;
+
+      localStorage.removeItem("companiesOptions");
+    }
   },
   extraReducers: (builder) => {
     builder
@@ -80,5 +100,5 @@ const companiesSlice = createSlice({
   },
 });
 
-export const { addCompanyOption } = companiesSlice.actions;
+export const { addCompanyOption, resetCompaniesOptions, removeCompanyOption } = companiesSlice.actions;
 export default companiesSlice.reducer;

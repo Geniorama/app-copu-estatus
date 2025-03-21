@@ -4,6 +4,7 @@
 import { useRouter } from "next/navigation";
 import { useDispatch } from "react-redux";
 import { resetCurrentUser, resetUserData } from "@/app/store/features/userSlice";
+import { resetCompaniesOptions } from "../store/features/companiesSlice";
 import type { MouseEvent } from "react";
 
 export default function useLogout() {
@@ -15,6 +16,7 @@ export default function useLogout() {
     router.push("/api/auth/logout");
     dispatch(resetCurrentUser());
     dispatch(resetUserData());
+    dispatch(resetCompaniesOptions());
   };
 
   return handleLogout;

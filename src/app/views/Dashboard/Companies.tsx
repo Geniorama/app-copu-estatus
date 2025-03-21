@@ -32,6 +32,8 @@ import { faFilter } from "@fortawesome/free-solid-svg-icons";
 import { getAllUsers } from "@/app/utilities/helpers/fetchers";
 import { Entry } from "contentful-management";
 import Label from "@/app/utilities/ui/Label";
+import { addCompanyOption, removeCompanyOption } from "@/app/store/features/companiesSlice";
+import { useDispatch } from "react-redux";
 
 interface FiltersProps {
   users?: { id: string; name: string }[];
@@ -52,6 +54,8 @@ export default function Companies() {
   const [openMenuFilter, setOpenMenuFilter] = useState(false);
   const menuFilterRef = useRef<HTMLDivElement>(null);
   const [showItems, setShowItems] = useState(5);
+
+  const dispatch = useDispatch();
 
   const headsTable = [
     "Logo",
@@ -249,16 +253,31 @@ export default function Companies() {
       const filterCompany = originalData.find(
         (company) => company.id === companyId
       );
-      console.log(filterCompany);
       if (filterCompany) {
+        const statusForUpdate = filterCompany.status
+
         const updatedCompany = {
           id: filterCompany.id,
-          status: !filterCompany.status,
+          status: !statusForUpdate,
         };
-        console.log(updatedCompany);
+        
         const response = await updateCompany(updatedCompany);
-        console.log(response);
-        notify("Compañía actualizada");
+        
+        if(response) {
+          if(!statusForUpdate){
+            dispatch(addCompanyOption({
+              name: filterCompany.name,
+              value: filterCompany.id
+            }));
+          } else {
+            dispatch(removeCompanyOption({
+              name: filterCompany.name,
+              value: filterCompany.id
+            }));
+          }
+          notify("Estado actualizado correctamente");
+          // fetchAllCompanyServices(currentPage);
+        }
       }
     }
   };
@@ -405,7 +424,6 @@ export default function Companies() {
             >
               <FontAwesomeIcon className="mr-2" icon={faFilter} />
               <span className="block">Filtros</span>
-              {/* <span className="w-5 h-5 bg-black inline-flex justify-center items-center ml-2 text-xs rounded-[50%]">3</span> */}
             </Button>
             {openMenuFilter && (
               <div className="bg-cp-light absolute right-0 p-4 min-w-64 rounded-md text-cp-dark text-sm z-50 top-12">
