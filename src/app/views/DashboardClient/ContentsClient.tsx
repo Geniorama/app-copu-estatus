@@ -7,7 +7,7 @@ import LinkCP from "@/app/utilities/ui/LinkCP";
 import type { Content, OptionSelect, TableDataProps } from "@/app/types";
 import type { ChangeEvent } from "react";
 import TitleSection from "@/app/utilities/ui/TitleSection";
-import FilterContentBar from "../FilterContentBar";
+import FilterContentBar from "../../components/FilterContentBar/FilterContentBar";
 import type { FilterDataProps } from "@/app/types";
 import useFetchContents from "@/app/hooks/useFetchContents";
 import {
@@ -20,7 +20,7 @@ import { useSelector } from "react-redux";
 import { RootState } from "@/app/store";
 import { useFetchCompanies } from "@/app/hooks/useFetchCompanies";
 import Spinner from "@/app/utilities/ui/Spinner";
-import { ServiceOptionsProps } from "../FilterContentBar";
+import { ServiceOptionsProps } from "../../components/FilterContentBar/FilterContentBar";
 
 export default function ContentsClient() {
   const [searchValue, setSearchValue] = useState("");

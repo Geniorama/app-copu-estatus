@@ -1,10 +1,10 @@
-import Label from "../utilities/ui/Label";
-import Input from "../utilities/ui/Input";
-import Select from "../utilities/ui/Select";
+import Label from "../../utilities/ui/Label";
+import Input from "../../utilities/ui/Input";
+import Select from "../../utilities/ui/Select";
 import { useState, useEffect } from "react";
 import type { ChangeEvent, FormEvent } from "react";
-import type { FilterDataProps, OptionSelect } from "../types";
-import { formattedDate } from "../utilities/helpers/formatters";
+import type { FilterDataProps, OptionSelect } from "../../types";
+import { formattedDate } from "../../utilities/helpers/formatters";
 
 export interface ServiceOptionsProps extends OptionSelect {
   companyId?: string;
@@ -99,8 +99,8 @@ export default function FilterContentBar({
 
   return (
     <>
-      <div className="flex flex-col lg:flex-row lg:justify-between mb-4 lg:mt-16 lg:items-end">
-        <span className="mb-5 lg:mb-0">Total Contenidos</span>
+      <div className="flex flex-col 2xl:flex-row 2xl:justify-between mb-4 2xl:mt-16 2xl:items-end">
+        <span className="mb-5 2xl:mb-0 block w-full 2xl:w-auto">Total Contenidos</span>
         <form
           onSubmit={(e) => handleFilter(e)}
           className="flex flex-col md:flex-row md:flex-wrap md:items-end gap-4"

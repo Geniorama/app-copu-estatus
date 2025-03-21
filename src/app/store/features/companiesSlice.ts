@@ -19,21 +19,23 @@ export const fetchCompaniesOptions = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const storedCompanies = localStorage.getItem("companiesOptions");
-      if (storedCompanies) {
+      if (storedCompanies && storedCompanies.length > 0) {
         return JSON.parse(storedCompanies);
       } else {
-        const companies = await getAllCompanies();
-        const options = companies
-          .map((company: CompanyResponse) => ({
-            value: company.sys.id,
-            name: company.fields.name["en-US"],
-          }))
-          .sort((a: OptionSelect, b: OptionSelect) =>
-            a.name.localeCompare(b.name)
-          );
-
-        localStorage.setItem("companiesOptions", JSON.stringify(options));
-        return options;
+        const result = await getAllCompanies();
+        const companies = result.companies;
+        if (companies.length > 0) {
+          const options = companies
+            .map((company: CompanyResponse) => ({
+              value: company.sys.id,
+              name: company.fields.name["en-US"],
+            }))
+          localStorage.setItem("companiesOptions", JSON.stringify(options));
+          return options;
+        } else {
+          console.log("No companies found");
+          return rejectWithValue("No companies found");
+        }
       }
     } catch (error) {
       return rejectWithValue("Error fetching companies options");
@@ -57,10 +59,7 @@ const companiesSlice = createSlice({
         state.options.push(newCompany);
 
         // Opcional: Guardar en localStorage para persistencia
-        localStorage.setItem(
-          "companiesOptions",
-          JSON.stringify(state.options)
-        );
+        localStorage.setItem("companiesOptions", JSON.stringify(state.options));
       }
     },
   },

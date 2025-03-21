@@ -60,7 +60,7 @@ export default function FormCreateUser({
 
   useEffect(() => {
     dispatch(fetchCompaniesOptions())
-  },[])
+  },[dispatch])
 
   useEffect(() => {
     if (currentUser) {

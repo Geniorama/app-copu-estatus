@@ -55,7 +55,7 @@ export default function Sidebar() {
                 <li >
                   <Link
                     href={item.path || "/"}
-                    className={`tracking-wide block hover:text-cp-primary transition active:text-cp-primary py-6 ${
+                    className={`tracking-wide block hover:text-cp-primary transition active:text-cp-primary py-4 2xl:py-6 ${
                       pathname === item.path && "text-cp-primary"
                     }`}
                   >
