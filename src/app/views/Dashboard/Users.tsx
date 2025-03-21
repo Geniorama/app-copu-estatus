@@ -357,12 +357,13 @@ export default function Users() {
       <div className="mb-5">
         <TitleSection title="Usuarios" />
       </div>
-      <div className="flex gap-3 items-center justify-between">
+      <div className="flex flex-col lg:flex-row gap-3 items-center justify-between">
         <Button
           onClick={() => {
             setEditUser(null);
             setOpenModal(true);
           }}
+          fullWidthMobile
           mode="cp-green"
         >
           <span className="mr-3">Nuevo usuario</span>

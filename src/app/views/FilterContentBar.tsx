@@ -99,13 +99,13 @@ export default function FilterContentBar({
 
   return (
     <>
-      <div className="flex justify-between mb-4 mt-16 items-end">
-        <span>Total Contenidos</span>
+      <div className="flex flex-col lg:flex-row lg:justify-between mb-4 lg:mt-16 lg:items-end">
+        <span className="mb-5 lg:mb-0">Total Contenidos</span>
         <form
           onSubmit={(e) => handleFilter(e)}
-          className="flex items-end gap-4"
+          className="flex flex-col md:flex-row md:flex-wrap md:items-end gap-4"
         >
-          <div>
+          <div className="w-full lg:w-auto">
             <Label mode="cp-light" htmlFor="company">
               Compañía
             </Label>
@@ -120,7 +120,7 @@ export default function FilterContentBar({
             />
           </div>
 
-          <div>
+          <div className="w-full lg:w-auto">
             <Label mode="cp-light" htmlFor="subcompany">
               Subcompañía
             </Label>
@@ -135,7 +135,7 @@ export default function FilterContentBar({
             />
           </div>
 
-          <div>
+          <div className="w-full lg:w-auto">
             <Label mode="cp-light" htmlFor="compny">
               Servicio
             </Label>
@@ -149,7 +149,7 @@ export default function FilterContentBar({
               mode="cp-light"
             />
           </div>
-          <div>
+          <div className="w-full lg:w-auto">
             <Label mode="cp-light" htmlFor="startDate">
               Fecha Publicación
             </Label>
@@ -163,11 +163,11 @@ export default function FilterContentBar({
               placeholder="Fecha inicio"
             />
           </div>
-          <div className=" flex gap-3">
+          <div className="w-full lg:w-auto flex gap-3">
             <button
               disabled={disabledButton}
               type="submit"
-              className=" disabled:bg-slate-500 bg-cp-primary text-cp-dark h-[45px] rounded-sm px-3 font-bold hover:bg-cp-primary-hover"
+              className=" disabled:bg-slate-500 bg-cp-primary text-cp-dark h-[45px] rounded-sm px-3 font-bold hover:bg-cp-primary-hover w-full lg:w-auto"
             >
               Aplicar
             </button>

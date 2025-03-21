@@ -367,7 +367,7 @@ export default function Contents() {
           onCleanForm={handleClearFilter}
         />
       )}
-      <div className="flex gap-4 mb-8 justify-center">
+      <div className="flex flex-col md:flex-row md:flex-wrap gap-4 mb-8 justify-center">
         {filters.service && filteredData && filteredData.length > 0 && (
           <div className="w-full max-w-xs text-slate-300 bg-slate-800 p-8 rounded-lg hover:outline-3 text-left flex items-start flex-col justify-center">
             <ul className=" gap-4 flex flex-col">
@@ -419,13 +419,13 @@ export default function Contents() {
         </div>
       </div>
 
-      <div className="flex gap-3 items-center justify-between">
-        <Button onClick={handleOpenCreateModal} mode="cp-green">
+      <div className="flex flex-col md:flex-row gap-3 items-center justify-between">
+        <Button fullWidthMobile onClick={handleOpenCreateModal} mode="cp-green">
           <span className="mr-3">Nuevo contenido</span>
           <FontAwesomeIcon icon={faPlus} />
         </Button>
 
-        <div className="flex gap-6 items-center">
+        <div className="flex gap-6 items-center mt-4 md:mt-0">
           <LinkCP onClick={exportToCSV} href="#">
             Exportar CSV
           </LinkCP>
