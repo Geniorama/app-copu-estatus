@@ -8,7 +8,7 @@ import LinkCP from "@/app/utilities/ui/LinkCP";
 import Modal from "@/app/components/Modal/Modal";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
-import type { Content, TableDataProps } from "@/app/types";
+import type { Content, OptionSelect, TableDataProps } from "@/app/types";
 import type { ChangeEvent } from "react";
 import TitleSection from "@/app/utilities/ui/TitleSection";
 // import FilterContentBar from "../../components/FilterContentBar/FilterContentBar";
@@ -31,6 +31,7 @@ import Pagination from "@/app/components/Pagination/Pagination";
 import { faFilter } from "@fortawesome/free-solid-svg-icons";
 import { RootState } from "@/app/store";
 import { useSelector } from "react-redux";
+import { faCaretDown, faCaretUp } from "@fortawesome/free-solid-svg-icons";
 
 export default function Contents() {
   const [searchValue, setSearchValue] = useState("");
@@ -53,6 +54,8 @@ export default function Contents() {
   const searchParams = useSearchParams();
   const actionUrl = searchParams.get("action");
   const menuFilterRef = useRef<HTMLDivElement>(null);
+  const [openFilterCompany, setOpenFilterCompany] = useState(false);
+  const [openFilterService, setOpenFilterService] = useState(false);
 
   const headsTable = [
     "Compañía",
@@ -97,6 +100,18 @@ export default function Contents() {
   useEffect(() => {
     dispatch(fetchCompaniesOptions());
   }, []);
+
+  useEffect(() => {
+    if(openFilterCompany) {
+      setOpenFilterService(false);
+    }
+  }, [openFilterCompany]);
+
+  useEffect(() => {
+    if(openFilterService) {
+      setOpenFilterCompany(false);
+    }
+  }, [openFilterService]);
 
   useEffect(() => {
     if (dataServices) {
@@ -296,6 +311,11 @@ export default function Contents() {
   }, [searchValue, originalData]);
 
   useEffect(() => {
+    if(!openMenuFilter){
+      setOpenFilterCompany(false);
+      setOpenFilterService(false);
+    }
+
     const handleClickOutside = (event: Event) => {
       if (
         menuFilterRef.current &&
@@ -402,47 +422,72 @@ export default function Contents() {
             {openMenuFilter && (
               <div className="bg-cp-light absolute space-y-5 right-0 p-4 min-w-64 rounded-md text-cp-dark text-sm z-50 top-12">
                 <div>
-                  <span className="font-bold text-slate-600 text-md">
-                    Compañía ({companiesData?.length})
-                  </span>
-                  <hr className="my-2" />
-                  <div className="space-y-2 max-h-48 overflow-y-scroll custom-scroll">
-                    {companiesData &&
-                      companiesData.length > 0 &&
-                      companiesData.map((company) => (
-                        <div
-                          key={company.value}
-                          className=" flex items-center gap-2 cursor-pointer hover:opacity-60"
-                        >
-                          <span
-                            className={`w-3 h-3 block border  rounded-sm shadow-sm border-slate-400`}
-                          ></span>
-                          <span>{company.name}</span>
-                        </div>
-                      ))}
+                  <div className="flex items-center justify-between cursor-pointer" onClick={() => setOpenFilterCompany(!openFilterCompany)}>
+                    <span className="font-bold text-slate-600 text-md">
+                      Compañía ({companiesData?.length})
+                    </span>
+
+                    <span>
+                      <FontAwesomeIcon
+                        icon={openFilterCompany ? faCaretUp : faCaretDown}
+                        className="ml-2 text-slate-700"
+                      />
+                    </span>
                   </div>
+                  <hr className="my-2" />
+                  {openFilterCompany && (
+                    <div className="space-y-2 max-h-48 overflow-y-scroll custom-scroll">
+                      {companiesData &&
+                        companiesData.length > 0 &&
+                        companiesData.map((company: OptionSelect) => (
+                          <div
+                            key={company.value}
+                            className=" flex items-center gap-2 cursor-pointer hover:opacity-60"
+                          >
+                            <span
+                              className={`w-3 h-3 block border  rounded-sm shadow-sm border-slate-400`}
+                            ></span>
+                            <span>{company.name}</span>
+                          </div>
+                        ))}
+                    </div>
+                  )}
                 </div>
 
                 <div>
-                  <span className="font-bold text-slate-600 text-md">
-                    Servicio ({dataServices?.length})
-                  </span>
-                  <hr className="my-2" />
-                  <div className="space-y-2 max-h-48 overflow-y-scroll custom-scroll">
-                    {dataServices &&
-                      dataServices.length > 0 &&
-                      dataServices.map((service) => (
-                        <div
-                          key={service.id}
-                          className=" flex items-center gap-2 cursor-pointer hover:opacity-60"
-                        >
-                          <span
-                            className={`w-3 h-3 block border  rounded-sm shadow-sm border-slate-400`}
-                          ></span>
-                          <span>{service.name}</span>
-                        </div>
-                      ))}
+                  <div className="flex items-center justify-between cursor-pointer" onClick={() => setOpenFilterService(!openFilterService)}>
+                    <span className="font-bold text-slate-600 text-md">
+                      Servicio ({dataServices?.length})
+                    </span>
+
+                    <span>
+                      <FontAwesomeIcon
+                        icon={openFilterService ? faCaretUp : faCaretDown}
+                        className="ml-2 text-slate-700"
+                      />
+                    </span>
                   </div>
+                  
+                  {openFilterService && (
+                    <>
+                      <hr className="my-2" />
+                      <div className="space-y-2 max-h-48 overflow-y-scroll custom-scroll">
+                      {dataServices &&
+                        dataServices.length > 0 &&
+                        dataServices.map((service) => (
+                          <div
+                            key={service.id}
+                            className=" flex items-center gap-2 cursor-pointer hover:opacity-60"
+                          >
+                            <span
+                              className={`w-3 h-3 block border  rounded-sm shadow-sm border-slate-400`}
+                            ></span>
+                            <span>{service.name}</span>
+                          </div>
+                        ))}
+                    </div>
+                    </>
+                  )}
                 </div>
               </div>
             )}
