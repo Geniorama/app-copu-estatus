@@ -216,7 +216,7 @@ export default function FormCreateService({
 
       <div>
         <Label htmlFor="description" mode="cp-dark">
-          Descripción
+          Tipo de plan
         </Label>
         <Textarea
           id="description"
@@ -229,7 +229,7 @@ export default function FormCreateService({
 
       <div>
         <Label htmlFor="description" mode="cp-dark">
-          Características
+          Acciones
         </Label>
         <div>
           {service.features?.length > 0 && (

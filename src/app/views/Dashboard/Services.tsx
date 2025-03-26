@@ -25,7 +25,7 @@ import Pagination from "@/app/components/Pagination/Pagination";
 
 const headsTable = [
   "Nombre servicio",
-  "Tipo plan",
+  "Plan",
   "Fecha inicio",
   "Fecha finalización",
   "Compañía",
