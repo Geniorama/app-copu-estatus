@@ -26,6 +26,8 @@ import Pagination from "@/app/components/Pagination/Pagination";
 const headsTable = [
   "Nombre servicio",
   "Plan",
+  "Art web y RSS",
+  "RSS",
   "Fecha inicio",
   "Fecha finalización",
   "Compañía",
@@ -102,6 +104,8 @@ export default function Services() {
     const filteredData = data.map((service) => [
       service.name,
       <span key={service.id} className=" capitalize">{service.plan}</span>,
+      service.accionWebYRss,
+      service.accionPostRss,
       formattedDate(service.startDate),
       formattedDate(service.endDate),
       service.companyName,

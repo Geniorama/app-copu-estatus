@@ -38,10 +38,12 @@ const initialData: Service = {
   description: "",
   startDate: "",
   endDate: "",
-  plan: null,
+  plan: "mensual",
   companyId: "",
   status: true,
   features: [],
+  accionPostRss: 0,
+  accionWebYRss: 0,
 };
 
 interface FormCreateServiceProps {
@@ -179,6 +181,7 @@ export default function FormCreateService({
       | ChangeEvent<HTMLTextAreaElement>
   ) => {
     const value = e.target.value;
+
     setService({
       ...service,
       [e.target.name]: value,
@@ -291,6 +294,38 @@ export default function FormCreateService({
               <FontAwesomeIcon icon={faPlus} />
             </button>
           </div>
+        </div>
+      </div>
+
+      <div className="flex gap-3">
+        <div className="w-1/2">
+          <Label htmlFor="accionWebYRss" mode="cp-dark">
+            Artículos web y post en RSS*
+          </Label>
+          <Input
+            onChange={(e) => handleChange(e)}
+            name="accionWebYRss"
+            id="accionWebYRss"
+            mode="cp-dark"
+            required
+            type="number"
+            value={service.accionWebYRss || 0}
+          />
+        </div>
+
+        <div className="w-1/2">
+          <Label htmlFor="accionPostRss" mode="cp-dark">
+            Posts en RSS*
+          </Label>
+          <Input
+            onChange={(e) => handleChange(e)}
+            name="accionPostRss"
+            id="accionPostRss"
+            mode="cp-dark"
+            required
+            type="number"
+            value={service.accionPostRss || 0}
+          />
         </div>
       </div>
 

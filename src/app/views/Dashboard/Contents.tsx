@@ -32,6 +32,12 @@ import { faFilter } from "@fortawesome/free-solid-svg-icons";
 import { RootState } from "@/app/store";
 import { useSelector } from "react-redux";
 import { faCaretDown, faCaretUp } from "@fortawesome/free-solid-svg-icons";
+import Label from "@/app/utilities/ui/Label";
+
+interface FiltersProps {
+  companiesIds?: string[];
+  servicesIds?: string[];
+}
 
 export default function Contents() {
   const [searchValue, setSearchValue] = useState("");
@@ -45,7 +51,7 @@ export default function Contents() {
   const [postSocialCount, setPostSocialCount] = useState(0);
   // const [optionsServices, setOptionsServices] = useState<ServiceOptionsProps[] | null>(null);
   const [originalData, setOriginalData] = useState<Content[] | null>(null);
-  // const [filters, setFilters] = useState({});
+  const [filters, setFilters] = useState<FiltersProps>();
   const [filteredData, setFilteredData] = useState<Content[] | null>(null);
   const [editContent, setEditContent] = useState<Content | null>(null);
   const [openMenuFilter, setOpenMenuFilter] = useState(false);
@@ -56,6 +62,7 @@ export default function Contents() {
   const menuFilterRef = useRef<HTMLDivElement>(null);
   const [openFilterCompany, setOpenFilterCompany] = useState(false);
   const [openFilterService, setOpenFilterService] = useState(false);
+  const [showItems, setShowItems] = useState(5);
 
   const headsTable = [
     "Compañía",
@@ -207,7 +214,7 @@ export default function Contents() {
     currentPage,
     totalPages,
     setCurrentPage,
-  } = useFetchAllContents(hasUpdate);
+  } = useFetchAllContents(hasUpdate, showItems);
 
   const nextPage = () => {
     if (currentPage < totalPages) {
@@ -336,6 +343,84 @@ export default function Contents() {
     };
   }, [openMenuFilter]);
 
+  const handleShowItems = (value: string) => {
+    setShowItems(parseInt(value));
+    setCurrentPage(1);
+  };
+
+  const handleFilterCompany = (companyId: string) => {
+    if (!originalData) return;
+  
+    setFilters((prevFilters) => {
+      const existingIds = prevFilters?.companiesIds || [];
+  
+      if (existingIds.includes(companyId)) {
+        return {
+          ...prevFilters,
+          companiesIds: existingIds.filter((id) => id !== companyId),
+        };
+      } else {
+        return {
+          ...prevFilters,
+          companiesIds: [...existingIds, companyId],
+        };
+      }
+    });
+  };
+
+  const handleFilterService = (serviceId: string) => {
+    if (!originalData) return;
+
+    setFilters((prevFilters) => {
+      const existingIds = prevFilters?.servicesIds || [];
+
+      if (existingIds.includes(serviceId)) {
+        return {
+          ...prevFilters,
+          servicesIds: existingIds.filter((id) => id !== serviceId),
+        };
+      } else {
+        return {
+          ...prevFilters,
+          servicesIds: [...existingIds, serviceId],
+        };
+      }
+    });
+
+    console.log("filters", filters);
+  };
+
+  useEffect(() => {
+    if (!originalData) return;
+
+    if (!filters || (!filters.companiesIds?.length && !filters.servicesIds?.length)) {
+      setContents({
+        heads: headsTable,
+        rows: rowsTable(originalData),
+      });
+      return;
+    }
+
+    console.log('originalData from filters', originalData);
+
+    const filtered = originalData.filter((content) => {
+    const companyMatch = !filters.companiesIds?.length || filters.companiesIds.includes(`${content.companyId}`);
+    const serviceMatch = !filters.servicesIds?.length || filters.servicesIds.includes(`${content.serviceId}`);
+
+      return companyMatch && serviceMatch;
+    });
+
+    console.log('filtered', filtered);
+
+    const tableDataFiltered: TableDataProps = {
+      heads: headsTable,
+      rows: rowsTable(filtered),
+    };
+
+    setContents(tableDataFiltered);
+    setFilteredData(filtered);
+  }, [filters, originalData]);
+
   const exportToCSV = useExportCSV(
     originalData as Record<string, string | number>[],
     [
@@ -388,14 +473,14 @@ export default function Contents() {
       )} */}
       <div className="flex flex-col md:flex-row md:flex-wrap gap-4 mb-8 justify-center">
         <div className="w-full max-w-xs text-cp-primary bg-slate-800 p-8 rounded-lg hover:outline-3 text-center">
-          <h3 className="text-xl font-bold min-h-14">Post en social media</h3>
-          <span className="text-8xl">{postSocialCount}</span>
+          <h3 className="text-lg font-bold min-h-14">Post en social media</h3>
+          <span className="text-6xl">{postSocialCount}</span>
         </div>
         <div className="w-full max-w-xs text-cp-primary bg-slate-800 p-8 rounded-lg hover:outline-3 text-center">
-          <h3 className="text-xl font-bold min-h-14">
+          <h3 className="text-lg font-bold min-h-14">
             Artículo web y post en social media
           </h3>
-          <span className="text-8xl">{postWebCount}</span>
+          <span className="text-6xl">{postWebCount}</span>
         </div>
       </div>
 
@@ -413,7 +498,7 @@ export default function Contents() {
           <div className="relative w-full lg:w-auto" ref={menuFilterRef}>
             <Button
               onClick={() => setOpenMenuFilter(!openMenuFilter)}
-              mode={`cp-dark`}
+              mode={`${filters?.companiesIds?.length || filters?.servicesIds?.length ? "cp-green" : "cp-dark"}`}
               fullWidthMobile
             >
               <FontAwesomeIcon className="mr-2" icon={faFilter} />
@@ -443,9 +528,10 @@ export default function Contents() {
                           <div
                             key={company.value}
                             className=" flex items-center gap-2 cursor-pointer hover:opacity-60"
+                            onClick={() => handleFilterCompany(company.value)}
                           >
                             <span
-                              className={`w-3 h-3 block border  rounded-sm shadow-sm border-slate-400`}
+                              className={`w-3 h-3 block border  rounded-sm shadow-sm ${filters?.companiesIds?.includes(company.value) ? "border-cp-primary bg-cp-primary" : "border-slate-400"}`}
                             ></span>
                             <span>{company.name}</span>
                           </div>
@@ -476,11 +562,12 @@ export default function Contents() {
                         dataServices.length > 0 &&
                         dataServices.map((service) => (
                           <div
+                            onClick={() => handleFilterService(`${service.id}`)}
                             key={service.id}
                             className=" flex items-center gap-2 cursor-pointer hover:opacity-60"
                           >
                             <span
-                              className={`w-3 h-3 block border  rounded-sm shadow-sm border-slate-400`}
+                              className={`w-3 h-3 block border  rounded-sm shadow-sm ${filters?.servicesIds?.includes(`${service.id}`) ? "border-cp-primary bg-cp-primary" : "border-slate-400"}`}
                             ></span>
                             <span>{service.name}</span>
                           </div>
@@ -498,13 +585,37 @@ export default function Contents() {
       {contents && contents.rows.length > 0 ? (
         <>
           <Table data={contents} />
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onNext={nextPage}
-            onPrev={prevPage}
-            setCurrentPage={setCurrentPage}
-          />
+
+          <div className="flex flex-col md:flex-row md:justify-between items-center mt-4 space-y-4 md:space-y-0">
+            {totalPages > 1 && (
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onNext={nextPage}
+                onPrev={prevPage}
+                setCurrentPage={setCurrentPage}
+              />
+            )}
+            <div className="flex items-center gap-3">
+              <Label className="text-xs" mode="cp-light" htmlFor="showItems">
+                Mostrar
+              </Label>
+              <select
+                name="showItems"
+                id="showItems"
+                onChange={(e) => handleShowItems(e.target.value)}
+                value={showItems.toString()}
+                className="text-xs bg-black text-white p-1 rounded-sm border border-slate-300"
+              >
+                <option value="5">5</option>
+                <option value="10">10</option>
+                <option value="20">20</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
+              </select>
+            </div>
+          </div>
+          
         </>
       ) : (
         <div className="text-center p-5 mt-10 flex justify-center items-center">

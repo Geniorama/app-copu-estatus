@@ -47,7 +47,9 @@ export function useFetchServices({hasUpdate, itemsPerPage = 6}: FetchServicesPro
           company: service.fields.company["en-US"],
           companyName: getCompanyName(service.fields.company["en-US"].sys.id, options),
           companyId: service.fields.company["en-US"].sys.id,
-          features: service.fields.features?.["en-US"] || []
+          features: service.fields.features?.["en-US"] || [],
+          accionWebYRss: service.fields.accionWebYRss?.["en-US"],
+          accionPostRss: service.fields.accionPostRss?.["en-US"]
         }));
         setDataServices(transformData)
         setLoading(false)

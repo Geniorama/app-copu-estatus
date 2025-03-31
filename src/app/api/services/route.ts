@@ -16,7 +16,8 @@ export async function GET(request: NextRequest) {
       content_type: 'service',
       include: 4,
       limit,
-      skip
+      skip,
+      order: "fields.name"
     });
 
     const items = entries.items;
@@ -35,9 +36,9 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const environment = await getContentfulEnvironment();
-    const { name, description, startDate, endDate, plan, status, companyId, features }: Service = await request.json();
+    const { name, description, startDate, endDate, plan, status, companyId, features, accionWebYRss, accionPostRss }: Service = await request.json();
 
-    if (!name || !description || !startDate || !endDate || !plan || typeof status !== "boolean" || !companyId || !features) {
+    if (!name || !description || !startDate || !endDate || !plan || typeof status !== "boolean" || !companyId || !features || !accionWebYRss || !accionPostRss) {
       return NextResponse.json(
         { error: "Todos los campos son requeridos para crear un servicio" },
         { status: 400 }
@@ -52,6 +53,8 @@ export async function POST(request: NextRequest) {
         endDate: { "en-US": endDate },
         plan: { "en-US": plan },
         status: { "en-US": status },
+        accionPostRss: { "en-US": Number(accionPostRss) },
+        accionWebYRss: { "en-US": Number(accionWebYRss) },
         company: {
           "en-US": {
             sys: {
@@ -115,6 +118,12 @@ export async function PATCH(request: NextRequest) {
     if (updatedServiceData.plan) {
       entry.fields.plan["en-US"] = updatedServiceData.plan;
     }
+    if(updatedServiceData.accionPostRss){
+      entry.fields.accionPostRss["en-US"] = Number(updatedServiceData.accionPostRss);
+    }
+    if(updatedServiceData.accionWebYRss){
+      entry.fields.accionWebYRss["en-US"] = Number(updatedServiceData.accionWebYRss);
+    }
     if (typeof updatedServiceData.status === "boolean") {
       entry.fields.status["en-US"] = updatedServiceData.status;
     }
@@ -127,7 +136,7 @@ export async function PATCH(request: NextRequest) {
         },
       };
     }
-    if(updatedServiceData.features){
+    if(updatedServiceData.features && updatedServiceData.features.length > 0){
       entry.fields.features["en-US"] = updatedServiceData.features;
     }
 

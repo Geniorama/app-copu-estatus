@@ -48,9 +48,11 @@ export interface Service {
   company?: Entry | null;
   companyId?: string | null;
   companyName?: string | null;
-  plan?: 'anual' | 'mensual' | 'personalizado' | null;
+  plan?: 'anual' | 'semestral' | 'mensual' | 'personalizado' | null;
   status?: boolean;
   features: FeatureService[];
+  accionWebYRss?: number;
+  accionPostRss?: number;
 }
 
 export interface SocialListsProps {

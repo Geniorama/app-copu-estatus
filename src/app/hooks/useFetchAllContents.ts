@@ -52,6 +52,8 @@ export function useFetchAllContents(hasUpdate: boolean, itemsPerPage: number = 3
                 impressions,
                 interactions,
                 type: content.fields.type["en-US"] || "Sin tipo",
+                companyId: companyInfo.sys.id,
+                serviceId: serviceInfo.sys.id,
               };
             })
           );
