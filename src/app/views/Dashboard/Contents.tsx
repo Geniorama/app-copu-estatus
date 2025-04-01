@@ -39,6 +39,11 @@ interface FiltersProps {
   servicesIds?: string[];
 }
 
+interface ServiceCountProps {
+  post: number,
+  web: number
+}
+
 export default function Contents() {
   const [searchValue, setSearchValue] = useState("");
   const [openModal, setOpenModal] = useState(false);
@@ -52,7 +57,7 @@ export default function Contents() {
   // const [optionsServices, setOptionsServices] = useState<ServiceOptionsProps[] | null>(null);
   const [originalData, setOriginalData] = useState<Content[] | null>(null);
   const [filters, setFilters] = useState<FiltersProps>();
-  const [filteredData, setFilteredData] = useState<Content[] | null>(null);
+  // const [filteredData, setFilteredData] = useState<Content[] | null>(null);
   const [editContent, setEditContent] = useState<Content | null>(null);
   const [openMenuFilter, setOpenMenuFilter] = useState(false);
 
@@ -63,6 +68,7 @@ export default function Contents() {
   const [openFilterCompany, setOpenFilterCompany] = useState(false);
   const [openFilterService, setOpenFilterService] = useState(false);
   const [showItems, setShowItems] = useState(5);
+  const [loadingCount, setLoadingCount] = useState(false)
 
   const headsTable = [
     "Compañía",
@@ -96,6 +102,65 @@ export default function Contents() {
     return <p className="text-slate-400">N/A</p>;
   };
 
+
+  // 4M04OTBWMMxA7G1f0BTmgh - dentsu
+
+  const getContentsCountByService = async () => {
+    let fetchApi
+
+    if ((filters?.companiesIds ?? []).length > 0) {
+      return;
+    }
+
+    if(!filters || (!filters?.servicesIds || filters.servicesIds?.length < 1)){
+      fetchApi = "/api/content/count"
+    } else {
+      const strServices = (filters.servicesIds).toString()
+      fetchApi = `/api/content/count?serviceIds=${strServices}`
+    }
+
+    if(fetchApi){
+      const res = await fetch(fetchApi)
+      if(res.ok){
+        const data = await res.json()
+        const contents:ServiceCountProps[] = data.countByServiceAndType;
+
+        console.log('contents', contents)
+
+        // Agrupar todos los tipos "web" y "post"
+        let totalWeb = 0;
+        let totalPost = 0;
+
+        Object.values(contents).forEach((service) => {
+          totalWeb += service.web;
+          totalPost += service.post;
+        });
+
+        // Puedes actualizar el estado o realizar otras acciones con los totales
+        setPostWebCount(totalWeb);
+        setPostSocialCount(totalPost);
+        setLoadingCount(false)
+      }
+    }
+  }
+
+  const getContentsCountByCompany = async() => {
+    if(!filters || (!filters?.companiesIds || filters.companiesIds?.length < 1)){
+      return
+    }
+
+    const strCompanies = (filters.companiesIds).toString()
+    const res = await fetch(`/api/content/countByCompany?companyIds=${strCompanies}`)
+    if(res.ok){
+      const data = await res.json()
+      const contents:{web: number, post: number} = data.countByType;
+      
+      setPostWebCount(contents.web);
+      setPostSocialCount(contents.post);
+      setLoadingCount(false)
+    }
+  }
+
   const { options: companiesData } = useSelector(
     (state: RootState) => state.companies
   );
@@ -120,11 +185,6 @@ export default function Contents() {
     }
   }, [openFilterService]);
 
-  useEffect(() => {
-    if (dataServices) {
-      console.log("dataServices", dataServices);
-    }
-  }, [dataServices]);
 
   useEffect(() => {
     if (dataServices && !loadingServices) {
@@ -216,6 +276,18 @@ export default function Contents() {
     setCurrentPage,
   } = useFetchAllContents(hasUpdate, showItems);
 
+  useEffect(() => {
+    setLoadingCount(true)
+    if(!loadingContents){
+      getContentsCountByService()
+    }
+  },[filters?.servicesIds, loadingContents])
+
+  useEffect(() => {
+    setLoadingCount(true)
+    getContentsCountByCompany()
+  },[filters?.companiesIds])
+
   const nextPage = () => {
     if (currentPage < totalPages) {
       setCurrentPage(currentPage + 1);
@@ -239,41 +311,6 @@ export default function Contents() {
     }
   }, [data, loadingContents]);
 
-  useEffect(() => {
-    if (filteredData) {
-      const filterWebContents = filteredData.filter(
-        (post) => post.type === "web"
-      );
-      const filterSocialContents = filteredData.filter(
-        (post) => post.type === "post"
-      );
-
-      if (filterWebContents) {
-        setPostWebCount(filterWebContents.length);
-      }
-
-      if (filterSocialContents) {
-        setPostSocialCount(filterSocialContents.length);
-      }
-    } else {
-      if (originalData) {
-        const filterWebContents = originalData.filter(
-          (post) => post.type === "web"
-        );
-        const filterSocialContents = originalData.filter(
-          (post) => post.type === "post"
-        );
-
-        if (filterWebContents) {
-          setPostWebCount(filterWebContents.length);
-        }
-
-        if (filterSocialContents) {
-          setPostSocialCount(filterSocialContents.length);
-        }
-      }
-    }
-  }, [filteredData, originalData]);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     setSearchValue(e.target.value);
@@ -314,7 +351,7 @@ export default function Contents() {
     };
 
     setContents(tableDataFiltered);
-    setFilteredData(filtered);
+    // setFilteredData(filtered);
   }, [searchValue, originalData]);
 
   useEffect(() => {
@@ -401,8 +438,6 @@ export default function Contents() {
       return;
     }
 
-    console.log('originalData from filters', originalData);
-
     const filtered = originalData.filter((content) => {
     const companyMatch = !filters.companiesIds?.length || filters.companiesIds.includes(`${content.companyId}`);
     const serviceMatch = !filters.servicesIds?.length || filters.servicesIds.includes(`${content.serviceId}`);
@@ -418,7 +453,7 @@ export default function Contents() {
     };
 
     setContents(tableDataFiltered);
-    setFilteredData(filtered);
+    // setFilteredData(filtered);
   }, [filters, originalData]);
 
   const exportToCSV = useExportCSV(
@@ -463,24 +498,28 @@ export default function Contents() {
       <div className="mb-5">
         <TitleSection title="Contenidos" />
       </div>
-      {/* {companiesData && (
-        <FilterContentBar
-          companies={companiesData}
-          services={optionsServices}
-          onFilter={handleFilterBar}
-          onCleanForm={handleClearFilter}
-        />
-      )} */}
       <div className="flex flex-col md:flex-row md:flex-wrap gap-4 mb-8 justify-center">
         <div className="w-full max-w-xs text-cp-primary bg-slate-800 p-8 rounded-lg hover:outline-3 text-center">
           <h3 className="text-lg font-bold min-h-14">Post en social media</h3>
-          <span className="text-6xl">{postSocialCount}</span>
+          <span className="text-6xl text-center">
+            {loadingCount ? (
+              <Spinner className="mx-auto" />
+            ):(
+              postSocialCount
+            )}
+          </span>
         </div>
         <div className="w-full max-w-xs text-cp-primary bg-slate-800 p-8 rounded-lg hover:outline-3 text-center">
           <h3 className="text-lg font-bold min-h-14">
             Artículo web y post en social media
           </h3>
-          <span className="text-6xl">{postWebCount}</span>
+          <span className="text-6xl">
+            {loadingCount ? (
+              <Spinner className="mx-auto" />
+            ):(
+              postWebCount
+            )}
+          </span>
         </div>
       </div>
 

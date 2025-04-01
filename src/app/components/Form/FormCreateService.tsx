@@ -36,14 +36,15 @@ const optionsPlan = [
 const initialData: Service = {
   name: "",
   description: "",
+  accionPostRss: 0,
+  accionWebYRss: 0,
   startDate: "",
   endDate: "",
   plan: "mensual",
   companyId: "",
   status: true,
   features: [],
-  accionPostRss: 0,
-  accionWebYRss: 0,
+  
 };
 
 interface FormCreateServiceProps {
