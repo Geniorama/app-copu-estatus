@@ -1,19 +1,20 @@
-import { TableDataProps } from "@/app/types";
+import type { TableDataProps } from "@/app/types";
+import styles from "./Table.module.css";
 
 interface TableProps {
   data: TableDataProps;
+  className?: string;
 }
 
-export default function Table({ data }: TableProps) {
+export default function Table({ data, className }: TableProps) {
   if(!data || !data.rows){
     console.log('falta la data')
     return
   }
 
-
   return (
     <div className="w-full overflow-x-scroll custom-scroll">
-      <table className="w-full mt-4 text-slate-300">
+      <table className={`w-full mt-4 text-slate-300 ${className || ""}`}>
         <thead className="text-slate-200 bg-gray-950">
           <tr>
             {data.heads.map((heading, i) => (

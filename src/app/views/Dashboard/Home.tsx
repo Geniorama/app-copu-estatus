@@ -42,7 +42,7 @@ export default function DashboardHome() {
     userData,
     fetchServicesByCompany,
     false, // fetchAll
-    6 // itemsPerPage
+    5 // itemsPerPage
   );
 
   const nextPage = () => {
@@ -59,7 +59,6 @@ export default function DashboardHome() {
 
   useEffect(() => {
     if (!loading && originalData.length > 0) {
-      console.log("originalData", originalData);
       const filteredData = originalData.filter((company) =>
         company?.name?.toLowerCase().includes(searchValue.toLowerCase())
       );
@@ -91,10 +90,12 @@ export default function DashboardHome() {
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     setSearchValue(e.target.value);
+    setCurrentPage(1); // Resetear a la primera página cuando se busca
   };
 
   const handleClearSearch = () => {
     setSearchValue("");
+    setCurrentPage(1); // Resetear a la primera página cuando se limpia la búsqueda
   };
 
   return (

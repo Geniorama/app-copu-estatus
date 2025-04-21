@@ -1,21 +1,29 @@
 import { useCallback } from "react";
 
-const useExportCSV = <T extends Record<string, string | number>>(
+const useExportCSV = <T extends Record<string, string | number | boolean | null | undefined>>(
   data: T[],
-  headers: string[],
+  headersMap: Record<string, string>, // Mapeo de encabezados personalizados
   fileName: string
 ) => {
+  /**
+   * Función para exportar datos a un archivo CSV.
+   * @param {T[]} data - Datos a exportar.
+   * @param {Record<string, string>} headersMap - Mapeo de encabezados personalizados.
+   * @param {string} fileName - Nombre del archivo CSV a descargar.
+   */
+  
   const exportToCSV = useCallback(() => {
-    const mappedData = data.map((item) => {
-      return headers.reduce((acc, header) => {
-        acc[header] = item[header];
-        return acc;
-      }, {} as Record<string, string | number>);
-    });
+    if (!data || !Array.isArray(data) || data.length === 0) {
+      console.error("No hay datos para exportar.");
+      return;
+    }
 
-    const rows = mappedData.map((item) =>
-      headers.map((header) => {
-        const value = item[header];
+    const headers = Object.keys(headersMap);
+    const keys = Object.values(headersMap);
+
+    const rows = data.map((item) =>
+      keys.map((key) => {
+        const value = item[key];
         return value !== undefined && value !== null ? value : "";
       })
     );
@@ -25,13 +33,12 @@ const useExportCSV = <T extends Record<string, string | number>>(
       ...rows.map((row) => row.join(",")),
     ].join("\n");
 
-    // Crear el archivo CSV
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
     const link = document.createElement("a");
     link.href = URL.createObjectURL(blob);
     link.download = `${fileName}.csv`;
     link.click();
-  }, [data, headers, fileName]);
+  }, [data, headersMap, fileName]);
 
   return exportToCSV;
 };

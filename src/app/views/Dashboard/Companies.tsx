@@ -81,12 +81,14 @@ export default function Companies() {
   const nextPage = () => {
     if (currentPage < totalPages) {
       setCurrentPage(currentPage + 1);
+      fetchAllCompanyServices(currentPage + 1);
     }
   };
 
   const prevPage = () => {
     if (currentPage > 1) {
       setCurrentPage(currentPage - 1);
+      fetchAllCompanyServices(currentPage - 1);
     }
   };
 
@@ -140,14 +142,14 @@ export default function Companies() {
       if (result.users) {
         const users = result.users;
         const usersAdmin = users.filter(
-          (user: Entry) => user.fields.role["en-US"] === "admin"
+          (user: Entry) => user.fields?.role?.["en-US"] === "admin"
         );
 
         usersAdmin.sort((a: Entry, b: Entry) => {
           const nameA =
-            `${a.fields.firstName["en-US"]} ${a.fields.lastName["en-US"]}`.toLowerCase();
+            `${a.fields?.firstName?.["en-US"]} ${a.fields?.lastName?.["en-US"]}`.toLowerCase();
           const nameB =
-            `${b.fields.firstName["en-US"]} ${b.fields.lastName["en-US"]}`.toLowerCase();
+            `${b.fields?.firstName?.["en-US"]} ${b.fields?.lastName?.["en-US"]}`.toLowerCase();
           return nameA.localeCompare(nameB);
         });
 
@@ -217,7 +219,13 @@ export default function Companies() {
 
   const exportToCSV = useExportCSV(
     originalData as Record<string, string | number>[],
-    ["name", "linkWhatsApp", "nit", "phone", "status"],
+    {
+      name: "Nombre",
+      linkWhatsApp: "Grupo WhatsApp",
+      nit: "NIT",
+      phone: "Teléfono",
+      status: "Estado"
+    },
     `companies-${new Date().toISOString()}`
   );
 
@@ -246,6 +254,7 @@ export default function Companies() {
   const handleShowItems = (value: string) => {
     setShowItems(parseInt(value));
     setCurrentPage(1);
+    fetchAllCompanyServices(1);
   };
 
   const handleSwitch = async (companyId?: string) => {

@@ -1,39 +1,48 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getContentfulEnvironment } from "@/app/lib/contentfulManagement";
 import type { User } from "@/app/types";
+import { Entry } from "contentful-management";
 
 export async function GET(request: NextRequest) {
   try {
     const environment = await getContentfulEnvironment();
-    const { searchParams } = new URL(request.url);
-    const page = parseInt(searchParams.get("page") || "1", 10);
-    const limit = parseInt(searchParams.get("limit") || "9", 10);
-    const skip = (page - 1) * limit;
+    const searchParams = request.nextUrl.searchParams;
+    const role = searchParams.get('role');
 
-    const entries = await environment.getEntries({
+    const query: {
+      content_type: string;
+      include: number;
+      "fields.role"?: string;
+    } = {
       content_type: "user",
-      limit,
-      skip,
-      order: "fields.firstName",
-    });
+      include: 3,
+    };
 
-    const items = entries.items;
-
-    if (!items || items.length === 0) {
-      return NextResponse.json(
-        { message: "No entries found" },
-        { status: 404 }
-      );
+    if (role) {
+      query["fields.role"] = role;
     }
 
-    return NextResponse.json({
-      users: entries.items,
-      totalPages: Math.ceil(entries.total / limit)      
-    }, { status: 200 });
+    const response = await environment.getEntries(query);
+
+    const users = response.items.map((entry: Entry) => ({
+      id: entry.sys.id,
+      fname: entry.fields.firstName?.["en-US"] || null,
+      lname: entry.fields.lastName?.["en-US"] || null,
+      email: entry.fields.email?.["en-US"] || null,
+      role: entry.fields.role?.["en-US"] || null,
+      phone: entry.fields.phone?.["en-US"] || null,
+      imageProfile: entry.fields.imageProfile?.["en-US"] || null,
+      status: entry.fields.status?.["en-US"] || null,
+      auth0Id: entry.fields.auth0Id?.["en-US"] || null,
+      companiesId: entry.fields.company?.["en-US"]?.map((company: Entry) => company.sys.id) || null,
+      position: entry.fields.position?.["en-US"] || null,
+    }));
+
+    return NextResponse.json({ users }, { status: 200 });
   } catch (error) {
-    console.error("Error fetching data from Contentful:", error);
+    console.error("Error fetching users:", error);
     return NextResponse.json(
-      { error: "Error fetching data from Contentful" },
+      { error: "Error fetching users" },
       { status: 500 }
     );
   }

@@ -7,8 +7,8 @@ import Search from "@/app/utilities/ui/Search";
 import LinkCP from "@/app/utilities/ui/LinkCP";
 import Modal from "@/app/components/Modal/Modal";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPlus } from "@fortawesome/free-solid-svg-icons";
-import type { Content, OptionSelect, TableDataProps } from "@/app/types";
+import { faPlus, faList, faTable } from "@fortawesome/free-solid-svg-icons";
+import type { Content, OptionSelect, TableDataProps, User } from "@/app/types";
 import type { ChangeEvent } from "react";
 import TitleSection from "@/app/utilities/ui/TitleSection";
 // import FilterContentBar from "../../components/FilterContentBar/FilterContentBar";
@@ -37,6 +37,7 @@ import Label from "@/app/utilities/ui/Label";
 interface FiltersProps {
   companiesIds?: string[];
   servicesIds?: string[];
+  usersIds?: string[];
 }
 
 interface ServiceCountProps {
@@ -60,6 +61,10 @@ export default function Contents() {
   // const [filteredData, setFilteredData] = useState<Content[] | null>(null);
   const [editContent, setEditContent] = useState<Content | null>(null);
   const [openMenuFilter, setOpenMenuFilter] = useState(false);
+  const [usersAdmin, setUsersAdmin] = useState<User[]>([]);
+  const [openFilterUser, setOpenFilterUser] = useState(false);
+  const [showFullView, setShowFullView] = useState(false);
+  const [loadingCount, setLoadingCount] = useState(false)
 
   const dispatch = useDispatch<AppDispatch>();
   const searchParams = useSearchParams();
@@ -68,11 +73,16 @@ export default function Contents() {
   const [openFilterCompany, setOpenFilterCompany] = useState(false);
   const [openFilterService, setOpenFilterService] = useState(false);
   const [showItems, setShowItems] = useState(5);
-  const [loadingCount, setLoadingCount] = useState(false)
 
-  const headsTable = [
+  const headsTableCompact = [
     "Compañía",
-    // "Servicio",
+    "Titular",
+    "Fecha Publicación",
+    "",
+  ];
+
+  const headsTableFull = [
+    "Compañía",
     "Tipo acción",
     "Titular",
     "Fecha Publicación",
@@ -176,15 +186,39 @@ export default function Contents() {
   useEffect(() => {
     if(openFilterCompany) {
       setOpenFilterService(false);
+      setOpenFilterUser(false);
     }
   }, [openFilterCompany]);
 
   useEffect(() => {
     if(openFilterService) {
       setOpenFilterCompany(false);
+      setOpenFilterUser(false);
     }
   }, [openFilterService]);
 
+  useEffect(() => {
+    if(openFilterUser) {
+      setOpenFilterCompany(false);
+      setOpenFilterService(false);
+    }
+  }, [openFilterUser]);
+
+  useEffect(() => {
+    const fetchUsersAdmin = async () => {
+      try {
+        const res = await fetch('/api/users?role=admin');
+        if (res.ok) {
+          const data = await res.json();
+          setUsersAdmin(data.users);
+        }
+      } catch (error) {
+        console.error('Error fetching admin users:', error);
+      }
+    };
+
+    fetchUsersAdmin();
+  }, []);
 
   useEffect(() => {
     if (dataServices && !loadingServices) {
@@ -220,10 +254,24 @@ export default function Contents() {
     }
   };
 
-  const rowsTable = (data: Content[]) => {
+  const rowsTableCompact = (data: Content[]) => {
     const result = data.map((content) => [
       content.companyName || "Sin compañía",
-      // content.serviceName || "Sin servicio",
+      <p title={content.headline} key={content.id}>
+        {truncateText(content.headline || "", 30)}
+      </p>,
+      formattedDate(content.publicationDate),
+      <LinkCP onClick={() => handleEditContent(content.id)} key={content.id}>
+        Editar
+      </LinkCP>,
+    ]);
+
+    return result;
+  };
+
+  const rowsTableFull = (data: Content[]) => {
+    const result = data.map((content) => [
+      content.companyName || "Sin compañía",
       actionOptions.find((option) => option.value === content.type)?.name,
       <p title={content.headline} key={content.id}>
         {truncateText(content.headline || "", 30)}
@@ -277,16 +325,16 @@ export default function Contents() {
   } = useFetchAllContents(hasUpdate, showItems);
 
   useEffect(() => {
-    setLoadingCount(true)
+    setLoadingCount(true);
     if(!loadingContents){
-      getContentsCountByService()
+      getContentsCountByService();
     }
-  },[filters?.servicesIds, loadingContents])
+  },[filters?.servicesIds, loadingContents, showItems])
 
   useEffect(() => {
-    setLoadingCount(true)
-    getContentsCountByCompany()
-  },[filters?.companiesIds])
+    setLoadingCount(true);
+    getContentsCountByCompany();
+  },[filters?.companiesIds, showItems])
 
   const nextPage = () => {
     if (currentPage < totalPages) {
@@ -304,12 +352,12 @@ export default function Contents() {
     if (data && !loadingContents) {
       setOriginalData(data);
       const tableData: TableDataProps = {
-        heads: headsTable,
-        rows: rowsTable(data),
+        heads: showFullView ? headsTableFull : headsTableCompact,
+        rows: showFullView ? rowsTableFull(data) : rowsTableCompact(data),
       };
       setContents(tableData);
     }
-  }, [data, loadingContents]);
+  }, [data, loadingContents, showFullView]);
 
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -346,18 +394,19 @@ export default function Contents() {
     });
 
     const tableDataFiltered: TableDataProps = {
-      heads: headsTable,
-      rows: rowsTable(filtered),
+      heads: showFullView ? headsTableFull : headsTableCompact,
+      rows: showFullView ? rowsTableFull(filtered) : rowsTableCompact(filtered),
     };
 
     setContents(tableDataFiltered);
     // setFilteredData(filtered);
-  }, [searchValue, originalData]);
+  }, [searchValue, originalData, showFullView]);
 
   useEffect(() => {
     if(!openMenuFilter){
       setOpenFilterCompany(false);
       setOpenFilterService(false);
+      setOpenFilterUser(false);
     }
 
     const handleClickOutside = (event: Event) => {
@@ -383,6 +432,8 @@ export default function Contents() {
   const handleShowItems = (value: string) => {
     setShowItems(parseInt(value));
     setCurrentPage(1);
+    setLoadingCount(true);
+    getContentsCountByService();
   };
 
   const handleFilterCompany = (companyId: string) => {
@@ -427,48 +478,94 @@ export default function Contents() {
     console.log("filters", filters);
   };
 
+  const handleFilterUser = (userId: string) => {
+    if (!originalData) return;
+
+    setFilters((prevFilters) => {
+      const existingIds = prevFilters?.usersIds || [];
+
+      if (existingIds.includes(userId)) {
+        return {
+          ...prevFilters,
+          usersIds: existingIds.filter((id) => id !== userId),
+        };
+      } else {
+        return {
+          ...prevFilters,
+          usersIds: [...existingIds, userId],
+        };
+      }
+    });
+  };
+
   useEffect(() => {
     if (!originalData) return;
 
-    if (!filters || (!filters.companiesIds?.length && !filters.servicesIds?.length)) {
+    if (!filters || (!filters.companiesIds?.length && !filters.servicesIds?.length && !filters.usersIds?.length)) {
       setContents({
-        heads: headsTable,
-        rows: rowsTable(originalData),
+        heads: showFullView ? headsTableFull : headsTableCompact,
+        rows: showFullView ? rowsTableFull(originalData) : rowsTableCompact(originalData),
       });
       return;
     }
 
     const filtered = originalData.filter((content) => {
-    const companyMatch = !filters.companiesIds?.length || filters.companiesIds.includes(`${content.companyId}`);
-    const serviceMatch = !filters.servicesIds?.length || filters.servicesIds.includes(`${content.serviceId}`);
+      const companyMatch = !filters.companiesIds?.length || filters.companiesIds.includes(`${content.companyId}`);
+      const serviceMatch = !filters.servicesIds?.length || filters.servicesIds.includes(`${content.serviceId}`);
+      const userMatch = !filters.usersIds?.length || 
+        (content.companyId && filters.usersIds.some(userId => 
+          usersAdmin.find(user => user.id === userId)?.companiesId?.includes(content.companyId || '')));
 
-      return companyMatch && serviceMatch;
+      return companyMatch && serviceMatch && userMatch;
     });
 
-    console.log('filtered', filtered);
-
     const tableDataFiltered: TableDataProps = {
-      heads: headsTable,
-      rows: rowsTable(filtered),
+      heads: showFullView ? headsTableFull : headsTableCompact,
+      rows: showFullView ? rowsTableFull(filtered) : rowsTableCompact(filtered),
     };
 
     setContents(tableDataFiltered);
-    // setFilteredData(filtered);
-  }, [filters, originalData]);
+  }, [filters, originalData, usersAdmin, showFullView]);
 
-  const exportToCSV = useExportCSV(
-    originalData as Record<string, string | number>[],
-    [
-      "headline",
-      "type",
-      "publicationDate",
-      "scope",
-      "impressions",
-      "interactions",
-      "socialMediaInfo",
-    ],
-    `contents-${new Date().toISOString()}`
-  );
+  const headersMap = {
+    "headline": "Titular",
+    "type": "Tipo acción",
+    "publicationDate": "Fecha Publicación",
+    "scope": "Alcance",
+    "impressions": "Impresiones",
+    "interactions": "Interacciones",
+    "web": "Web",
+    "ig": "Instagram", 
+    "fb": "Facebook",
+    "lk": "LinkedIn",
+    "x": "X",
+    "tk": "TikTok",
+    "yt": "YouTube",
+    "th": "Threads",
+  }
+
+  const dataForExport = originalData?.map((content) => {
+    return(
+      {
+        headline: content.headline,
+        type: actionOptions.find((option) => option.value === content.type)?.name,
+        publicationDate: formattedDate(content.publicationDate),
+        scope: content.scope,
+        impressions: content.impressions,
+        interactions: content.interactions,
+        web: content.socialMediaInfo?.find((social) => social.id === "webcopu")?.link,
+        ig: content.socialMediaInfo?.find((social) => social.id === "instagram")?.link,
+        fb: content.socialMediaInfo?.find((social) => social.id === "facebook")?.link,
+        lk: content.socialMediaInfo?.find((social) => social.id === "linkedin")?.link,
+        x: content.socialMediaInfo?.find((social) => social.id === "xtwitter")?.link,
+        tk: content.socialMediaInfo?.find((social) => social.id === "tiktok")?.link,
+        yt: content.socialMediaInfo?.find((social) => social.id === "youtube")?.link,
+        th: content.socialMediaInfo?.find((social) => social.id === "threads")?.link,
+      }
+    )
+  })
+
+  const exportToCSV = useExportCSV(dataForExport as Record<string, string | number>[], headersMap, `contents-${new Date().toISOString()}`)
 
   if (loadingContents) {
     return (
@@ -524,10 +621,20 @@ export default function Contents() {
       </div>
 
       <div className="flex flex-col md:flex-row gap-3 items-center justify-between">
-        <Button fullWidthMobile onClick={handleOpenCreateModal} mode="cp-green">
-          <span className="mr-3">Nuevo contenido</span>
-          <FontAwesomeIcon icon={faPlus} />
-        </Button>
+        <div className="flex gap-3">
+          <Button fullWidthMobile onClick={handleOpenCreateModal} mode="cp-green">
+            <span className="mr-3">Nuevo contenido</span>
+            <FontAwesomeIcon icon={faPlus} />
+          </Button>
+          <Button
+            onClick={() => setShowFullView(!showFullView)}
+            mode="cp-dark"
+            className="text-sm"
+          >
+            <span className="mr-3">{showFullView ? "Vista Compacta" : "Vista Completa"}</span>
+            <FontAwesomeIcon icon={showFullView ? faTable : faList} />
+          </Button>
+        </div>
 
         <div className="flex gap-6 items-center mt-4 md:mt-0">
           <LinkCP onClick={exportToCSV} href="#">
@@ -537,7 +644,7 @@ export default function Contents() {
           <div className="relative w-full lg:w-auto" ref={menuFilterRef}>
             <Button
               onClick={() => setOpenMenuFilter(!openMenuFilter)}
-              mode={`${filters?.companiesIds?.length || filters?.servicesIds?.length ? "cp-green" : "cp-dark"}`}
+              mode={`${filters?.companiesIds?.length || filters?.servicesIds?.length || filters?.usersIds?.length ? "cp-green" : "cp-dark"}`}
               fullWidthMobile
             >
               <FontAwesomeIcon className="mr-2" icon={faFilter} />
@@ -592,10 +699,9 @@ export default function Contents() {
                       />
                     </span>
                   </div>
-                  
+                  <hr className="my-2" />
                   {openFilterService && (
                     <>
-                      <hr className="my-2" />
                       <div className="space-y-2 max-h-48 overflow-y-scroll custom-scroll">
                       {dataServices &&
                         dataServices.length > 0 &&
@@ -615,6 +721,47 @@ export default function Contents() {
                     </>
                   )}
                 </div>
+
+                {usersAdmin.length > 0 && (
+                  <div>
+                    <div className="flex items-center justify-between cursor-pointer" onClick={() => setOpenFilterUser(!openFilterUser)}>
+                      <span className="font-bold text-slate-600 text-md">
+                        Ejecutiva/o ({usersAdmin.length})
+                      </span>
+
+                      <span>
+                        <FontAwesomeIcon
+                          icon={openFilterUser ? faCaretUp : faCaretDown}
+                          className="ml-2 text-slate-700"
+                        />
+                      </span>
+                    </div>
+                    
+                    {openFilterUser && (
+                      <>
+                        <hr className="my-2" />
+                        <div className="space-y-2 max-h-48 overflow-y-scroll custom-scroll">
+                          {usersAdmin.map((user) => (
+                            <div
+                              onClick={() => handleFilterUser(user.id || '')}
+                              key={user.id}
+                              className="flex items-center gap-2 cursor-pointer hover:opacity-60"
+                            >
+                              <span
+                                className={`w-3 h-3 block border rounded-sm shadow-sm ${
+                                  filters?.usersIds?.includes(user.id || '')
+                                    ? "border-cp-primary bg-cp-primary"
+                                    : "border-slate-400"
+                                }`}
+                              ></span>
+                              <span>{`${user.fname} ${user.lname}`}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </>
+                    )}
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -623,7 +770,7 @@ export default function Contents() {
 
       {contents && contents.rows.length > 0 ? (
         <>
-          <Table data={contents} />
+          <Table data={contents} className={showFullView ? "" : "compact-view"} />
 
           <div className="flex flex-col md:flex-row md:justify-between items-center mt-4 space-y-4 md:space-y-0">
             {totalPages > 1 && (
@@ -651,6 +798,8 @@ export default function Contents() {
                 <option value="20">20</option>
                 <option value="50">50</option>
                 <option value="100">100</option>
+                <option value="500">500</option>
+                <option value="1000">1000</option>
               </select>
             </div>
           </div>

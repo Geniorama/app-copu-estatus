@@ -1,0 +1,33 @@
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.compact-view {
+  font-size: 0.875rem;
+}
+
+.compact-view th {
+  padding: 0.5rem 1rem;
+}
+
+.compact-view td {
+  padding: 0.5rem 1rem;
+}
+
+.compact-view tr {
+  height: 2.5rem;
+}
+
+.compact-view tr:nth-child(even) {
+  background-color: #1e293b;
+}
+
+.compact-view tr:nth-child(odd) {
+  background-color: #0f172a;
+}
+
+.compact-view tr:hover {
+  background-color: #1e293b;
+  outline: 1px solid #3b82f6;
+} 
