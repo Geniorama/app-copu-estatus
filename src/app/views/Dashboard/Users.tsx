@@ -52,7 +52,13 @@ export default function Users() {
 
   const exportToCSV = useExportCSV(
     originalData as Record<string, string | number>[],
-    ["email", "fname", "lname", "role", "status"],
+    {
+      email: "Correo",
+      fname: "Nombre(s)",
+      lname: "Apellido(s)",
+      role: "Rol",
+      status: "Estado"
+    },
     `usuarios-${new Date().toISOString()}`
   );
 
@@ -243,8 +249,6 @@ export default function Users() {
   const rowsTable = (data: User[]) => {
     const filteredData = data.map((user: User) => [
       <BoxLogo
-        alt={`${user.fname} ${user.lname}`}
-        type="user"
         key={user.email}
         url={user.imageProfile || ""}
       />,
