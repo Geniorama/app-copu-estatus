@@ -32,8 +32,9 @@ import { faFilter } from "@fortawesome/free-solid-svg-icons";
 import { getAllUsers } from "@/app/utilities/helpers/fetchers";
 import { Entry } from "contentful-management";
 import Label from "@/app/utilities/ui/Label";
-import { addCompanyOption, removeCompanyOption } from "@/app/store/features/companiesSlice";
+import { addCompanyOption, removeCompanyOption, fetchCompaniesOptions } from "@/app/store/features/companiesSlice";
 import { useDispatch } from "react-redux";
+import type { ThunkDispatch, AnyAction } from "@reduxjs/toolkit";
 
 interface FiltersProps {
   users?: { id: string; name: string }[];
@@ -54,8 +55,11 @@ export default function Companies() {
   const [openMenuFilter, setOpenMenuFilter] = useState(false);
   const menuFilterRef = useRef<HTMLDivElement>(null);
   const [showItems, setShowItems] = useState(5);
+  const [openFilterCompany, setOpenFilterCompany] = useState(false);
+  const [openFilterService, setOpenFilterService] = useState(false);
+  const [openFilterUser, setOpenFilterUser] = useState(false);
 
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<ThunkDispatch<RootState, undefined, AnyAction>>();
 
   const headsTable = [
     "Logo",
@@ -120,6 +124,38 @@ export default function Companies() {
   };
 
   useEffect(() => {
+    dispatch(fetchCompaniesOptions());
+  }, [dispatch]);
+
+  useEffect(() => {
+    if(openFilterCompany) {
+      setOpenFilterService(false);
+      setOpenFilterUser(false);
+    }
+  }, [openFilterCompany]);
+
+  useEffect(() => {
+    if(openFilterService) {
+      setOpenFilterCompany(false);
+      setOpenFilterUser(false);
+    }
+  }, [openFilterService]);
+
+  useEffect(() => {
+    if(openFilterUser) {
+      setOpenFilterCompany(false);
+      setOpenFilterService(false);
+    }
+  }, [openFilterUser]);
+
+  useEffect(() => {
+    if (success) {
+      fetchAllCompanyServices(currentPage);
+      setSuccess(false);
+    }
+  }, [success, fetchAllCompanyServices, currentPage]);
+
+  useEffect(() => {
     if (!loading) {
       const dataTable: TableDataProps = {
         heads: headsTable,
@@ -128,7 +164,7 @@ export default function Companies() {
 
       setTableData(originalData.length > 0 ? dataTable : null);
     }
-  }, [loading, originalData, currentPage]);
+  }, [loading, originalData, headsTable]);
 
   useEffect(() => {
     if (actionUrl === "create") {
@@ -205,13 +241,6 @@ export default function Companies() {
 
     setTableData(filteredData.length > 0 ? dataTable : null);
   }, [searchValue, originalData]);
-
-  useEffect(() => {
-    if (success) {
-      fetchAllCompanyServices(currentPage);
-      setSuccess(false);
-    }
-  }, [success, fetchAllCompanyServices, currentPage]);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     setSearchValue(e.target.value);

@@ -1,5 +1,4 @@
 import type { TableDataProps } from "@/app/types";
-import styles from "./Table.module.css";
 
 interface TableProps {
   data: TableDataProps;
