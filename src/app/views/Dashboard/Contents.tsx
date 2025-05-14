@@ -8,7 +8,7 @@ import LinkCP from "@/app/utilities/ui/LinkCP";
 import Modal from "@/app/components/Modal/Modal";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus, faList, faTable } from "@fortawesome/free-solid-svg-icons";
-import type { Content, OptionSelect, TableDataProps, User } from "@/app/types";
+import type { Content, TableDataProps, User } from "@/app/types";
 import type { ChangeEvent } from "react";
 import TitleSection from "@/app/utilities/ui/TitleSection";
 // import FilterContentBar from "../../components/FilterContentBar/FilterContentBar";
@@ -34,6 +34,9 @@ import { useSelector } from "react-redux";
 import { faCaretDown, faCaretUp } from "@fortawesome/free-solid-svg-icons";
 import Label from "@/app/utilities/ui/Label";
 import SkeletonLoader from "@/app/utilities/ui/SkeletonLoader";
+import HierarchicalCompanyFilter from "@/app/components/Filter/HierarchicalCompanyFilter";
+import { useFetchCompanies } from "@/app/hooks/useFetchCompanies";
+import { useFetchServicesByCompany } from "@/app/hooks/useFetchServicesByCompany";
 
 interface FiltersProps {
   companiesIds?: string[];
@@ -179,6 +182,10 @@ export default function Contents() {
     hasUpdate,
     itemsPerPage: 100,
   });
+
+  const fetchServicesByCompany = useFetchServicesByCompany();
+  // Obtener todas las empresas con jerarquía
+  const { originalData: allCompanies } = useFetchCompanies(undefined, fetchServicesByCompany, true, 100);
 
   useEffect(() => {
     dispatch(fetchCompaniesOptions());
@@ -438,23 +445,25 @@ export default function Contents() {
   };
 
   const handleFilterCompany = (companyId: string) => {
-    if (!originalData) return;
-  
-    setFilters((prevFilters) => {
-      const existingIds = prevFilters?.companiesIds || [];
-  
-      if (existingIds.includes(companyId)) {
-        return {
-          ...prevFilters,
-          companiesIds: existingIds.filter((id) => id !== companyId),
-        };
-      } else {
-        return {
-          ...prevFilters,
-          companiesIds: [...existingIds, companyId],
-        };
-      }
-    });
+    const company = allCompanies.find(c => c.id === companyId);
+    if (!company) return;
+
+    const isSelected = filters?.companiesIds?.includes(companyId);
+    
+    if (isSelected) {
+      setFilters({
+        ...filters,
+        companiesIds: filters?.companiesIds?.filter(id => id !== companyId) || []
+      });
+    } else {
+      // Seleccionar la empresa y todas sus subempresas directas
+      const subCompanies = allCompanies.filter(c => c.superiorId === companyId);
+      const subCompanyIds = subCompanies.map(c => c.id).filter((id): id is string => typeof id === 'string');
+      setFilters({
+        ...filters,
+        companiesIds: [...(filters?.companiesIds || []), companyId, ...subCompanyIds]
+      });
+    }
   };
 
   const handleFilterService = (serviceId: string) => {
@@ -668,21 +677,13 @@ export default function Contents() {
                   </div>
                   <hr className="my-2" />
                   {openFilterCompany && (
-                    <div className="space-y-2 max-h-48 overflow-y-scroll custom-scroll">
-                      {companiesData &&
-                        companiesData.length > 0 &&
-                        companiesData.map((company: OptionSelect) => (
-                          <div
-                            key={company.value}
-                            className=" flex items-center gap-2 cursor-pointer hover:opacity-60"
-                            onClick={() => handleFilterCompany(company.value)}
-                          >
-                            <span
-                              className={`w-3 h-3 block border  rounded-sm shadow-sm ${filters?.companiesIds?.includes(company.value) ? "border-cp-primary bg-cp-primary" : "border-slate-400"}`}
-                            ></span>
-                            <span>{company.name}</span>
-                          </div>
-                        ))}
+                    <div className="bg-cp-light p-4 min-w-64 rounded-md text-cp-dark text-sm">
+                      <HierarchicalCompanyFilter
+                        companies={allCompanies}
+                        selectedCompanies={filters?.companiesIds || []}
+                        onCompanySelect={handleFilterCompany}
+                        onCompanyDeselect={handleFilterCompany}
+                      />
                     </div>
                   )}
                 </div>

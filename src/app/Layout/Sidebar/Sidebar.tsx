@@ -15,6 +15,7 @@ import { useDispatch } from "react-redux";
 
 export default function Sidebar() {
   const [menuData, setMenuData] = useState(menuDashboard)
+  const [isLoading, setIsLoading] = useState(true)
   const pathname = usePathname();
   const dispatch = useDispatch()
   const { currentUser } = useSelector((state: RootState) => state.user)
@@ -27,10 +28,33 @@ export default function Sidebar() {
   }
 
   useEffect(() => {
-    if (!currentUser || !currentUser.user) {
-      router.push("/api/auth/logout");
+    // Dar tiempo para que la sesión se hidrate
+    const timer = setTimeout(() => {
+      setIsLoading(false)
+    }, 1000)
+
+    return () => clearTimeout(timer)
+  }, [])
+
+  useEffect(() => {
+    if (!isLoading && (!currentUser || !currentUser.user)) {
+      // Verificar si realmente no hay sesión antes de hacer logout
+      const checkSession = async () => {
+        try {
+          const response = await fetch('/api/auth/session')
+          const session = await response.json()
+          
+          if (!session || !session.user) {
+            router.push("/api/auth/logout")
+          }
+        } catch (error) {
+          console.error('Error checking session:', error)
+        }
+      }
+      
+      checkSession()
     }
-  }, [currentUser, router]);
+  }, [currentUser, router, isLoading])
 
   useEffect(() => {
     if (currentUser && currentUser.user) {

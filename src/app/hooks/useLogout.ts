@@ -1,20 +1,27 @@
 // /app/hooks/useLogout.ts
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useDispatch } from "react-redux";
 import { resetCurrentUser, resetUserData } from "@/app/store/features/userSlice";
 import { resetCompaniesOptions } from "../store/features/companiesSlice";
 
 export default function useLogout() {
-  const router = useRouter();
   const dispatch = useDispatch();
 
-  const handleLogout = () => {
-    router.push("/api/auth/logout");
-    dispatch(resetCurrentUser());
-    dispatch(resetUserData());
-    dispatch(resetCompaniesOptions());
+  const handleLogout = async () => {
+    try {
+      // Primero limpiamos el estado
+      dispatch(resetCurrentUser());
+      dispatch(resetUserData());
+      dispatch(resetCompaniesOptions());
+      
+      // Luego hacemos la redirección
+      window.location.href = "/api/auth/logout";
+    } catch (error) {
+      console.error("Error during logout:", error);
+      // Si hay un error, intentamos la redirección de todos modos
+      window.location.href = "/api/auth/logout";
+    }
   };
 
   return handleLogout;
