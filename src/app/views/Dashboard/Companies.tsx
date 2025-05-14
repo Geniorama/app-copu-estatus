@@ -17,7 +17,7 @@ import { useSelector } from "react-redux";
 import { RootState } from "@/app/store";
 import BoxLogo from "@/app/utilities/ui/BoxLogo";
 import ListServices from "@/app/utilities/ui/ListServices";
-import type { Company } from "@/app/types";
+import type { Company, User } from "@/app/types";
 import Spinner from "@/app/utilities/ui/Spinner";
 import Switch from "@/app/utilities/ui/Switch";
 import type { MouseEvent } from "react";
@@ -30,7 +30,6 @@ import Pagination from "@/app/components/Pagination/Pagination";
 import { useFetchServicesByCompany } from "@/app/hooks/useFetchServicesByCompany";
 import { faFilter } from "@fortawesome/free-solid-svg-icons";
 import { getAllUsers } from "@/app/utilities/helpers/fetchers";
-import { Entry } from "contentful-management";
 import Label from "@/app/utilities/ui/Label";
 import { addCompanyOption, removeCompanyOption, fetchCompaniesOptions } from "@/app/store/features/companiesSlice";
 import { useDispatch } from "react-redux";
@@ -61,7 +60,7 @@ export default function Companies() {
   const searchParams = useSearchParams();
   const actionUrl = searchParams.get("action");
   const [filters, setFilters] = useState<FiltersProps>();
-  const [usersAdmin, setUsersAdmin] = useState<Entry[]>([]);
+  const [usersAdmin, setUsersAdmin] = useState<User[]>([]);
   const [openMenuFilter, setOpenMenuFilter] = useState(false);
   const menuFilterRef = useRef<HTMLDivElement>(null);
   const [showItems, setShowItems] = useState(5);
@@ -97,8 +96,8 @@ export default function Companies() {
   };
 
   const toggleUserFilter = (userId: string) => {
-    const user = usersAdmin.find((user) => user.sys.id === userId);
-    if (user) {
+    const user = usersAdmin.find((user) => user.id === userId);
+    if (user && user.id) {
       const userFilter = filters?.users?.find(
         (userMap) => userMap.id === userId
       );
@@ -114,8 +113,8 @@ export default function Companies() {
           users: [
             ...(filters?.users || []),
             {
-              id: user.sys.id,
-              name: `${user.fields.firstName["en-US"]} ${user.fields.lastName["en-US"]}`,
+              id: user.id,
+              name: `${user.fname || ''} ${user.lname || ''}`,
             },
           ],
         });
@@ -173,18 +172,15 @@ export default function Companies() {
 
   useEffect(() => {
     const fetchUsers = async () => {
-      const result = await getAllUsers();
+      const result = await getAllUsers(100);
       if (result.users) {
-        const users = result.users;
-        const usersAdmin = users.filter(
-          (user: Entry) => user.fields?.role?.["en-US"] === "admin"
+        const usersAdmin = result.users.filter(
+          (user: User) => user.role === "admin"
         );
 
-        usersAdmin.sort((a: Entry, b: Entry) => {
-          const nameA =
-            `${a.fields?.firstName?.["en-US"]} ${a.fields?.lastName?.["en-US"]}`.toLowerCase();
-          const nameB =
-            `${b.fields?.firstName?.["en-US"]} ${b.fields?.lastName?.["en-US"]}`.toLowerCase();
+        usersAdmin.sort((a: User, b: User) => {
+          const nameA = `${a.fname} ${a.lname}`.toLowerCase();
+          const nameB = `${b.fname} ${b.lname}`.toLowerCase();
           return nameA.localeCompare(nameB);
         });
 
@@ -197,18 +193,16 @@ export default function Companies() {
   useEffect(() => {
     if (filters?.users && filters.users.length > 0) {
       const usersSelected = filters.users.map((user) => user.id);
-      const mapUsers = usersAdmin.filter((user) =>
-        usersSelected.includes(user.sys.id)
+      const mapUsers = usersAdmin.filter((user): user is User & { id: string } => 
+        typeof user.id === 'string' && usersSelected.includes(user.id)
       );
 
       const companyIds = new Set(
-        mapUsers.flatMap((user) =>
-          user.fields.company["en-US"].map((company: Entry) => company.sys.id)
-        )
+        mapUsers.flatMap((user) => user.companiesId || [])
       );
 
-      const filteredCompanies = originalData.filter((company) =>
-        companyIds.has(company.id)
+      const filteredCompanies = originalData.filter((company): company is Company & { id: string } => 
+        typeof company.id === 'string' && companyIds.has(company.id)
       );
 
       const dataTable: TableDataProps = {
@@ -313,7 +307,6 @@ export default function Companies() {
             }));
           }
           notify("Estado actualizado correctamente");
-          // fetchAllCompanyServices(currentPage);
         }
       }
     }
@@ -471,27 +464,30 @@ export default function Companies() {
                     </span>
                     <hr className="my-2" />
                     <div className="space-y-2">
-                      {usersAdmin.map((user) => (
-                        <div
-                          onClick={() => toggleUserFilter(user.sys.id)}
-                          key={user.sys.id}
-                          className=" flex items-center gap-2 cursor-pointer hover:opacity-60"
-                        >
-                          <span
-                            className={`w-3 h-3 block border  rounded-sm shadow-sm ${
-                              filters?.users?.find(
-                                (userMap) => userMap.id === user.sys.id
-                              )
-                                ? "bg-cp-primary border-cp-primary"
-                                : "border-slate-400"
-                            }`}
-                          ></span>
-                          <span>
-                            {user.fields.firstName["en-US"]}{" "}
-                            {user.fields.lastName["en-US"]}
-                          </span>
-                        </div>
-                      ))}
+                      {usersAdmin.map((user: User) => {
+                        if (typeof user.id !== 'string') return null;
+                        const userId = user.id;
+                        return (
+                          <div
+                            onClick={() => toggleUserFilter(userId)}
+                            key={userId}
+                            className="flex items-center gap-2 cursor-pointer hover:opacity-60"
+                          >
+                            <span
+                              className={`w-3 h-3 block border rounded-sm shadow-sm ${
+                                filters?.users?.find(
+                                  (userMap) => userMap.id === userId
+                                )
+                                  ? "bg-cp-primary border-cp-primary"
+                                  : "border-slate-400"
+                              }`}
+                            ></span>
+                            <span>
+                              {user.fname || ''} {user.lname || ''}
+                            </span>
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
                 )}
