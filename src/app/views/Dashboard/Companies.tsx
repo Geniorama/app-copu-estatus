@@ -40,6 +40,16 @@ interface FiltersProps {
   users?: { id: string; name: string }[];
 }
 
+const headsTable = [
+  "Logo",
+  "Nombre empresa",
+  "Grupo Whatsapp",
+  "Servicios activos",
+  "Última modificación",
+  "Estado",
+  "Acciones",
+];
+
 export default function Companies() {
   const [searchValue, setSearchValue] = useState("");
   const [openModal, setOpenModal] = useState(false);
@@ -60,16 +70,6 @@ export default function Companies() {
   const [openFilterUser, setOpenFilterUser] = useState(false);
 
   const dispatch = useDispatch<ThunkDispatch<RootState, undefined, AnyAction>>();
-
-  const headsTable = [
-    "Logo",
-    "Nombre empresa",
-    "Grupo Whatsapp",
-    "Servicios activos",
-    "Última modificación",
-    "Estado",
-    "Acciones",
-  ];
 
   const fetchServicesByCompany = useFetchServicesByCompany();
 
@@ -161,10 +161,9 @@ export default function Companies() {
         heads: headsTable,
         rows: rowsTable(originalData),
       };
-
       setTableData(originalData.length > 0 ? dataTable : null);
     }
-  }, [loading, originalData, headsTable]);
+  }, [loading, originalData]);
 
   useEffect(() => {
     if (actionUrl === "create") {
