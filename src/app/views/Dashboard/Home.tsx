@@ -8,13 +8,13 @@ import type { ChangeEvent } from "react";
 import type { Company, TableDataProps } from "@/app/types";
 import TitleSection from "@/app/utilities/ui/TitleSection";
 import { useRouter } from "next/navigation";
-import Spinner from "@/app/utilities/ui/Spinner";
 import { useFetchCompanies } from "@/app/hooks/useFetchCompanies";
 import BoxLogo from "@/app/utilities/ui/BoxLogo";
 import ListServices from "@/app/utilities/ui/ListServices";
 import LinkCP from "@/app/utilities/ui/LinkCP";
 import { useFetchServicesByCompany } from "@/app/hooks/useFetchServicesByCompany";
 import Pagination from "@/app/components/Pagination/Pagination";
+import SkeletonLoader from "@/app/utilities/ui/SkeletonLoader";
 
 const headsTable = [
   "Logo",
@@ -140,9 +140,7 @@ export default function DashboardHome() {
 
         {loading && !hasFetchedData ? (
           <div className="w-full h-[400px] flex justify-center items-center">
-            <span className="text-8xl">
-              <Spinner />
-            </span>
+            <SkeletonLoader type="table" rows={5} className="w-full" />
           </div>
         ) : tableData ? (
           <>

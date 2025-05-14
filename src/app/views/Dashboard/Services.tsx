@@ -22,6 +22,7 @@ import "react-toastify/dist/ReactToastify.css";
 import { formattedDate } from "@/app/utilities/helpers/formatters";
 import { useSearchParams } from "next/navigation";
 import Pagination from "@/app/components/Pagination/Pagination";
+import SkeletonLoader from "@/app/utilities/ui/SkeletonLoader";
 
 const headsTable = [
   "Nombre servicio",
@@ -176,10 +177,10 @@ export default function Services() {
         <div className="mb-5">
           <TitleSection title="Servicios" />
         </div>
-        <div className="w-full h-[70vh] flex justify-center items-center">
-          <span className="text-8xl">
-            <Spinner />
-          </span>
+        <div className="w-full h-[70vh] flex flex-col justify-center items-center px-4">
+          <div className="w-full max-w-7xl">
+            <SkeletonLoader type="table" rows={5} className="w-full" />
+          </div>
         </div>
       </div>
     );

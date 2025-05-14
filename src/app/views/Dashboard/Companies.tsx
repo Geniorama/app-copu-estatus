@@ -18,7 +18,6 @@ import { RootState } from "@/app/store";
 import BoxLogo from "@/app/utilities/ui/BoxLogo";
 import ListServices from "@/app/utilities/ui/ListServices";
 import type { Company, User } from "@/app/types";
-import Spinner from "@/app/utilities/ui/Spinner";
 import Switch from "@/app/utilities/ui/Switch";
 import type { MouseEvent } from "react";
 import { updateCompany } from "@/app/utilities/helpers/fetchers";
@@ -34,6 +33,7 @@ import Label from "@/app/utilities/ui/Label";
 import { addCompanyOption, removeCompanyOption, fetchCompaniesOptions } from "@/app/store/features/companiesSlice";
 import { useDispatch } from "react-redux";
 import type { ThunkDispatch, AnyAction } from "@reduxjs/toolkit";
+import SkeletonLoader from "@/app/utilities/ui/SkeletonLoader";
 
 interface FiltersProps {
   users?: { id: string; name: string }[];
@@ -393,10 +393,10 @@ export default function Companies() {
         <div className="mb-5">
           <TitleSection title="Compañías" />
         </div>
-        <div className="w-full h-[70vh] flex justify-center items-center">
-          <span className="text-8xl">
-            <Spinner />
-          </span>
+        <div className="w-full h-[70vh] flex flex-col justify-center items-center px-4">
+          <div className="w-full max-w-7xl">
+            <SkeletonLoader type="table" rows={5} className="w-full" />
+          </div>
         </div>
       </div>
     );

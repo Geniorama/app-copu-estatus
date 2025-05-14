@@ -33,6 +33,7 @@ import { RootState } from "@/app/store";
 import { useSelector } from "react-redux";
 import { faCaretDown, faCaretUp } from "@fortawesome/free-solid-svg-icons";
 import Label from "@/app/utilities/ui/Label";
+import SkeletonLoader from "@/app/utilities/ui/SkeletonLoader";
 
 interface FiltersProps {
   companiesIds?: string[];
@@ -573,10 +574,10 @@ export default function Contents() {
         <div className="mb-5">
           <TitleSection title="Contenidos" />
         </div>
-        <div className="w-full h-[70vh] flex justify-center items-center">
-          <span className="text-8xl">
-            <Spinner />
-          </span>
+        <div className="w-full h-[70vh] flex flex-col justify-center items-center px-4">
+          <div className="w-full max-w-7xl">
+            <SkeletonLoader type="table" rows={5} className="w-full" />
+          </div>
         </div>
       </div>
     );

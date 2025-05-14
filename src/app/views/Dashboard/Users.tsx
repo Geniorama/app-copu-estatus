@@ -24,6 +24,7 @@ import useExportCSV from "@/app/hooks/useExportCSV";
 import Swal from "sweetalert2";
 import useFetchUsers from "@/app/hooks/useFetchUsers";
 import Pagination from "@/app/components/Pagination/Pagination";
+import SkeletonLoader from "@/app/utilities/ui/SkeletonLoader";
 
 export default function Users() {
   const [searchValue, setSearchValue] = useState("");
@@ -336,10 +337,10 @@ export default function Users() {
         <div className="mb-5">
           <TitleSection title="Usuarios" />
         </div>
-        <div className="w-full h-[70vh] flex justify-center items-center">
-          <span className="text-8xl">
-            <Spinner />
-          </span>
+        <div className="w-full h-[70vh] flex flex-col justify-center items-center px-4">
+          <div className="w-full max-w-7xl">
+            <SkeletonLoader type="table" rows={5} className="w-full" />
+          </div>
         </div>
       </div>
     );
