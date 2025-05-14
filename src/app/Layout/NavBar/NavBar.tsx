@@ -108,7 +108,7 @@ export default function NavBar() {
                   <Link
                     href={"#"}
                     className="block p-2 py-3"
-                    onClick={(e) => handleLogout(e)}
+                    onClick={handleLogout}
                   >
                     Cerrar sesión
                   </Link>

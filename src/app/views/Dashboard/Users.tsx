@@ -13,7 +13,6 @@ import type { TableDataProps, User } from "@/app/types";
 import type { ChangeEvent } from "react";
 import TitleSection from "@/app/utilities/ui/TitleSection";
 import type { MouseEvent } from "react";
-import Spinner from "@/app/utilities/ui/Spinner";
 import { usePathname, useSearchParams } from "next/navigation";
 import Switch from "@/app/utilities/ui/Switch";
 import BoxLogo from "@/app/utilities/ui/BoxLogo";
