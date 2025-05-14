@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { menuDashboard } from "@/app/utilities/data/menus/menuDashboard";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import Logo from "@/app/utilities/ui/Logo";
 import { useSelector } from "react-redux";
 import { RootState } from "@/app/store";
@@ -18,6 +18,7 @@ export default function Sidebar() {
   const pathname = usePathname();
   const dispatch = useDispatch()
   const { currentUser } = useSelector((state: RootState) => state.user)
+  const router = useRouter();
   
   const handleLogout = useLogout()
 
@@ -26,16 +27,25 @@ export default function Sidebar() {
   }
 
   useEffect(() => {
-    if(currentUser){
-      const userRoleUri = `${process.env.NEXT_PUBLIC_ROLE_URL}`;
-      const role =  currentUser.user[userRoleUri]
-      if(role === 'cliente'){
-        const updatedMenu = menuDashboard.filter((item) => item.path !== '/dashboard/usuarios')
-
-        setMenuData(updatedMenu)
-      }
+    if (!currentUser || !currentUser.user) {
+      router.push("/api/auth/logout");
     }
-  },[currentUser])
+  }, [currentUser, router]);
+
+  useEffect(() => {
+    if (currentUser && currentUser.user) {
+      const userRoleUri = `${process.env.NEXT_PUBLIC_ROLE_URL}`;
+      const role = currentUser.user[userRoleUri];
+      if (role === 'cliente') {
+        const updatedMenu = menuDashboard.filter((item) => item.path !== '/dashboard/usuarios');
+        setMenuData(updatedMenu.length > 0 ? updatedMenu : menuDashboard);
+      } else {
+        setMenuData(menuDashboard);
+      }
+    } else {
+      setMenuData(menuDashboard);
+    }
+  }, [currentUser]);
 
   return (
     <div className="p-8 h-full flex flex-col justify-between">
@@ -51,24 +61,22 @@ export default function Sidebar() {
         <nav className="mt-10">
           <ul>
             {menuData.map((item) => (
-              <>
-                <li >
-                  <Link
-                    href={item.path || "/"}
-                    className={`tracking-wide block hover:text-cp-primary transition active:text-cp-primary py-4 2xl:py-6 ${
-                      pathname === item.path && "text-cp-primary"
-                    }`}
-                  >
-                    {item.icon && (
-                      <span className="text-sm mr-2">
-                        {item.icon}
-                      </span>
-                    )}
-                    {item.name}
-                  </Link>
-                </li>
+              <li key={item.path}>
+                <Link
+                  href={item.path || "/"}
+                  className={`tracking-wide block hover:text-cp-primary transition py-4 2xl:py-6 ${
+                    pathname === item.path ? "text-cp-primary" : ""
+                  }`}
+                >
+                  {item.icon && (
+                    <span className="text-sm mr-2">
+                      {item.icon}
+                    </span>
+                  )}
+                  {item.name}
+                </Link>
                 <hr className="border-slate-600" />
-              </>
+              </li>
             ))}
           </ul>
         </nav>
@@ -76,13 +84,12 @@ export default function Sidebar() {
 
       {/* BOTTOM SIDEBAR */}
       <div>
-        <Link
+        <button
           className="text-slate-300 hover:text-cp-primary-hover"
-          href={"#"}
-          onClick={(e) => handleLogout(e)}
+          onClick={handleLogout}
         >
           Cerrar sesión
-        </Link>
+        </button>
       </div>
     </div>
   );
