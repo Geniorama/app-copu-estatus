@@ -15,13 +15,20 @@ import LinkCP from "@/app/utilities/ui/LinkCP";
 import { useFetchServicesByCompany } from "@/app/hooks/useFetchServicesByCompany";
 import Pagination from "@/app/components/Pagination/Pagination";
 import SkeletonLoader from "@/app/utilities/ui/SkeletonLoader";
+import Switch from "@/app/utilities/ui/Switch";
+import { updateCompany } from "@/app/utilities/helpers/fetchers";
+import { addCompanyOption, removeCompanyOption } from "@/app/store/features/companiesSlice";
+import { useDispatch } from "react-redux";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const headsTable = [
   "Logo",
   "Compañía",
   "Grupo Whatsapp",
   "Servicios activos",
-  "Última modificación"
+  "Última modificación",
+  "Estado"
 ];
 
 const initialData: TableDataProps = {
@@ -35,6 +42,8 @@ export default function DashboardHome() {
   const [tableData, setTableData] = useState<TableDataProps | null>(initialData);
   const [hasFetchedData, setHasFetchedData] = useState(false);
   const router = useRouter();
+  const dispatch = useDispatch();
+  const notify = (message: string) => toast(message);
 
   const fetchServicesByCompany = useFetchServicesByCompany();
 
@@ -56,6 +65,36 @@ export default function DashboardHome() {
       setCurrentPage(currentPage - 1);
     }
   } 
+
+  const handleSwitch = async (companyId?: string) => {
+    if (companyId) {
+      const filterCompany = originalData.find(
+        (company) => company.id === companyId
+      );
+      if (filterCompany) {
+        const statusForUpdate = filterCompany.status;
+        const updatedCompany = {
+          id: filterCompany.id,
+          status: !statusForUpdate,
+        };
+        const response = await updateCompany(updatedCompany);
+        if (response) {
+          if (!statusForUpdate) {
+            dispatch(addCompanyOption({
+              name: filterCompany.name,
+              value: filterCompany.id
+            }));
+          } else {
+            dispatch(removeCompanyOption({
+              name: filterCompany.name,
+              value: filterCompany.id
+            }));
+          }
+          notify("Estado actualizado correctamente");
+        }
+      }
+    }
+  };
 
   useEffect(() => {
     if (!loading && originalData.length > 0) {
@@ -80,6 +119,11 @@ export default function DashboardHome() {
           ),
           <ListServices key={company.id} services={company.services || null} />,
           company.updatedAt,
+          <Switch
+            key={company.id}
+            active={company.status || false}
+            onClick={() => handleSwitch(company.id)}
+          />
         ]),
       };
 
@@ -100,6 +144,7 @@ export default function DashboardHome() {
 
   return (
     <div>
+      <ToastContainer toastStyle={{ fontFamily: "inherit" }} progressClassName={"custom-progress-bar"} />
       <div className="mb-5">
         <TitleSection title="Home" />
       </div>
