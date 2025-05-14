@@ -323,6 +323,7 @@ export default function Users() {
 
   const handleCreateUser = (user: User) => {
     setUserCreated(user);
+    setHasUpdate(true);
   };
 
   const handleEditedUser = (user: User) => {

@@ -141,10 +141,8 @@ export default function FormCreateUser({
               fileProfileUrl = "";
             }
 
-            await updatedUserInContentful({
-              ...user,
-              imageProfile: fileProfileUrl
-            })
+            const userPayload = { ...user, ...(fileProfileUrl && { imageProfile: fileProfileUrl }) };
+            await updatedUserInContentful(userPayload);
 
             onSubmit && onSubmit(user);
 
@@ -203,10 +201,8 @@ export default function FormCreateUser({
               }
             }
 
-            await createUserInContentful({
-              ...updatedUser,
-              imageProfile: fileProfileUrl,
-            });
+            const userPayload = { ...updatedUser, ...(fileProfileUrl && { imageProfile: fileProfileUrl }) };
+            await createUserInContentful(userPayload);
             onSubmit && onSubmit(updatedUser);
 
             Swal.fire({
