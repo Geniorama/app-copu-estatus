@@ -70,6 +70,7 @@ export default function Users() {
     setCurrentPage
   } = useFetchUsers({
     itemsPerPage: 8,
+    hasUpdate
   });
   
   useEffect(() => {
@@ -77,6 +78,8 @@ export default function Users() {
       // const filteredData = fetchUsers.filter(
       //   (user) => user.auth0Id !== currentUserId
       // );
+
+      console.log('fetchUsers',fetchUsers);
 
       const dataTable: TableDataProps = {
         heads: headsTable,
@@ -86,6 +89,7 @@ export default function Users() {
       setTableData(dataTable);
       setOriginalData(fetchUsers);
       setLoading(false);
+      setHasUpdate(false);
     }
   },[fetchUsers, loadingUsers, currentPage, totalPages, hasUpdate]);
 
@@ -182,6 +186,7 @@ export default function Users() {
         };
         await updatedUserInContentful(updatedUser);
         notify("Usuario actualizado");
+        setHasUpdate(true);
       }
     }
   };
@@ -322,6 +327,7 @@ export default function Users() {
 
   const handleEditedUser = (user: User) => {
     setUserEdited(user);
+    setHasUpdate(true);
   };
 
   if (loading) {

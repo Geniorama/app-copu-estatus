@@ -8,14 +8,21 @@ export async function GET(request: NextRequest) {
     const environment = await getContentfulEnvironment();
     const searchParams = request.nextUrl.searchParams;
     const role = searchParams.get('role');
+    const page = parseInt(searchParams.get('page') || '1', 10);
+    const limit = parseInt(searchParams.get('limit') || '6', 10);
+    const skip = (page - 1) * limit;
 
     const query: {
       content_type: string;
       include: number;
       "fields.role"?: string;
+      limit: number;
+      skip: number;
     } = {
       content_type: "user",
       include: 3,
+      limit,
+      skip
     };
 
     if (role) {
@@ -38,7 +45,12 @@ export async function GET(request: NextRequest) {
       position: entry.fields.position?.["en-US"] || null,
     }));
 
-    return NextResponse.json({ users }, { status: 200 });
+    return NextResponse.json({ 
+      users,
+      total: response.total,
+      totalPages: Math.ceil(response.total / limit),
+      currentPage: page
+    }, { status: 200 });
   } catch (error) {
     console.error("Error fetching users:", error);
     return NextResponse.json(

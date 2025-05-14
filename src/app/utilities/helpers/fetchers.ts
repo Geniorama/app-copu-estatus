@@ -154,17 +154,16 @@ export const getCompaniesByIds = async (companiesIds: string[], page: number = 1
 export const getAllUsers = async (limit: number = 6, page: number = 1) => {
   try {
     const fetchUsers = await fetch(`/api/users?limit=${limit}&page=${page}`);
-    if (fetchUsers.ok) {
-      const res = await fetchUsers.json();
-      return res;
-    } else {
-      console.log("Error fetch all users");
+    if (!fetchUsers.ok) {
+      throw new Error(`Error al obtener usuarios: ${fetchUsers.statusText}`);
     }
+    const res = await fetchUsers.json();
+    return res;
   } catch (error) {
-    console.log(error);
+    console.error("Error en getAllUsers:", error);
+    throw error;
   }
 };
-
 
 export const getUsersByCompanyId = async(companyId:string) => {
   try {
