@@ -105,7 +105,7 @@ export default function FormCreateContent({
   );
   const [infoContent, setInfoContent] = useState<Content | null>(initialData);
 
-  const { dataServices, loading } = useFetchServices({ hasUpdate: undefined });
+  const { dataServices, loading } = useFetchServices({ hasUpdate: undefined, itemsPerPage: 1000 });
 
   const handleNextStep = () => {
     if (activeStep < 3) {
