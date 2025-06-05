@@ -189,8 +189,10 @@ export default function FormCreateUser({
             body: JSON.stringify({ action: 'create', user: {...user, password} }),
           });
 
+          const data = await response.json();
+
           if (response.ok) {
-            const auth0User = await response.json();
+            const auth0User = data;
             const updatedUser = { ...user, auth0Id: auth0User.auth0Id };
 
             let fileProfileUrl = "";
@@ -212,13 +214,30 @@ export default function FormCreateUser({
               confirmButtonText: "OK",
             }).then(handleClose);
           } else {
-            console.error(
-              "Error al crear usuario en Auth0",
-              response.statusText
-            );
+            if (response.status === 409) {
+              Swal.fire({
+                title: "Error",
+                text: "El usuario ya existe en el sistema",
+                icon: "error",
+                confirmButtonText: "OK",
+              });
+            } else {
+              Swal.fire({
+                title: "Error",
+                text: data.error || "Error al crear el usuario",
+                icon: "error",
+                confirmButtonText: "OK",
+              });
+            }
           }
         } catch (error) {
           console.error("Error al conectar con la API de Auth0", error);
+          Swal.fire({
+            title: "Error",
+            text: "Error al conectar con el sistema",
+            icon: "error",
+            confirmButtonText: "OK",
+          });
         }
       }
     });

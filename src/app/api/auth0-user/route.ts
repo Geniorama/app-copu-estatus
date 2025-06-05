@@ -70,7 +70,13 @@ const createAuth0User = async (token: string, user: UserForAuth) => {
     }),
   });
 
-  if (!response.ok) throw new Error('Error creando usuario en Auth0');
+  if (!response.ok) {
+    const errorData = await response.json();
+    if (errorData.statusCode === 409) {
+      throw new Error('El usuario ya existe en el sistema');
+    }
+    throw new Error(errorData.message || 'Error creando usuario en Auth0');
+  }
   const data = await response.json();
   return data.user_id;
 };
@@ -82,8 +88,18 @@ export async function POST(req: Request) {
     const token = await getAuth0Token();
 
     if (action === 'create') {
-      const auth0Id = await createAuth0User(token, user);
-      return NextResponse.json({ auth0Id }, { status: 200 });
+      try {
+        const auth0Id = await createAuth0User(token, user);
+        return NextResponse.json({ auth0Id }, { status: 200 });
+      } catch (error) {
+        if (error instanceof Error && error.message === 'El usuario ya existe en el sistema') {
+          return NextResponse.json(
+            { error: 'El usuario ya existe en el sistema' },
+            { status: 409 }
+          );
+        }
+        throw error;
+      }
     } else if (action === 'getRole') {
       const auth0User = await getAuth0User(token, user.auth0Id);
       return NextResponse.json({ auth0User }, { status: 200 });
@@ -95,6 +111,9 @@ export async function POST(req: Request) {
     }
   } catch (error) {
     console.error('Error en la API de Auth0:', error);
-    return NextResponse.json({ message: 'Error en la API de Auth0' }, { status: 500 });
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : 'Error en la API de Auth0' },
+      { status: 500 }
+    );
   }
 }
