@@ -330,13 +330,12 @@ export default function FormCreateCompany({
       <div className="flex gap-3">
         <div className="w-1/2">
           <Label htmlFor="companyPhone" mode="cp-dark">
-            Teléfono *
+            Teléfono
           </Label>
           <PhoneInput
             defaultCountry="co"
             onChange={(phone) => handlePhoneChange(phone)}
             value={company.phone}
-            required
           />
         </div>
 
