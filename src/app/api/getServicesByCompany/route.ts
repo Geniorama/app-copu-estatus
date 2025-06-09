@@ -19,12 +19,6 @@ export async function GET(request: NextRequest) {
       limit: 3,
     });
 
-    if (response.items.length === 0) {
-      return new Response(JSON.stringify({ error: "No se encontraron servicios" }), {
-        status: 404,
-      });
-    }
-
     return new Response(JSON.stringify(response.items), { status: 200 });
   } catch (error) {
     console.error("Error al obtener los servicios de Contentful", error);
