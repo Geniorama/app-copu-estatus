@@ -22,7 +22,7 @@ export default function CarouselCompaniesLogos({ companies }: CarouselCompaniesL
             modules={[Navigation, Pagination]}
             onSwiper={setSwiper}
             onSlideChange={(swiper) => setActiveIndex(swiper.activeIndex)}
-            slidesPerView={1}
+            slidesPerView={companies.length > 3 ? 2.5 : companies.length}
             spaceBetween={30}
             className="rounded-xl"
         >
@@ -38,7 +38,7 @@ export default function CarouselCompaniesLogos({ companies }: CarouselCompaniesL
 
         {/* Bullets personalizados */}
       <div className="flex justify-center mt-3 space-x-2">
-        {companies.map((_, index) => (
+        {companies.length > 3 && companies.map((_, index) => (
           <button
             key={index}
             onClick={() => swiper?.slideTo(index)}
