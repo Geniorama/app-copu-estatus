@@ -22,9 +22,14 @@ export default function CarouselCompaniesLogos({ companies }: CarouselCompaniesL
             modules={[Navigation, Pagination]}
             onSwiper={setSwiper}
             onSlideChange={(swiper) => setActiveIndex(swiper.activeIndex)}
-            slidesPerView={companies.length > 3 ? 2.5 : companies.length}
+            slidesPerView={1}
             spaceBetween={30}
             className="rounded-xl"
+            breakpoints={{
+              768: {
+                slidesPerView: companies.length > 3 ? 2.5 : companies.length,
+              },
+            }}
         >
         {companies.map((company) => (
             <SwiperSlide key={company.id}>

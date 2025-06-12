@@ -17,7 +17,7 @@ export default function Table({ data, className }: TableProps) {
         <thead className="text-slate-200 bg-gray-950">
           <tr>
             {data.heads.map((heading, i) => (
-              <th key={i} className="p-4 uppercase text-sm text-left">
+              <th key={i} className="p-4 uppercase text-sm text-left whitespace-nowrap">
                 {heading}
               </th>
             ))}

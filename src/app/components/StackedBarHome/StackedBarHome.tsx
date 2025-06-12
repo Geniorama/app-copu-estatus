@@ -6,6 +6,7 @@ import {
   CartesianGrid,
   Tooltip,
   Legend,
+  ResponsiveContainer,
 } from "recharts";
 
 const data = [
@@ -41,28 +42,77 @@ const data = [
 
 export default function StackedBarHome() {
   return (
-    <div className="w-full h-full">
-      <BarChart
-        width={700}
-        height={300}
-        data={data}
-        margin={{
-          top: 50,
-          right: 30,
-          left: 20,
-          bottom: 5,
-        }}
-      >
-        <CartesianGrid strokeDasharray="3 3" />
-        <XAxis dataKey="name" />
-        <YAxis />
-        <Tooltip />
-        <Legend />
-        <Bar dataKey="alcance" stackId="a" fill="#FFA806" />
-        <Bar dataKey="impresiones" stackId="a" fill="#815AFF" />
-        <Bar dataKey="interacciones" stackId="a" fill="#EF3E24" />
-        <Bar dataKey="contenidos" stackId="a" fill="#0102FF" />
-      </BarChart>
+    <div className="w-full h-[300px] md:h-[350px]">
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart
+          data={data}
+          margin={{
+            top: 40,
+            right: 10,
+            left: 10,
+            bottom: 20,
+          }}
+          barGap={4}
+          barCategoryGap={12}
+        >
+          <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+          <XAxis 
+            dataKey="name" 
+            stroke="#9CA3AF" 
+            fontSize={12}
+            angle={-45}
+            textAnchor="end"
+            height={60}
+            interval={0}
+          />
+          <YAxis 
+            stroke="#9CA3AF" 
+            fontSize={12}
+            width={40}
+          />
+          <Tooltip 
+            contentStyle={{
+              backgroundColor: '#1F2937',
+              border: '1px solid #374151',
+              borderRadius: '8px',
+              color: '#F9FAFB',
+              fontSize: '12px'
+            }}
+          />
+          <Legend 
+            wrapperStyle={{
+              color: '#F9FAFB',
+              fontSize: '12px',
+              paddingTop: '0px',
+              marginBottom: '10px',
+              paddingBottom: '30px'
+            }}
+            layout="horizontal"
+            verticalAlign="top"
+            align="center"
+          />
+          <Bar 
+            dataKey="alcance" 
+            fill="#3B82F6"
+            radius={[2, 2, 0, 0]}
+          />
+          <Bar 
+            dataKey="impresiones" 
+            fill="#10B981"
+            radius={[2, 2, 0, 0]}
+          />
+          <Bar 
+            dataKey="interacciones" 
+            fill="#F59E0B"
+            radius={[2, 2, 0, 0]}
+          />
+          <Bar 
+            dataKey="contenidos" 
+            fill="#8B5CF6"
+            radius={[2, 2, 0, 0]}
+          />
+        </BarChart>
+      </ResponsiveContainer>
     </div>
   );
 }
