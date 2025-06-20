@@ -17,6 +17,7 @@ interface UserExecutive {
   name: string;
   position: string;
   whatsappUrl: string;
+  phone: string;
 }
 
 export default function HomeClient() {
@@ -24,6 +25,7 @@ export default function HomeClient() {
     name: "Nombre del ejecutivo",
     position: "Cargo del ejecutivo",
     whatsappUrl: "https://wa.me/573178521212",
+    phone: "+573178521212",
   });
   const [contents] = useState<Content[]>([
     {
@@ -81,8 +83,8 @@ export default function HomeClient() {
   ]);
 
   const dataServices: TableDataProps = {
-    heads: ["Nombre", "Fecha de fin", "Estado"],
-    rows: services.map((service) => [service.name, service.startDate, service.status ? "Activo" : "Inactivo"]),
+    heads: ["Nombre", "Fecha inicio", "Fecha fin", "Estado"],
+    rows: services.map((service) => [service.name, service.startDate, service.endDate, service.status ? "Activo" : "Inactivo"]),
   };
 
   const dataContents: TableDataProps = {
@@ -145,9 +147,11 @@ export default function HomeClient() {
               <div>
                 <h3>{userExecutive.name}</h3>
                 <p className="mb-4 text-sm text-slate-400">{userExecutive.position}</p>
-                
                 <Link href={userExecutive.whatsappUrl} target="_blank" rel="noopener noreferrer">
-                  <Button fullWidthMobile mode="cp-light">Enviar mensaje</Button>
+                  <Button fullWidthMobile mode="cp-light">Grupo de WhatsApp</Button>
+                </Link>
+                <Link href={userExecutive.whatsappUrl} target="_blank" rel="noopener noreferrer" className="text-slate-400 hover:text-cp-primary hover:underline transition mt-2 block">
+                  Mensaje directo: {userExecutive.phone}
                 </Link>
               </div>
             </div>
