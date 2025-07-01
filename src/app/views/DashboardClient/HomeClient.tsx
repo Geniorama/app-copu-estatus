@@ -104,12 +104,13 @@ export default function HomeClient() {
       </>,
       service.startDate,
       service.endDate,
-      <span
+      <Link
         key={service.id}
+        href={`/dashboard/servicios/${service.id}`}
         className="text-cp-primary hover:text-cp-primary-dark transition cursor-pointer hover:underline"
       >
         Ver
-      </span>,
+      </Link>,
     ]),
   };
 
