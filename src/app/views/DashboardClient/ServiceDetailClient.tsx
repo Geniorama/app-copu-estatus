@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import { useState, useEffect } from "react";
 import TitleSection from "@/app/utilities/ui/TitleSection";
@@ -7,7 +7,13 @@ import ServiceStatsChart from "@/app/components/ServiceStatsChart/ServiceStatsCh
 import ServiceActionsSummary from "@/app/components/ServiceActionsSummary/ServiceActionsSummary";
 import type { TableDataProps, Service, Content } from "@/app/types";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCalendar, faBuilding, faCheckCircle, faTimesCircle, faArrowLeft } from "@fortawesome/free-solid-svg-icons";
+import {
+  faCalendar,
+  faBuilding,
+  faCheckCircle,
+  faTimesCircle,
+  faArrowLeft,
+} from "@fortawesome/free-solid-svg-icons";
 import Link from "next/link";
 import { formatNumber } from "@/app/utilities/helpers/formatters";
 
@@ -15,7 +21,9 @@ interface ServiceDetailClientProps {
   serviceId: string;
 }
 
-export default function ServiceDetailClient({ serviceId }: ServiceDetailClientProps) {
+export default function ServiceDetailClient({
+  serviceId,
+}: ServiceDetailClientProps) {
   const [service, setService] = useState<Service | null>(null);
   const [contents, setContents] = useState<Content[]>([]);
   const [loading, setLoading] = useState(true);
@@ -24,25 +32,26 @@ export default function ServiceDetailClient({ serviceId }: ServiceDetailClientPr
     // Simular carga de datos - aquí deberías hacer la llamada a tu API
     const loadServiceData = async () => {
       setLoading(true);
-      
+
       // Datos simulados del servicio
       const mockService: Service = {
         id: serviceId,
         name: "Servicio de Marketing Digital",
-        description: "Servicio completo de marketing digital que incluye gestión de redes sociales, creación de contenido y análisis de métricas.",
+        description:
+          "Servicio completo de marketing digital que incluye gestión de redes sociales, creación de contenido y análisis de métricas.",
         startDate: "2024-01-01",
         endDate: "2024-12-31",
         plan: "anual",
         status: true,
         features: [
-          { title: "Gestión de redes sociales", quantity: 3 },
-          { title: "Creación de contenido", quantity: 20 },
-          { title: "Análisis de métricas", quantity: 1 },
-          { title: "Reportes mensuales", quantity: 12 }
+          { title: "Entradas Marketing Dealers", quantity: 3 },
+          { title: "Speakers Congreso Adictos", quantity: 20 },
+          { title: "Entradas Congreso Adictos", quantity: 1 },
+          { title: "Entradas Cannes Lions", quantity: 12 },
         ],
         companyName: "Compañía Ejemplo",
         accionWebYRss: 5,
-        accionPostRss: 10
+        accionPostRss: 10,
       };
 
       // Datos simulados de contenidos
@@ -64,8 +73,8 @@ export default function ServiceDetailClient({ serviceId }: ServiceDetailClientPr
               statistics: {
                 scope: 800,
                 impressions: 1500,
-                interactions: 120
-              }
+                interactions: 120,
+              },
             },
             {
               id: "2",
@@ -74,10 +83,10 @@ export default function ServiceDetailClient({ serviceId }: ServiceDetailClientPr
               statistics: {
                 scope: 700,
                 impressions: 1500,
-                interactions: 130
-              }
-            }
-          ]
+                interactions: 130,
+              },
+            },
+          ],
         },
         {
           id: "2",
@@ -96,8 +105,8 @@ export default function ServiceDetailClient({ serviceId }: ServiceDetailClientPr
               statistics: {
                 scope: 600,
                 impressions: 1200,
-                interactions: 90
-              }
+                interactions: 90,
+              },
             },
             {
               id: "4",
@@ -106,10 +115,10 @@ export default function ServiceDetailClient({ serviceId }: ServiceDetailClientPr
               statistics: {
                 scope: 600,
                 impressions: 1200,
-                interactions: 90
-              }
-            }
-          ]
+                interactions: 90,
+              },
+            },
+          ],
         },
         {
           id: "3",
@@ -128,8 +137,8 @@ export default function ServiceDetailClient({ serviceId }: ServiceDetailClientPr
               statistics: {
                 scope: 400,
                 impressions: 800,
-                interactions: 60
-              }
+                interactions: 60,
+              },
             },
             {
               id: "6",
@@ -138,11 +147,11 @@ export default function ServiceDetailClient({ serviceId }: ServiceDetailClientPr
               statistics: {
                 scope: 400,
                 impressions: 800,
-                interactions: 60
-              }
-            }
-          ]
-        }
+                interactions: 60,
+              },
+            },
+          ],
+        },
       ];
 
       setService(mockService);
@@ -154,7 +163,15 @@ export default function ServiceDetailClient({ serviceId }: ServiceDetailClientPr
   }, [serviceId]);
 
   const dataContents: TableDataProps = {
-    heads: ["Titular", "Fecha", "Tipo", "Alcance", "Impresiones", "Interacciones", "Links"],
+    heads: [
+      "Titular",
+      "Fecha",
+      "Tipo",
+      "Alcance",
+      "Impresiones",
+      "Interacciones",
+      "Links",
+    ],
     rows: contents.map((content) => [
       content.headline,
       content.publicationDate,
@@ -179,8 +196,8 @@ export default function ServiceDetailClient({ serviceId }: ServiceDetailClientPr
         ) : (
           <span className="text-slate-400 text-sm">Sin links</span>
         )}
-      </div>
-    ])
+      </div>,
+    ]),
   };
 
   if (loading) {
@@ -194,8 +211,13 @@ export default function ServiceDetailClient({ serviceId }: ServiceDetailClientPr
   if (!service) {
     return (
       <div className="text-center py-8">
-        <h2 className="text-xl font-semibold text-slate-400">Servicio no encontrado</h2>
-        <Link href="/dashboard/servicios" className="text-cp-primary hover:underline mt-4 inline-block">
+        <h2 className="text-xl font-semibold text-slate-400">
+          Servicio no encontrado
+        </h2>
+        <Link
+          href="/dashboard/servicios"
+          className="text-cp-primary hover:underline mt-4 inline-block"
+        >
           Volver a servicios
         </Link>
       </div>
@@ -206,8 +228,8 @@ export default function ServiceDetailClient({ serviceId }: ServiceDetailClientPr
     <div>
       {/* Header con botón de regreso */}
       <div className="flex items-center gap-4 mb-6">
-        <Link 
-          href="/dashboard/servicios" 
+        <Link
+          href="/dashboard/servicios"
           className="flex items-center gap-2 text-slate-400 hover:text-cp-primary transition"
         >
           <FontAwesomeIcon icon={faArrowLeft} />
@@ -221,42 +243,66 @@ export default function ServiceDetailClient({ serviceId }: ServiceDetailClientPr
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
         {/* Detalles principales */}
         <div className="lg:col-span-2 bg-slate-900 rounded-lg p-6">
-          <h2 className="text-xl font-semibold mb-4">Información del servicio</h2>
-          
+          <h2 className="text-xl font-semibold mb-4">
+            Información del servicio
+          </h2>
+
           <div className="space-y-4">
             <div className="flex items-center gap-3">
-              <FontAwesomeIcon icon={faBuilding} className="text-slate-400 w-4" />
-              <span className="text-slate-300">Compañía: {service.companyName}</span>
+              <FontAwesomeIcon
+                icon={faBuilding}
+                className="text-slate-400 w-4"
+              />
+              <span className="text-slate-300">
+                Compañía: {service.companyName}
+              </span>
             </div>
-            
+
             <div className="flex items-center gap-3">
-              <FontAwesomeIcon icon={faCalendar} className="text-slate-400 w-4" />
+              <FontAwesomeIcon
+                icon={faCalendar}
+                className="text-slate-400 w-4"
+              />
               <span className="text-slate-300">
                 Período: {service.startDate} - {service.endDate}
               </span>
             </div>
-            
+
             <div className="flex items-center gap-3">
               {service.status ? (
-                <FontAwesomeIcon icon={faCheckCircle} className="text-green-500 w-4" />
+                <FontAwesomeIcon
+                  icon={faCheckCircle}
+                  className="text-green-500 w-4"
+                />
               ) : (
-                <FontAwesomeIcon icon={faTimesCircle} className="text-red-500 w-4" />
+                <FontAwesomeIcon
+                  icon={faTimesCircle}
+                  className="text-red-500 w-4"
+                />
               )}
-              <span className={`${service.status ? 'text-green-500' : 'text-red-500'}`}>
-                Estado: {service.status ? 'Activo' : 'Inactivo'}
+              <span
+                className={`${
+                  service.status ? "text-green-500" : "text-red-500"
+                }`}
+              >
+                Estado: {service.status ? "Activo" : "Inactivo"}
               </span>
             </div>
-            
+
             <div className="flex items-center gap-3">
               <span className="text-slate-400">Plan:</span>
-              <span className="text-cp-primary font-medium capitalize">{service.plan}</span>
+              <span className="text-cp-primary font-medium capitalize">
+                {service.plan}
+              </span>
             </div>
           </div>
 
           {service.description && (
             <div className="mt-6">
               <h3 className="text-lg font-medium mb-2">Descripción</h3>
-              <p className="text-slate-300 leading-relaxed">{service.description}</p>
+              <p className="text-slate-300 leading-relaxed">
+                {service.description}
+              </p>
             </div>
           )}
         </div>
@@ -264,13 +310,18 @@ export default function ServiceDetailClient({ serviceId }: ServiceDetailClientPr
         {/* Características del servicio */}
         <div className="bg-slate-900 rounded-lg p-6">
           <h2 className="text-xl font-semibold mb-4">Características</h2>
-          
-          <div className="space-y-3">
+
+          <div className="space-y-2">
             {service.features.map((feature, index) => (
-              <div key={index} className="flex justify-between items-center p-3 bg-slate-800 rounded-lg">
+              <div
+                key={index}
+                className="flex justify-between items-center p-2 bg-slate-800 rounded-lg text-sm"
+              >
                 <span className="text-slate-300">{feature.title}</span>
                 {feature.quantity && (
-                  <span className="text-cp-primary font-medium">{feature.quantity}</span>
+                  <span className="text-cp-primary font-medium">
+                    {feature.quantity}
+                  </span>
                 )}
               </div>
             ))}
@@ -278,7 +329,7 @@ export default function ServiceDetailClient({ serviceId }: ServiceDetailClientPr
 
           {/* Métricas del servicio */}
           <div className="mt-6 pt-6 border-t border-slate-700">
-            <h3 className="text-lg font-medium mb-3">Métricas del servicio</h3>
+            <h3 className="text-lg font-medium mb-3">Total Acciones</h3>
             <div className="space-y-2">
               <div className="flex justify-between">
                 <span className="text-slate-400">Acciones Web y RSS:</span>
@@ -287,6 +338,14 @@ export default function ServiceDetailClient({ serviceId }: ServiceDetailClientPr
               <div className="flex justify-between">
                 <span className="text-slate-400">Acciones Post RSS:</span>
                 <span className="text-cp-primary">{service.accionPostRss}</span>
+              </div>
+              <div className="flex justify-between border-t border-slate-700 pt-2">
+                <span className="text-slate-400 font-bold text-lg">Total General:</span>
+                <span className="text-cp-primary font-bold text-lg">
+                  {service.accionPostRss && service.accionWebYRss
+                    ? service.accionPostRss + service.accionWebYRss
+                    : 0}
+                </span>
               </div>
             </div>
           </div>
@@ -303,7 +362,9 @@ export default function ServiceDetailClient({ serviceId }: ServiceDetailClientPr
           </div>
           {/* Resumen de estadísticas */}
           <div className="bg-slate-900 rounded-lg p-6">
-            <h2 className="text-xl font-semibold mb-6">Resumen de estadísticas</h2>
+            <h2 className="text-xl font-semibold mb-6">
+              Resumen de estadísticas
+            </h2>
             <ServiceStatsChart contents={contents} />
           </div>
         </div>
@@ -314,7 +375,7 @@ export default function ServiceDetailClient({ serviceId }: ServiceDetailClientPr
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-xl font-semibold">Contenidos</h2>
           <span className="text-slate-400 text-sm">
-            {contents.length} contenido{contents.length !== 1 ? 's' : ''}
+            {contents.length} contenido{contents.length !== 1 ? "s" : ""}
           </span>
         </div>
 
@@ -324,10 +385,12 @@ export default function ServiceDetailClient({ serviceId }: ServiceDetailClientPr
           </div>
         ) : (
           <div className="text-center py-8">
-            <p className="text-slate-400">No hay contenidos relacionados con este servicio</p>
+            <p className="text-slate-400">
+              No hay contenidos relacionados con este servicio
+            </p>
           </div>
         )}
       </div>
     </div>
   );
-} 
+}
