@@ -327,28 +327,6 @@ export default function ServiceDetailClient({
             ))}
           </div>
 
-          {/* Métricas del servicio */}
-          <div className="mt-6 pt-6 border-t border-slate-700">
-            <h3 className="text-lg font-medium mb-3">Total Acciones</h3>
-            <div className="space-y-2">
-              <div className="flex justify-between">
-                <span className="text-slate-400">Acciones Web y RSS:</span>
-                <span className="text-cp-primary">{service.accionWebYRss}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-slate-400">Acciones Post RSS:</span>
-                <span className="text-cp-primary">{service.accionPostRss}</span>
-              </div>
-              <div className="flex justify-between border-t border-slate-700 pt-2">
-                <span className="text-slate-400 font-bold text-lg">Total General:</span>
-                <span className="text-cp-primary font-bold text-lg">
-                  {service.accionPostRss && service.accionWebYRss
-                    ? service.accionPostRss + service.accionWebYRss
-                    : 0}
-                </span>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
 
