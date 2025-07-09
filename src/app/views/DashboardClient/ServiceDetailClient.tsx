@@ -264,7 +264,7 @@ export default function ServiceDetailClient({
                 className="text-slate-400 w-4"
               />
               <span className="text-slate-300">
-                Período: {service.startDate} - {service.endDate}
+                Periodo: {service.startDate} - {service.endDate}
               </span>
             </div>
 
