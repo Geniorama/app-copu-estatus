@@ -6,7 +6,7 @@ import Search from "@/app/utilities/ui/Search";
 import Button from "@/app/utilities/ui/Button";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faList, faTable, faFilter, faCaretDown, faCaretUp } from "@fortawesome/free-solid-svg-icons";
-import type { Content, OptionSelect, TableDataProps, SocialListsProps } from "@/app/types";
+import type { Content, OptionSelect, SocialListsProps } from "@/app/types";
 import type { ChangeEvent } from "react";
 import TitleSection from "@/app/utilities/ui/TitleSection";
 import useFetchContents from "@/app/hooks/useFetchContents";
@@ -34,9 +34,6 @@ const PAGE_SIZE_OPTIONS = [5, 10, 20, 50];
 
 export default function ContentsClient() {
   const [searchValue, setSearchValue] = useState("");
-  const [tableContents, setTableContents] = useState<TableDataProps | null>(
-    null
-  );
   const [socialMediaCount, setSocialMediaCount] = useState(0);
   const [webSocialMediaCount, setWebSocialMediaCount] = useState(0);
   const [companiesData, setCompaniesData] = useState<OptionSelect[]>();
@@ -244,19 +241,9 @@ export default function ContentsClient() {
     page * pageSize
   );
 
-  useEffect(() => {
+  // Calcular tableContents con useMemo
+  const tableContents = useMemo(() => {
     if (filteredContents.length > 0) {
-      // Contar tipos de publicaciones visibles
-      const countSocialMedia = filteredContents.filter(
-        (content) => content.type === "post"
-      ).length;
-      const countWebArticles = filteredContents.filter(
-        (content) => content.type === "web"
-      ).length;
-
-      setSocialMediaCount(countSocialMedia);
-      setWebSocialMediaCount(countWebArticles);
-
       const transformData = paginatedContents.map((content: Content) => ({
         companyName: content.companyName || "",
         serviceName: content.serviceName || "",
@@ -269,16 +256,32 @@ export default function ContentsClient() {
         socialMediaInfo: content.socialMediaInfo,
       }));
 
-      setTableContents({
+      return {
         heads: showFullView ? headsTableFull : headsTableCompact,
         rows: showFullView ? rowsTableFull(transformData) : rowsTableCompact(transformData),
-      });
+      };
+    }
+    return null;
+  }, [filteredContents, paginatedContents, showFullView]);
+
+  // useEffect para contar tipos de publicaciones visibles
+  useEffect(() => {
+    if (filteredContents.length > 0) {
+      // Contar tipos de publicaciones visibles
+      const countSocialMedia = filteredContents.filter(
+        (content) => content.type === "post"
+      ).length;
+      const countWebArticles = filteredContents.filter(
+        (content) => content.type === "web"
+      ).length;
+
+      setSocialMediaCount(countSocialMedia);
+      setWebSocialMediaCount(countWebArticles);
     } else {
-      setTableContents(null);
       setSocialMediaCount(0);
       setWebSocialMediaCount(0);
     }
-  }, [filteredContents, paginatedContents, showFullView]);
+  }, [filteredContents]);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     setSearchValue(e.target.value);
@@ -384,7 +387,7 @@ export default function ContentsClient() {
             {/* Filtro por tipo de acción */}
             <div>
               <label className="block text-sm font-medium text-slate-300 mb-2">
-                Tipo de Acción
+                Tipo de acción
               </label>
               <select
                 value={advancedFilters.actionType || ""}
@@ -406,7 +409,7 @@ export default function ContentsClient() {
                 {/* Filtro por fecha desde */}
                 <div>
                   <label className="block text-sm font-medium text-slate-300 mb-2">
-                    Fecha Desde
+                    Fecha inicio
                   </label>
                   <input
                     type="date"
@@ -419,7 +422,7 @@ export default function ContentsClient() {
                 {/* Filtro por fecha hasta */}
                 <div>
                   <label className="block text-sm font-medium text-slate-300 mb-2">
-                    Fecha Hasta
+                    Fecha fin
                   </label>
                   <input
                     type="date"
