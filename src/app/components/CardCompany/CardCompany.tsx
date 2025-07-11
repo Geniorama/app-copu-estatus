@@ -1,5 +1,6 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faImage } from "@fortawesome/free-solid-svg-icons";
+import { useRouter } from "next/navigation";
 
 interface CardCompanyProps {
   name: string;
@@ -20,13 +21,14 @@ export default function CardCompany({
   handle,
   active
 }: CardCompanyProps) {
+  const router = useRouter();
 
   const handleClick = () => {
     if(!handle || !active){
       return
     }
 
-    console.log(handle)
+    router.push(`/dashboard/companias/${handle}`);
   }
 
   return (
