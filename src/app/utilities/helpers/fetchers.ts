@@ -332,9 +332,9 @@ export const getAllContents = async (limit: number = 6, page: number = 1) => {
   }
 };
 
-export const getServicesByCompanyId = async (companyId: string) => {
+export const getServicesByCompanyId = async (companyId: string, limit: number = 100) => {
   try {
-    const res = await fetch(`/api/getServicesByCompany?companyId=${companyId}`);
+    const res = await fetch(`/api/getServicesByCompany?companyId=${companyId}&limit=${limit}`);
     if (res.ok) {
       const data = await res.json();
       return data;

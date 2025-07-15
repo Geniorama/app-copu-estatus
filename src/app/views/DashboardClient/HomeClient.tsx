@@ -10,12 +10,10 @@ import { faUser } from "@fortawesome/free-solid-svg-icons";
 // import Button from "@/app/utilities/ui/Button";
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import type { Company, Service, Content } from "@/app/types";
+import type { Company, Service, Content, CompanyResponse } from "@/app/types";
 import CarouselCompaniesLogos from "@/app/components/CarouselCompaniesLogos/CarouselCompaniesLogos";
-import { getCompaniesByIds, getUsersByCompanyId } from "@/app/utilities/helpers/fetchers";
-import type { CompanyResponse } from "@/app/types";
+import { getCompaniesByIds, getUsersByCompanyId, getServicesByCompanyId } from "@/app/utilities/helpers/fetchers";
 import { Entry } from "contentful-management";
-
 interface UserExecutive {
   name: string;
   position: string;
@@ -33,6 +31,8 @@ export default function HomeClient() {
     phone: "",
     imageProfile: "",
   });
+  const [services, setServices] = useState<Partial<Service>[]>([]);
+
   // Get all companies for the user from localStorage
   useEffect(() => {
     const fetchCompanies = async () => {
@@ -44,7 +44,6 @@ export default function HomeClient() {
       
     const companiesIds = userDataParsed.companiesId || [];
       const companiesFetched = await getCompaniesByIds(companiesIds);
-      console.log('companiesFetched', companiesFetched);
       if (companiesFetched) {
         const transformData = companiesFetched.companies.map((company: CompanyResponse) => ({
           id: company.sys.id,
@@ -52,8 +51,6 @@ export default function HomeClient() {
           logo: company.fields.logo,
           status: company.fields.status,
         }));
-
-        console.log('transformData', transformData);
 
         // Only active companies
         const activeCompanies = transformData.filter((company: Company) => company.status);
@@ -79,12 +76,14 @@ export default function HomeClient() {
         return;
       }
       const users = await getUsersByCompanyId(companies[0].id || "");
-      console.log('users', users);
+
+      if (!users) {
+        return;
+      }
 
       if (users.length > 0) {
        const usersExecutive = users.filter((user: Entry) => user.fields.role["en-US"] === "admin");
        if (usersExecutive.length > 0) {
-        console.log('usersExecutive', usersExecutive);
         setUserExecutive({
           name: usersExecutive[0].fields.firstName["en-US"] + " " + usersExecutive[0].fields.lastName["en-US"],
           position: usersExecutive[0].fields.position["en-US"],
@@ -98,12 +97,34 @@ export default function HomeClient() {
     fetchUserExecutive();
   }, [companies]);
 
-  // const [userExecutive] = useState<UserExecutive>({
-  //   name: "Nombre del ejecutivo",
-  //   position: "Cargo del ejecutivo",
-  //   whatsappUrl: "https://wa.me/573178521212",
-  //   phone: "+573178521212",
-  // });
+  // Get the services for all companies - only fisrt 3 services
+  useEffect(() => {
+    const fetchServices = async () => {
+      const allServices: Entry[] = [];
+      
+      for (const company of companies) {
+        if (company.id) {
+          const servicesFetched = await getServicesByCompanyId(company.id, 3);
+          if (servicesFetched && Array.isArray(servicesFetched)) {
+            allServices.push(...servicesFetched);
+          }
+        }
+      }
+      
+      const transformData = allServices.map((service: Entry) => ({
+        id: service.sys.id,
+        name: service.fields.name["en-US"],
+        description: service.fields.description["en-US"],
+        status: service.fields.status["en-US"],
+        startDate: service.fields.startDate["en-US"],
+        endDate: service.fields.endDate["en-US"],
+      }));
+
+      setServices(transformData.slice(0, 3));
+    };
+    fetchServices();
+  }, [companies]);
+
   const [contents] = useState<Content[]>([
     {
       id: "1",
@@ -124,39 +145,39 @@ export default function HomeClient() {
       type: "Social Media",
     },
   ]);
-  const [services] = useState<Service[]>([
-    {
-      id: "1",
-      name: "Servicio 1",
-      description: "Descripción del servicio 1",
-      features: [],
-      status: true,
-      startDate: "2021-01-01",
-      endDate: "2021-01-01",
-    },
-    {
-      id: "2",
-      name: "Servicio 2",
-      description: "Descripción del servicio 2",
-      features: [],
-      status: false,
-      startDate: "2021-01-01",
-      endDate: "2021-01-01",
-    },
-  ]);
+  // const [mockServices] = useState<Service[]>([
+  //   {
+  //     id: "1",
+  //     name: "Servicio 1",
+  //     description: "Descripción del servicio 1",
+  //     features: [],
+  //     status: true,
+  //     startDate: "2021-01-01",
+  //     endDate: "2021-01-01",
+  //   },
+  //   {
+  //     id: "2",
+  //     name: "Servicio 2",
+  //     description: "Descripción del servicio 2",
+  //     features: [],
+  //     status: false,
+  //     startDate: "2021-01-01",
+  //     endDate: "2021-01-01",
+  //   },
+  // ]);
 
   const dataServices: TableDataProps = {
     heads: ["Nombre", "Fecha inicio", "Fecha fin", ""],
     rows: services.map((service) => [
-      <>
+      <div key={service.id} className="flex items-center gap-2">
         <span
           key={service.id}
           className={`${
             service.status ? "bg-cp-primary" : "bg-red-500"
           } w-2 h-2 rounded-full inline-block mr-1`}
         ></span>{" "}
-        <span>{service.name}</span>
-      </>,
+        <span className="whitespace-nowrap">{service.name}</span>
+      </div>,
       service.startDate,
       service.endDate,
       <Link
@@ -283,7 +304,7 @@ export default function HomeClient() {
         <div className="w-full lg:w-1/3 bg-slate-900 rounded-lg p-4">
           <h2>Mis servicios</h2>
           {services.length > 0 ? (
-            <div className="mt-5">
+            <div className="mt-0">
               <div className="mt-0 overflow-x-scroll w-full custom-scroll">
                 <Table data={dataServices} />
               </div>
