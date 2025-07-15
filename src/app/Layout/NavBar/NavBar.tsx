@@ -40,7 +40,6 @@ export default function NavBar() {
       if (auth0Id) {
         const fetchUser = async () => {
           const response = await getUserByAuth0Id(currentUser.user.sub);
-          console.log('response', response);
           if (response) {
             const transformData:User = {
               id: '',
@@ -55,6 +54,7 @@ export default function NavBar() {
               companiesId: response.company['en-US']?.map((company: Entry) => (company.sys.id)) || [],
             }
             dispatch(setUserData(transformData));
+            localStorage.setItem("userData", JSON.stringify(transformData));
           }
         };
 

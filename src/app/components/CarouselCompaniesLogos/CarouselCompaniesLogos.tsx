@@ -1,3 +1,5 @@
+"use client";
+
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Swiper as SwiperType } from 'swiper/types';
 import 'swiper/css';
@@ -7,6 +9,7 @@ import 'swiper/css/scrollbar';
 import type { Company } from '@/app/types';
 import {Navigation, Pagination} from 'swiper/modules';
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 interface CarouselCompaniesLogosProps {
   companies: Company[];
@@ -15,6 +18,13 @@ interface CarouselCompaniesLogosProps {
 export default function CarouselCompaniesLogos({ companies }: CarouselCompaniesLogosProps) {
   const [swiper, setSwiper] = useState<SwiperType | null>(null);
   const [activeIndex, setActiveIndex] = useState(0);
+  const router = useRouter();
+  const handleCompanyClick = (companyId: string) => {
+    if (!companyId) {
+      return;
+    }
+    router.push(`/dashboard/companias/${companyId}`);
+  }
 
   return (
     <div >
@@ -33,16 +43,16 @@ export default function CarouselCompaniesLogos({ companies }: CarouselCompaniesL
         >
         {companies.map((company) => (
             <SwiperSlide key={company.id}>
-            <div className="flex flex-col gap-2 items-center">
+            <div onClick={() => handleCompanyClick(company.id || "")} className="flex flex-col gap-2 items-center cursor-pointer hover:underline hover:text-cp-primary">
                 <img src={company.logo ? company.logo : 'https://placehold.co/500x500'} alt={company.name} className="w-28 h-28 rounded-full bg-black" />
-                <p className="text-slate-400 text-center hover:underline cursor-pointer hover:text-cp-primary transition">{company.name}</p>
+                <p className="text-slate-400 text-center transition hover:text-cp-primary">{company.name}</p>
             </div>
             </SwiperSlide>
         ))}
         </Swiper>
 
         {/* Bullets personalizados */}
-      <div className="flex justify-center mt-3 space-x-2">
+      <div className="flex justify-center mt-6 space-x-2">
         {companies.length > 3 && companies.map((_, index) => (
           <button
             key={index}

@@ -7,26 +7,103 @@ import Table from "@/app/components/Table/Table";
 import type { TableDataProps } from "@/app/types";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUser } from "@fortawesome/free-solid-svg-icons";
-import Button from "@/app/utilities/ui/Button";
-import { useState } from "react";
+// import Button from "@/app/utilities/ui/Button";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import type { Company, Service, Content } from "@/app/types";
 import CarouselCompaniesLogos from "@/app/components/CarouselCompaniesLogos/CarouselCompaniesLogos";
+import { getCompaniesByIds, getUsersByCompanyId } from "@/app/utilities/helpers/fetchers";
+import type { CompanyResponse } from "@/app/types";
+import { Entry } from "contentful-management";
 
 interface UserExecutive {
   name: string;
   position: string;
   whatsappUrl: string;
   phone: string;
+  imageProfile: string;
 }
 
 export default function HomeClient() {
-  const [userExecutive] = useState<UserExecutive>({
-    name: "Nombre del ejecutivo",
-    position: "Cargo del ejecutivo",
-    whatsappUrl: "https://wa.me/573178521212",
-    phone: "+573178521212",
+  const [companies, setCompanies] = useState<Company[]>([]);
+  const [userExecutive, setUserExecutive] = useState<UserExecutive>({
+    name: "",
+    position: "",
+    whatsappUrl: "",
+    phone: "",
+    imageProfile: "",
   });
+  // Get all companies for the user from localStorage
+  useEffect(() => {
+    const fetchCompanies = async () => {
+      const userData = localStorage.getItem("userData");
+      if (!userData) {
+        return;
+      }
+      const userDataParsed = JSON.parse(userData);
+      
+    const companiesIds = userDataParsed.companiesId || [];
+      const companiesFetched = await getCompaniesByIds(companiesIds);
+      console.log('companiesFetched', companiesFetched);
+      if (companiesFetched) {
+        const transformData = companiesFetched.companies.map((company: CompanyResponse) => ({
+          id: company.sys.id,
+          name: company.fields.name,
+          logo: company.fields.logo,
+          status: company.fields.status,
+        }));
+
+        console.log('transformData', transformData);
+
+        // Only active companies
+        const activeCompanies = transformData.filter((company: Company) => company.status);
+
+        setCompanies(activeCompanies);
+      }
+    };
+    fetchCompanies();
+  }, []);
+
+  // Get the whatsapp url from the phone number
+  const getWhatsappUrl = (phone: string) => {
+    if (!phone) {
+      return "";
+    }
+    return `https://wa.me/${phone}`;
+  }
+
+  // Get the user executive for the first company
+  useEffect(() => {
+    const fetchUserExecutive = async () => {
+      if (!companies || companies.length === 0) {
+        return;
+      }
+      const users = await getUsersByCompanyId(companies[0].id || "");
+      console.log('users', users);
+
+      if (users.length > 0) {
+       const usersExecutive = users.filter((user: Entry) => user.fields.role["en-US"] === "admin");
+       if (usersExecutive.length > 0) {
+        console.log('usersExecutive', usersExecutive);
+        setUserExecutive({
+          name: usersExecutive[0].fields.firstName["en-US"] + " " + usersExecutive[0].fields.lastName["en-US"],
+          position: usersExecutive[0].fields.position["en-US"],
+          whatsappUrl: getWhatsappUrl(usersExecutive[0].fields.phone["en-US"]),
+          phone: usersExecutive[0].fields.phone["en-US"],
+          imageProfile: usersExecutive[0].fields.imageProfile["en-US"],
+        });
+       }
+      }
+    };
+    fetchUserExecutive();
+  }, [companies]);
+
+  // const [userExecutive] = useState<UserExecutive>({
+  //   name: "Nombre del ejecutivo",
+  //   position: "Cargo del ejecutivo",
+  //   whatsappUrl: "https://wa.me/573178521212",
+  //   phone: "+573178521212",
+  // });
   const [contents] = useState<Content[]>([
     {
       id: "1",
@@ -65,28 +142,6 @@ export default function HomeClient() {
       status: false,
       startDate: "2021-01-01",
       endDate: "2021-01-01",
-    },
-  ]);
-  const [companies] = useState<Company[]>([
-    {
-      id: "1",
-      name: "Compañía 1",
-      logo: "https://placehold.co/500x500",
-    },
-    {
-      id: "2",
-      name: "Compañía 2",
-      logo: "https://placehold.co/500x500",
-    },
-    {
-      id: "3",
-      name: "Compañía 3",
-      logo: "https://placehold.co/500x500",
-    },
-    {
-      id: "4",
-      name: "Compañía 4",
-      logo: "https://placehold.co/500x500",
     },
   ]);
 
@@ -175,19 +230,23 @@ export default function HomeClient() {
       <div className="mt-5 flex flex-col lg:flex-row gap-5">
         <div className="w-full lg:w-1/3 bg-slate-900 rounded-lg p-4">
           <h2>Contacto</h2>
-          <div className="flex items-center gap-4 mt-4">
+          <div className="flex items-center gap-4 mt-6">
             <div className="w-32 h-32 bg-slate-800 rounded-full flex justify-center items-center">
-              <FontAwesomeIcon
-                className="text-slate-400 size-10"
-                icon={faUser}
-              />
+              {userExecutive.imageProfile ? (
+                <img src={userExecutive.imageProfile} alt="User Executive" className="w-full h-full object-cover rounded-full" />
+              ) : (
+                <FontAwesomeIcon
+                  className="text-slate-400 size-10"
+                  icon={faUser}
+                />
+              )}
             </div>
             <div>
               <h3>{userExecutive.name}</h3>
               <p className="mb-4 text-sm text-slate-400">
                 {userExecutive.position}
               </p>
-              <Link
+              {/* <Link
                 href={userExecutive.whatsappUrl}
                 target="_blank"
                 rel="noopener noreferrer"
@@ -195,7 +254,7 @@ export default function HomeClient() {
                 <Button fullWidthMobile mode="cp-light">
                   Grupo de WhatsApp
                 </Button>
-              </Link>
+              </Link> */}
               <Link
                 href={userExecutive.whatsappUrl}
                 target="_blank"

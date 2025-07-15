@@ -14,7 +14,7 @@ export default function useLogout() {
       dispatch(resetCurrentUser());
       dispatch(resetUserData());
       dispatch(resetCompaniesOptions());
-      
+      localStorage.removeItem("userData");
       // Luego hacemos la redirección
       window.location.href = "/api/auth/logout";
     } catch (error) {
