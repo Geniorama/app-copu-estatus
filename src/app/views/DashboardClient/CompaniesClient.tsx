@@ -8,7 +8,7 @@ import { RootState } from "@/app/store";
 import { useCallback } from "react";
 import type { CompanyWithUser } from "@/app/types";
 import { useCompanyWithAdmins } from "@/app/hooks/useCompanyWithAdmins";
-import Spinner from "@/app/utilities/ui/Spinner";
+import CompaniesSkeleton from "@/app/components/SkeletonLoader/CompaniesSkeleton";
 
 
 export default function CompaniesClient() {
@@ -34,7 +34,50 @@ export default function CompaniesClient() {
     false
   );
 
-  const { updatedCompanies, subUpdatedData, loading } = useCompanyWithAdmins(companies);
+  const { updatedCompanies, subUpdatedData, loading, error } = useCompanyWithAdmins(companies);
+
+  // Función para obtener el nombre de la compañía superior
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const getSuperiorCompanyName = (superiorData: any) => {
+    if (!superiorData) return null;
+    
+    // Si superiorData es un objeto con fields, extraer el nombre
+    if (superiorData.fields && superiorData.fields.name) {
+      return superiorData.fields.name;
+    }
+    
+    return null;
+  };
+
+  // Mostrar skeleton mientras se cargan los datos
+  if (loading || loadingOriginalData) {
+    return (
+      <CompaniesSkeleton 
+        mainCompaniesCount={companies?.length || 3}
+        subCompaniesCount={subUpdatedData?.length || 0}
+      />
+    );
+  }
+
+  // Mostrar error si existe
+  if (error) {
+    return (
+      <div>
+        <div className="mb-5">
+          <TitleSection title="Mis Compañías" />
+        </div>
+        <div className="text-center p-8">
+          <p className="text-red-400 mb-4">{error}</p>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="bg-cp-primary text-white px-4 py-2 rounded hover:bg-cp-primary-dark"
+          >
+            Reintentar
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -42,19 +85,11 @@ export default function CompaniesClient() {
         <TitleSection title="Mis Compañías" />
       </div>
 
-      {loading || loadingOriginalData ? (
-        <div className="w-full h-[70vh] flex justify-center items-center">
-          <span className="text-8xl">
-            <Spinner />
-          </span>
-        </div>
-      ) : (
-        <>
-        {updatedCompanies && (
+      {updatedCompanies && (
         <div className="flex flex-wrap flex-col lg:flex-row gap-4">
           {updatedCompanies.map((company: CompanyWithUser) => {
             const linkWhatsApp = "https://wa.me/573178239911";
-            console.log(company)
+            console.log('Main Company:', company.name, 'UsersAdmin:', company.usersAdmin, 'Superior:', company.superior);
             return(
               <CardCompany
                   key={company.id}
@@ -80,21 +115,29 @@ export default function CompaniesClient() {
           <div>
             <h2 className="font-bold">Subcompañias</h2>
             <div className="flex mt-4 flex-wrap flex-col lg:flex-row gap-4">
-              {subUpdatedData.map((company: CompanyWithUser) => (
-                <CardCompany
-                  key={company.id}
-                  name={company.name || ""}
-                  executiveLink={"#"}
-                  executiveName={
-                    company.usersAdmin && company.usersAdmin.length > 0
-                      ? `${company.usersAdmin[0].fname} ${company.usersAdmin[0].lname}` ||
-                        ""
-                      : "Sin administrador"
-                  }
-                  icon={company.logo}
-                  handle={company.id}
-                />
-              ))}
+              {subUpdatedData.map((company: CompanyWithUser) => {
+                const superiorCompanyName = getSuperiorCompanyName(company.superior);
+                console.log('Sub Company:', company.name, 'Superior:', company.superior, 'SuperiorName:', superiorCompanyName);
+                console.log('Sub Company UsersAdmin:', company.usersAdmin);
+                
+                return (
+                  <CardCompany
+                    key={company.id}
+                    name={company.name || ""}
+                    executiveLink={"#"}
+                    executiveName={
+                      company.usersAdmin && company.usersAdmin.length > 0
+                        ? `${company.usersAdmin[0].fname} ${company.usersAdmin[0].lname}` ||
+                          ""
+                        : "Sin administrador"
+                    }
+                    icon={company.logo}
+                    handle={company.id}
+                    active={company.status}
+                    companySuperior={superiorCompanyName}
+                  />
+                );
+              })}
             </div>
           </div>
         </div>
@@ -110,8 +153,6 @@ export default function CompaniesClient() {
           ponte en contacto con COPU
         </a>
       </p>
-      </>
-      )}
     </div>
   );
 }

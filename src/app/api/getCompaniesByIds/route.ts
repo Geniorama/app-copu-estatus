@@ -16,12 +16,14 @@ export async function POST(request: NextRequest) {
     const skip = (page - 1) * limit;
 
     // Obtener las entradas de Contentful con los IDs especificados
+    // Incluir la información completa del campo superior
     const response = await contentfulClient.getEntries({
       content_type: "company",
       "sys.id[in]": ids,
       limit,
       skip,
       order: ["fields.name"],
+      include: 2, // Incluir hasta 2 niveles de referencias
     });
 
     // Mapear y extraer solo los campos necesarios

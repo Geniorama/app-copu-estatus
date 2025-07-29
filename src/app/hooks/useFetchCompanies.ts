@@ -267,13 +267,33 @@ export const useFetchCompanies = (
       } else if (userData && userData.companiesId) {
         const data = await getCompaniesByIds(userData.companiesId as string[], page, itemsPerPage);
         const companiesMap = data?.companies;
+        
+        // Debug: Verificar el campo superior en las compañías
+        console.log('Companies from API:', companiesMap?.map(c => ({
+          id: c.sys.id,
+          name: c.fields.name?.["en-US"],
+          superior: c.fields.superior?.["en-US"]
+        })));
+        
         const companiesUpdated = companiesMap.map((company: Entry) => ({
           ...company,
           fields: {
             ...company.fields,
             linkWhatsApp: company.fields.whatsappLink,
+            status: company.fields.status?.["en-US"] ?? true,
+            // Preservar el campo superior original sin procesar
+            superior: company.fields.superior,
+            superiorId: company.fields.superior?.["en-US"]?.sys?.id || null,
           }
         }))
+
+        // Debug: Verificar el campo superior después del mapeo
+        console.log('Companies after mapping:', companiesUpdated?.map(c => ({
+          id: c.sys.id,
+          name: c.fields.name?.["en-US"],
+          superior: c.fields.superior,
+          superiorId: c.fields.superiorId
+        })));
 
         companies = companiesUpdated;
 
@@ -292,7 +312,7 @@ export const useFetchCompanies = (
 
             const services = await fetchServicesByCompany(company.sys.id);
 
-            return {
+            const transformedCompany = {
               id: company.sys.id,
               logo: company.fields.logo || "",
               name: company.fields.name,
@@ -303,7 +323,7 @@ export const useFetchCompanies = (
               businessName: company.fields.businessName,
               driveLink: company.fields.driveLink,
               superior: company.fields.superior,
-              superiorId: company.fields.superior?.sys.id || null,
+              superiorId: company.fields.superiorId,
               updatedAt: `${formattedDate}`,
               services: services.map((service) => ({
                 id: service.sys.id,
@@ -317,6 +337,16 @@ export const useFetchCompanies = (
               })),
               status: company.fields.status,
             };
+
+            // Debug: Verificar el campo superior en la transformación
+            console.log('Transformed Company:', {
+              id: transformedCompany.id,
+              name: transformedCompany.name,
+              superior: transformedCompany.superior,
+              superiorId: transformedCompany.superiorId
+            });
+
+            return transformedCompany;
           })
         );
 
