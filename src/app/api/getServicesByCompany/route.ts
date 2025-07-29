@@ -19,6 +19,7 @@ export async function GET(request: NextRequest) {
     const response = await environment.getEntries({
       content_type: "service",
       "fields.company.sys.id": companyId,
+      "sys.publishedAt[exists]": true,
       limit: limitValue,
     });
 

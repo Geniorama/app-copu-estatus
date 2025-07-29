@@ -19,7 +19,7 @@ import { actionOptions } from "@/app/components/Form/FormCreateContent";
 import { useSelector } from "react-redux";
 import { RootState } from "@/app/store";
 import { useFetchCompanies } from "@/app/hooks/useFetchCompanies";
-import Spinner from "@/app/utilities/ui/Spinner";
+import TableSkeleton from "@/app/components/SkeletonLoader/TableSkeleton";
 import { ServiceOptionsProps } from "../../components/FilterContentBar/FilterContentBar";
 
 interface AdvancedFiltersProps {
@@ -89,12 +89,25 @@ export default function ContentsClient() {
 
   const showSocialLinks = (socialMediaInfo?: SocialListsProps[]) => {
     if (!socialMediaInfo || socialMediaInfo.length === 0) {
-      return <span className="text-slate-400 text-sm">Sin links</span>;
+      return null;
+    }
+
+    // Filtrar solo enlaces válidos
+    const validLinks = socialMediaInfo.filter(social => 
+      social.link && 
+      social.link.trim() !== '' && 
+      social.link !== '#' &&
+      social.link !== 'javascript:void(0)' &&
+      social.link !== 'javascript:;'
+    );
+
+    if (validLinks.length === 0) {
+      return null;
     }
 
     return (
       <div className="flex flex-wrap gap-2">
-        {socialMediaInfo.map((social, index) => (
+        {validLinks.map((social, index) => (
           <a
             key={index}
             href={social.link}
@@ -216,6 +229,24 @@ export default function ContentsClient() {
 
     let filteredData = contents;
 
+    // Filtrar contenidos que tienen enlaces sociales válidos
+    filteredData = filteredData.filter((content) => {
+      if (!content.socialMediaInfo || content.socialMediaInfo.length === 0) {
+        return false;
+      }
+
+      // Verificar que al menos un enlace sea válido
+      const hasValidLinks = content.socialMediaInfo.some(social => 
+        social.link && 
+        social.link.trim() !== '' && 
+        social.link !== '#' &&
+        social.link !== 'javascript:void(0)' &&
+        social.link !== 'javascript:;'
+      );
+
+      return hasValidLinks;
+    });
+
     // Aplicar filtros avanzados
     filteredData = applyAdvancedFilters(filteredData);
 
@@ -315,13 +346,38 @@ export default function ContentsClient() {
     return (
       <div>
         <div className="mb-5">
-          <TitleSection title="Contenidos" />
+          <TitleSection title="Contenidos con Enlaces" />
         </div>
-        <div className="w-full h-[70vh] flex justify-center items-center">
-          <span className="text-8xl">
-            <Spinner />
-          </span>
+        
+        {/* Skeleton para las estadísticas */}
+        <div className="flex flex-col md:flex-row gap-4 mb-8 justify-center">
+          <div className="w-full max-w-xs bg-slate-800 p-8 rounded-lg animate-pulse">
+            <div className="h-6 bg-slate-700 rounded mb-4"></div>
+            <div className="h-24 bg-slate-700 rounded"></div>
+          </div>
+          <div className="w-full max-w-xs bg-slate-800 p-8 rounded-lg animate-pulse">
+            <div className="h-6 bg-slate-700 rounded mb-4"></div>
+            <div className="h-24 bg-slate-700 rounded"></div>
+          </div>
         </div>
+
+        {/* Skeleton para los controles */}
+        <div className="flex flex-col md:flex-row gap-3 items-center justify-between mb-4">
+          <div className="flex flex-col md:flex-row gap-3">
+            <div className="h-10 bg-slate-700 rounded w-64 animate-pulse"></div>
+            <div className="h-10 bg-slate-700 rounded w-24 animate-pulse"></div>
+          </div>
+          <div className="flex flex-col-reverse md:flex-row gap-6 items-center mt-4 md:mt-0">
+            <div className="flex items-center gap-2">
+              <div className="h-4 bg-slate-700 rounded w-32 animate-pulse"></div>
+              <div className="h-8 bg-slate-700 rounded w-16 animate-pulse"></div>
+            </div>
+            <div className="h-10 bg-slate-700 rounded w-32 animate-pulse"></div>
+          </div>
+        </div>
+
+        {/* Skeleton para la tabla */}
+        <TableSkeleton rows={10} columns={showFullView ? 9 : 5} />
       </div>
     );
   }
@@ -329,7 +385,7 @@ export default function ContentsClient() {
   return (
     <div>
       <div className="mb-5">
-        <TitleSection title="Contenidos" />
+        <TitleSection title="Contenidos con Enlaces" />
       </div>
       <div className="flex flex-col md:flex-row gap-4 mb-8 justify-center">
         <div className="w-full max-w-xs text-cp-primary bg-slate-800 p-8 rounded-lg hover:outline-3 hover:outline hover:outline-offset-1 text-center">
@@ -339,6 +395,13 @@ export default function ContentsClient() {
         <div className="w-full max-w-xs text-cp-primary bg-slate-800 p-8 rounded-lg hover:outline-3 hover:outline hover:outline-offset-1 text-center">
           <h3 className="text-xl font-bold">Artículos web</h3>
           <span className="text-8xl">{webSocialMediaCount}</span>
+        </div>
+        <div className="w-full max-w-xs text-cp-primary bg-slate-800 p-8 rounded-lg hover:outline-3 hover:outline hover:outline-offset-1 text-center">
+          <h3 className="text-xl font-bold">Total contenidos</h3>
+          <span className="text-8xl">{contents?.length || 0}</span>
+          <p className="text-sm text-slate-400 mt-2">
+            {socialMediaCount + webSocialMediaCount} (post + web)
+          </p>
         </div>
       </div>
 
@@ -492,7 +555,7 @@ export default function ContentsClient() {
       ) : (
         <div className="text-center p-5 mt-10 flex justify-center items-center">
           <p className="text-slate-400">
-            No hay datos disponibles o no hay coincidencias con la búsqueda.
+            No hay contenidos con enlaces sociales disponibles o no hay coincidencias con la búsqueda.
           </p>
         </div>
       )}

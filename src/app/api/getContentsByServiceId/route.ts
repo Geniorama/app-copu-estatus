@@ -14,6 +14,7 @@ export async function GET(request: NextRequest) {
     const entries = await environment.getEntries({
       content_type: "content",
       "fields.service.sys.id": serviceId,
+      "sys.publishedAt[exists]": true,
     });
 
     const items = entries.items;
