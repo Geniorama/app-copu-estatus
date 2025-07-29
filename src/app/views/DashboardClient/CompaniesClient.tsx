@@ -49,6 +49,31 @@ export default function CompaniesClient() {
     return null;
   };
 
+  // Función para crear el enlace de WhatsApp a partir del número de teléfono
+  const createWhatsAppLink = (phoneNumber: string | undefined) => {
+    if (!phoneNumber) return "#";
+    
+    // Limpiar el número de teléfono (remover espacios, guiones, paréntesis, etc.)
+    const cleanNumber = phoneNumber.replace(/[\s\-\(\)]/g, '');
+    
+    // Si el número no empieza con código de país, agregar +57 (Colombia)
+    let formattedNumber = cleanNumber;
+    if (!cleanNumber.startsWith('+')) {
+      if (cleanNumber.startsWith('57')) {
+        formattedNumber = '+' + cleanNumber;
+      } else if (cleanNumber.startsWith('0')) {
+        formattedNumber = '+57' + cleanNumber.substring(1);
+      } else {
+        formattedNumber = '+57' + cleanNumber;
+      }
+    }
+    
+    // Remover el + para el enlace de WhatsApp
+    const whatsappNumber = formattedNumber.replace('+', '');
+    
+    return `https://wa.me/${whatsappNumber}`;
+  };
+
   // Mostrar skeleton mientras se cargan los datos
   if (loading || loadingOriginalData) {
     return (
@@ -88,17 +113,18 @@ export default function CompaniesClient() {
       {updatedCompanies && (
         <div className="flex flex-wrap flex-col lg:flex-row gap-4">
           {updatedCompanies.map((company: CompanyWithUser) => {
-            const linkWhatsApp = "https://wa.me/573178239911";
+            const adminUser = company.usersAdmin && company.usersAdmin.length > 0 ? company.usersAdmin[0] : null;
+            const executiveLink = createWhatsAppLink(adminUser?.phone);
             console.log('Main Company:', company.name, 'UsersAdmin:', company.usersAdmin, 'Superior:', company.superior);
+            console.log('Admin User:', adminUser?.fname, adminUser?.lname, 'Phone:', adminUser?.phone, 'WhatsApp Link:', executiveLink);
             return(
               <CardCompany
                   key={company.id}
                   name={company.name || ""}
-                  executiveLink={linkWhatsApp}
+                  executiveLink={executiveLink}
                   executiveName={
-                    company.usersAdmin && company.usersAdmin.length > 0
-                      ? `${company.usersAdmin[0].fname} ${company.usersAdmin[0].lname}` ||
-                        ""
+                    adminUser
+                      ? `${adminUser.fname} ${adminUser.lname}` || ""
                       : "Sin administrador"
                   }
                   icon={company.logo}
@@ -117,18 +143,20 @@ export default function CompaniesClient() {
             <div className="flex mt-4 flex-wrap flex-col lg:flex-row gap-4">
               {subUpdatedData.map((company: CompanyWithUser) => {
                 const superiorCompanyName = getSuperiorCompanyName(company.superior);
+                const adminUser = company.usersAdmin && company.usersAdmin.length > 0 ? company.usersAdmin[0] : null;
+                const executiveLink = createWhatsAppLink(adminUser?.phone);
                 console.log('Sub Company:', company.name, 'Superior:', company.superior, 'SuperiorName:', superiorCompanyName);
                 console.log('Sub Company UsersAdmin:', company.usersAdmin);
+                console.log('Sub Admin User:', adminUser?.fname, adminUser?.lname, 'Phone:', adminUser?.phone, 'WhatsApp Link:', executiveLink);
                 
                 return (
                   <CardCompany
                     key={company.id}
                     name={company.name || ""}
-                    executiveLink={"#"}
+                    executiveLink={executiveLink}
                     executiveName={
-                      company.usersAdmin && company.usersAdmin.length > 0
-                        ? `${company.usersAdmin[0].fname} ${company.usersAdmin[0].lname}` ||
-                          ""
+                      adminUser
+                        ? `${adminUser.fname} ${adminUser.lname}` || ""
                         : "Sin administrador"
                     }
                     icon={company.logo}
