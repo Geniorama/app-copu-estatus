@@ -16,7 +16,16 @@ const persistedReducer = persistReducer(persistConfig, rootReducer);
 // Crear el store con el persistedReducer
 export const makeStore = () => {
   return configureStore({
-    reducer: persistedReducer  // Pasar el reducer persistido directamente
+    reducer: persistedReducer,  // Pasar el reducer persistido directamente
+    middleware: (getDefaultMiddleware) =>
+      getDefaultMiddleware({
+        serializableCheck: {
+          // Ignorar acciones específicas que contienen valores no serializables
+          ignoredActions: ['persist/PERSIST', 'persist/REHYDRATE'],
+          // Ignorar rutas específicas del estado
+          ignoredPaths: ['user.currentUser'],
+        },
+      }),
   });
 }
 

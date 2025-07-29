@@ -53,7 +53,7 @@ export default function CompaniesClient() {
         {updatedCompanies && (
         <div className="flex flex-wrap flex-col lg:flex-row gap-4">
           {updatedCompanies.map((company: CompanyWithUser) => {
-            const linkWhatsApp = `https://wa.me/${company.usersAdmin?.[0].phone?.replace(/\+/g, "")}` || "#";
+            const linkWhatsApp = "https://wa.me/573178239911";
             console.log(company)
             return(
               <CardCompany
@@ -84,7 +84,7 @@ export default function CompaniesClient() {
                 <CardCompany
                   key={company.id}
                   name={company.name || ""}
-                  executiveLink={`https://wa.me/${(company.usersAdmin?.[0].phone)?.replace(/\+/g, "")}` || "#"}
+                  executiveLink={"#"}
                   executiveName={
                     company.usersAdmin && company.usersAdmin.length > 0
                       ? `${company.usersAdmin[0].fname} ${company.usersAdmin[0].lname}` ||

@@ -9,43 +9,58 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-const data = [
-  {
-    name: "Compañía A",
-    alcance: 4000,
-    impresiones: 2400,
-    interacciones: 2400,
-    contenidos: 1000,
-  },
-  {
-    name: "Compañía B",
-    alcance: 3000,
-    impresiones: 1398,
-    interacciones: 2210,
-    contenidos: 1000,
-  },
-  {
-    name: "Compañía C",
-    alcance: 2000,
-    impresiones: 9800,
-    interacciones: 2290,
-    contenidos: 1000,
-  },
-  {
-    name: "Compañía D",
-    alcance: 2780,
-    impresiones: 3908,
-    interacciones: 2000,
-    contenidos: 1000,
-  }
-];
+interface CompanyStats {
+  name: string;
+  alcance: number;
+  impresiones: number;
+  interacciones: number;
+  contenidos: number;
+}
 
-export default function StackedBarHome() {
+interface StackedBarHomeProps {
+  data?: CompanyStats[];
+}
+
+export default function StackedBarHome({ data = [] }: StackedBarHomeProps) {
+  // Datos por defecto si no se proporcionan datos
+  const defaultData = [
+    {
+      name: "Compañía A",
+      alcance: 4000,
+      impresiones: 2400,
+      interacciones: 2400,
+      contenidos: 1000,
+    },
+    {
+      name: "Compañía B",
+      alcance: 3000,
+      impresiones: 1398,
+      interacciones: 2210,
+      contenidos: 1000,
+    },
+    {
+      name: "Compañía C",
+      alcance: 2000,
+      impresiones: 9800,
+      interacciones: 2290,
+      contenidos: 1000,
+    },
+    {
+      name: "Compañía D",
+      alcance: 2780,
+      impresiones: 3908,
+      interacciones: 2000,
+      contenidos: 1000,
+    }
+  ];
+
+  const chartData = data.length > 0 ? data : defaultData;
+
   return (
     <div className="w-full h-[300px] md:h-[350px]">
       <ResponsiveContainer width="100%" height="100%">
         <BarChart
-          data={data}
+          data={chartData}
           margin={{
             top: 40,
             right: 10,

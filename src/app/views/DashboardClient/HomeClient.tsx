@@ -8,11 +8,12 @@ import type { TableDataProps } from "@/app/types";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUser } from "@fortawesome/free-solid-svg-icons";
 // import Button from "@/app/utilities/ui/Button";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import type { Company, Service, Content, CompanyResponse } from "@/app/types";
 import CarouselCompaniesLogos from "@/app/components/CarouselCompaniesLogos/CarouselCompaniesLogos";
-import { getCompaniesByIds, getUsersByCompanyId, getServicesByCompanyId } from "@/app/utilities/helpers/fetchers";
+import { getCompaniesByIds, getUsersByCompanyId, getServicesByCompanyId, getContentsByServiceId } from "@/app/utilities/helpers/fetchers";
+import { useCompanyStats } from "@/app/hooks/useCompanyStats";
 import { Entry } from "contentful-management";
 interface UserExecutive {
   name: string;
@@ -32,6 +33,7 @@ export default function HomeClient() {
     imageProfile: "",
   });
   const [services, setServices] = useState<Partial<Service>[]>([]);
+  const [recentContents, setRecentContents] = useState<Content[]>([]);
 
   // Get all companies for the user from localStorage
   useEffect(() => {
@@ -60,6 +62,14 @@ export default function HomeClient() {
     };
     fetchCompanies();
   }, []);
+
+  // Memoize company IDs to prevent infinite re-renders
+  const companyIds = useMemo(() => {
+    return companies.map(company => company.id).filter(Boolean) as string[];
+  }, [companies]);
+
+  // Get company statistics using custom hook
+  const { stats: companyStats, loading: statsLoading, error: statsError } = useCompanyStats(companyIds);
 
   // Get the whatsapp url from the phone number
   const getWhatsappUrl = (phone: string) => {
@@ -100,6 +110,10 @@ export default function HomeClient() {
   // Get the services for all companies - only fisrt 3 services
   useEffect(() => {
     const fetchServices = async () => {
+      if (!companies || companies.length === 0) {
+        return;
+      }
+      
       const allServices: Entry[] = [];
       
       for (const company of companies) {
@@ -125,48 +139,28 @@ export default function HomeClient() {
     fetchServices();
   }, [companies]);
 
-  const [contents] = useState<Content[]>([
-    {
-      id: "1",
-      headline: "Contenido 1",
-      publicationDate: "2021-01-01",
-      type: "Social Media",
-    },
-    {
-      id: "2",
-      headline: "Contenido 2",
-      publicationDate: "2021-01-01",
-      type: "Social Media",
-    },
-    {
-      id: "3",
-      headline: "Contenido 3",
-      publicationDate: "2021-01-01",
-      type: "Social Media",
-    },
-  ]);
-  // const [mockServices] = useState<Service[]>([
-  //   {
-  //     id: "1",
-  //     name: "Servicio 1",
-  //     description: "Descripción del servicio 1",
-  //     features: [],
-  //     status: true,
-  //     startDate: "2021-01-01",
-  //     endDate: "2021-01-01",
-  //   },
-  //   {
-  //     id: "2",
-  //     name: "Servicio 2",
-  //     description: "Descripción del servicio 2",
-  //     features: [],
-  //     status: false,
-  //     startDate: "2021-01-01",
-  //     endDate: "2021-01-01",
-  //   },
-  // ]);
+  useEffect(() => {
+    const fetchContents = async () => {
+      if (!services || services.length === 0) {
+        return;
+      }
 
-  const dataServices: TableDataProps = {
+      const contentsFetched = await getContentsByServiceId(services[0].id || "");
+      if (contentsFetched) {
+        const transformData = contentsFetched.map((content: Entry) => ({
+          id: content.sys.id,
+          headline: content.fields.headline["en-US"],
+          publicationDate: content.fields.publicationDate["en-US"],
+          type: content.fields.type["en-US"],
+        }));
+        setRecentContents(transformData);
+      }
+    };
+    fetchContents();
+  }, [services]);
+
+  // Memoize data objects to prevent unnecessary re-renders
+  const dataServices: TableDataProps = useMemo(() => ({
     heads: ["Nombre", "Fecha inicio", "Fecha fin", ""],
     rows: services.map((service) => [
       <div key={service.id} className="flex items-center gap-2">
@@ -188,16 +182,16 @@ export default function HomeClient() {
         Ver
       </Link>,
     ]),
-  };
+  }), [services]);
 
-  const dataContents: TableDataProps = {
+  const dataContents: TableDataProps = useMemo(() => ({
     heads: ["Nombre", "Fecha de publicación", "Tipo"],
-    rows: contents.map((content: Content) => [
+    rows: recentContents.map((content: Content) => [
       content.headline,
       content.publicationDate,
-      content.type,
+      content.type ? content.type === "post" ? "Post" : "Web" : "No hay tipo",
     ]),
-  };
+  }), [recentContents]);
 
   return (
     <div>
@@ -231,7 +225,17 @@ export default function HomeClient() {
       <div className="mt-5 flex flex-col lg:flex-row gap-5">
         <div className="w-full lg:w-1/2 bg-slate-900 rounded-lg p-4">
           <h2>Datos por compañía</h2>
-          <StackedBarHome />
+          {statsLoading ? (
+            <div className="flex justify-center items-center h-[300px]">
+              <p className="text-slate-400">Cargando estadísticas...</p>
+            </div>
+          ) : statsError ? (
+            <div className="flex justify-center items-center h-[300px]">
+              <p className="text-red-400">{statsError}</p>
+            </div>
+          ) : (
+            <StackedBarHome data={companyStats} />
+          )}
         </div>
 
         <div className="w-full lg:w-1/2 bg-slate-900 rounded-lg p-4">

@@ -411,3 +411,26 @@ export const getContentsByServiceId = async (serviceId: string) => {
     return null;
   }
 };
+
+export const getCompanyStats = async (companyIds: string[]) => {
+  if (!Array.isArray(companyIds) || companyIds.length === 0) {
+    console.error("companyIds debe ser un array con al menos un ID.");
+    return null;
+  }
+
+  try {
+    const companyIdsParam = companyIds.join(",");
+    const res = await fetch(`/api/company-stats?companyIds=${companyIdsParam}`);
+    
+    if (res.ok) {
+      const data = await res.json();
+      return data.stats || [];
+    } else {
+      console.error("Error fetching company stats:", res.statusText);
+      return null;
+    }
+  } catch (error) {
+    console.error("Error in fetch:", error);
+    return null;
+  }
+};
