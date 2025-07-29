@@ -14,6 +14,9 @@ import type { Company, Service, Content, CompanyResponse } from "@/app/types";
 import CarouselCompaniesLogos from "@/app/components/CarouselCompaniesLogos/CarouselCompaniesLogos";
 import { getCompaniesByIds, getUsersByCompanyId, getServicesByCompanyId, getContentsByServiceId } from "@/app/utilities/helpers/fetchers";
 import { useCompanyStats } from "@/app/hooks/useCompanyStats";
+import HomeSkeleton from "@/app/components/SkeletonLoader/HomeSkeleton";
+import StatsSkeleton from "@/app/components/SkeletonLoader/StatsSkeleton";
+import TableSkeleton from "@/app/components/SkeletonLoader/TableSkeleton";
 import { Entry } from "contentful-management";
 interface UserExecutive {
   name: string;
@@ -34,12 +37,16 @@ export default function HomeClient() {
   });
   const [services, setServices] = useState<Partial<Service>[]>([]);
   const [recentContents, setRecentContents] = useState<Content[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [servicesLoading, setServicesLoading] = useState(false);
+  const [contentsLoading, setContentsLoading] = useState(false);
 
   // Get all companies for the user from localStorage
   useEffect(() => {
     const fetchCompanies = async () => {
       const userData = localStorage.getItem("userData");
       if (!userData) {
+        setIsLoading(false);
         return;
       }
       const userDataParsed = JSON.parse(userData);
@@ -59,6 +66,7 @@ export default function HomeClient() {
 
         setCompanies(activeCompanies);
       }
+      setIsLoading(false);
     };
     fetchCompanies();
   }, []);
@@ -114,6 +122,7 @@ export default function HomeClient() {
         return;
       }
       
+      setServicesLoading(true);
       const allServices: Entry[] = [];
       
       for (const company of companies) {
@@ -135,6 +144,7 @@ export default function HomeClient() {
       }));
 
       setServices(transformData.slice(0, 3));
+      setServicesLoading(false);
     };
     fetchServices();
   }, [companies]);
@@ -145,6 +155,7 @@ export default function HomeClient() {
         return;
       }
 
+      setContentsLoading(true);
       const contentsFetched = await getContentsByServiceId(services[0].id || "");
       if (contentsFetched) {
         const transformData = contentsFetched.map((content: Entry) => ({
@@ -155,6 +166,7 @@ export default function HomeClient() {
         }));
         setRecentContents(transformData);
       }
+      setContentsLoading(false);
     };
     fetchContents();
   }, [services]);
@@ -193,33 +205,57 @@ export default function HomeClient() {
     ]),
   }), [recentContents]);
 
+  // Calcular estadísticas totales
+  const totalStats = useMemo(() => {
+    return companyStats.reduce((acc, company) => ({
+      contenidos: acc.contenidos + company.contenidos,
+      alcance: acc.alcance + company.alcance,
+      interacciones: acc.interacciones + company.interacciones,
+      impresiones: acc.impresiones + company.impresiones,
+    }), {
+      contenidos: 0,
+      alcance: 0,
+      interacciones: 0,
+      impresiones: 0,
+    });
+  }, [companyStats]);
+
+  // Mostrar skeleton mientras se cargan los datos iniciales
+  if (isLoading) {
+    return <HomeSkeleton />;
+  }
+
   return (
     <div>
       <TitleSection title="Home" />
 
       {/* Estadísticas totales */}
-      <div className="flex flex-col lg:flex-row gap-5 mt-5">
-        <div className="w-full lg:w-1/4 bg-slate-700 rounded-lg p-4 flex flex-col items-center justify-center gap-2">
-          <h2>Contenidos</h2>
-          <span className="text-3xl font-bold">{formatNumber(15000)}</span>
-          <span className="text-sm text-slate-400">Total de contenidos</span>
+      {statsLoading ? (
+        <StatsSkeleton />
+      ) : (
+        <div className="flex flex-col lg:flex-row gap-5 mt-5">
+          <div className="w-full lg:w-1/4 bg-slate-700 rounded-lg p-4 flex flex-col items-center justify-center gap-2">
+            <h2>Contenidos</h2>
+            <span className="text-3xl font-bold">{formatNumber(totalStats.contenidos)}</span>
+            <span className="text-sm text-slate-400">Total de contenidos</span>
+          </div>
+          <div className="w-full lg:w-1/4 bg-slate-700 rounded-lg p-4 flex flex-col items-center justify-center gap-2">
+            <h2>Alcance</h2>
+            <span className="text-3xl font-bold">{formatNumber(totalStats.alcance)}</span>
+            <span className="text-sm text-slate-400">Total de alcance</span>
+          </div>
+          <div className="w-full lg:w-1/4 bg-slate-700 rounded-lg p-4 flex flex-col items-center justify-center gap-2">
+            <h2>Interacciones</h2>
+            <span className="text-3xl font-bold">{formatNumber(totalStats.interacciones)}</span>
+            <span className="text-sm text-slate-400">Total de interacciones</span>
+          </div>
+          <div className="w-full lg:w-1/4 bg-slate-700 rounded-lg p-4 flex flex-col items-center justify-center gap-2">
+            <h2>Impresiones</h2>
+            <span className="text-3xl font-bold">{formatNumber(totalStats.impresiones)}</span>
+            <span className="text-sm text-slate-400">Total de impresiones</span>
+          </div>
         </div>
-        <div className="w-full lg:w-1/4 bg-slate-700 rounded-lg p-4 flex flex-col items-center justify-center gap-2">
-          <h2>Alcance</h2>
-          <span className="text-3xl font-bold">{formatNumber(15000)}</span>
-          <span className="text-sm text-slate-400">Total de alcance</span>
-        </div>
-        <div className="w-full lg:w-1/4 bg-slate-700 rounded-lg p-4 flex flex-col items-center justify-center gap-2">
-          <h2>Interacciones</h2>
-          <span className="text-3xl font-bold">{formatNumber(15000)}</span>
-          <span className="text-sm text-slate-400">Total de interacciones</span>
-        </div>
-        <div className="w-full lg:w-1/4 bg-slate-700 rounded-lg p-4 flex flex-col items-center justify-center gap-2">
-          <h2>Impresiones</h2>
-          <span className="text-3xl font-bold">{formatNumber(15000)}</span>
-          <span className="text-sm text-slate-400">Total de impresiones</span>
-        </div>
-      </div>
+      )}
 
       {/* Datos por compañía y contenidos recientes */}
       <div className="mt-5 flex flex-col lg:flex-row gap-5">
@@ -240,15 +276,23 @@ export default function HomeClient() {
 
         <div className="w-full lg:w-1/2 bg-slate-900 rounded-lg p-4">
           <h2>Contenidos recientes</h2>
-          <div className="mt-5 overflow-x-scroll w-full custom-scroll">
-            <Table data={dataContents} />
-          </div>
-          <Link
-            href={"/dashboard/contenidos"}
-            className="text-slate-400 text-center flex justify-center items-center mt-2 hover:text-cp-primary hover:underline transition"
-          >
-            Ver todos
-          </Link>
+          {contentsLoading ? (
+            <div className="mt-5">
+              <TableSkeleton rows={3} columns={3} />
+            </div>
+          ) : (
+            <>
+              <div className="mt-5 overflow-x-scroll w-full custom-scroll">
+                <Table data={dataContents} />
+              </div>
+              <Link
+                href={"/dashboard/contenidos"}
+                className="text-slate-400 text-center flex justify-center items-center mt-2 hover:text-cp-primary hover:underline transition"
+              >
+                Ver todos
+              </Link>
+            </>
+          )}
         </div>
       </div>
 
@@ -307,7 +351,11 @@ export default function HomeClient() {
 
         <div className="w-full lg:w-1/3 bg-slate-900 rounded-lg p-4">
           <h2>Mis servicios</h2>
-          {services.length > 0 ? (
+          {servicesLoading ? (
+            <div className="mt-0">
+              <TableSkeleton rows={3} columns={4} />
+            </div>
+          ) : services.length > 0 ? (
             <div className="mt-0">
               <div className="mt-0 overflow-x-scroll w-full custom-scroll">
                 <Table data={dataServices} />
