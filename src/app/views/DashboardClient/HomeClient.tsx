@@ -44,31 +44,93 @@ export default function HomeClient() {
   // Get all companies for the user from localStorage
   useEffect(() => {
     const fetchCompanies = async () => {
+      console.log("HomeClient: Fetching companies from localStorage");
       const userData = localStorage.getItem("userData");
       if (!userData) {
+        console.log("HomeClient: No userData in localStorage");
+        setCompanies([]);
         setIsLoading(false);
         return;
       }
-      const userDataParsed = JSON.parse(userData);
       
-    const companiesIds = userDataParsed.companiesId || [];
-      const companiesFetched = await getCompaniesByIds(companiesIds);
-      if (companiesFetched) {
-        const transformData = companiesFetched.companies.map((company: CompanyResponse) => ({
-          id: company.sys.id,
-          name: company.fields.name,
-          logo: company.fields.logo,
-          status: company.fields.status,
-        }));
+      try {
+        const userDataParsed = JSON.parse(userData);
+        const companiesIds = userDataParsed.companiesId || [];
+        
+        console.log("HomeClient: Companies IDs from localStorage:", companiesIds);
+        
+        if (companiesIds.length === 0) {
+          console.log("HomeClient: No companies IDs found");
+          setCompanies([]);
+          setIsLoading(false);
+          return;
+        }
+        
+        const companiesFetched = await getCompaniesByIds(companiesIds);
+        if (companiesFetched && companiesFetched.companies) {
+          const transformData = companiesFetched.companies.map((company: CompanyResponse) => ({
+            id: company.sys.id,
+            name: company.fields.name,
+            logo: company.fields.logo,
+            status: company.fields.status,
+          }));
 
-        // Only active companies
-        const activeCompanies = transformData.filter((company: Company) => company.status);
-
-        setCompanies(activeCompanies);
+          // Only active companies
+          const activeCompanies = transformData.filter((company: Company) => company.status);
+          
+          console.log("HomeClient: Active companies loaded:", activeCompanies.length);
+          setCompanies(activeCompanies);
+        } else {
+          console.log("HomeClient: No companies fetched from API");
+          setCompanies([]);
+        }
+      } catch (error) {
+        console.error("HomeClient: Error parsing userData or fetching companies:", error);
+        setCompanies([]);
       }
+      
       setIsLoading(false);
     };
+    
     fetchCompanies();
+    
+    // Listener para detectar cambios en localStorage
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'userData') {
+        console.log("HomeClient: localStorage changed, refetching companies");
+        fetchCompanies();
+      }
+    };
+    
+    // Listener para detectar cuando se limpia el localStorage (logout)
+    const handleBeforeUnload = () => {
+      console.log("HomeClient: Page unloading, clearing companies");
+      setCompanies([]);
+    };
+    
+    // Listener para detectar cuando se cargan los datos del usuario
+    const handleUserDataLoaded = () => {
+      console.log("HomeClient: User data loaded event received, refetching companies");
+      fetchCompanies();
+    };
+    
+    // Listener para detectar cuando se hace logout
+    const handleUserLoggedOut = () => {
+      console.log("HomeClient: User logged out, clearing companies");
+      setCompanies([]);
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    window.addEventListener('userDataLoaded', handleUserDataLoaded as EventListener);
+    window.addEventListener('userLoggedOut', handleUserLoggedOut);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      window.removeEventListener('userDataLoaded', handleUserDataLoaded as EventListener);
+      window.removeEventListener('userLoggedOut', handleUserLoggedOut);
+    };
   }, []);
 
   // Memoize company IDs to prevent infinite re-renders

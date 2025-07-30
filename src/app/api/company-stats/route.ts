@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
 
         // Obtener contenidos de todos los servicios de la compañía
         const serviceIds = services.items.map(service => service.sys.id);
-        let allContents = [];
+        let allContents: { fields: { socialLinksAndStatistics?: { [key: string]: unknown } } }[] = [];
         
         if (serviceIds.length > 0) {
           const contents = await environment.getEntries({
@@ -47,7 +47,7 @@ export async function GET(request: NextRequest) {
         let totalScope = 0;
         let totalImpressions = 0;
         let totalInteractions = 0;
-        let totalContents = allContents.length;
+        const totalContents = allContents.length;
 
         // Procesar estadísticas de cada contenido
         allContents.forEach((content) => {

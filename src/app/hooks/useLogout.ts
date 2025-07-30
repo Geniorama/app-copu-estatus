@@ -10,12 +10,39 @@ export default function useLogout() {
 
   const handleLogout = async () => {
     try {
-      // Primero limpiamos el estado
+      console.log("Iniciando proceso de logout...");
+      
+      // Limpiar el estado de Redux
       dispatch(resetCurrentUser());
       dispatch(resetUserData());
       dispatch(resetCompaniesOptions());
+      
+      // Limpiar localStorage completamente
       localStorage.removeItem("userData");
-      // Luego hacemos la redirección
+      
+      // Limpiar cualquier otro dato que pueda estar en localStorage
+      const keysToRemove = [];
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && (key.includes('user') || key.includes('company') || key.includes('auth'))) {
+          keysToRemove.push(key);
+        }
+      }
+      
+      keysToRemove.forEach(key => {
+        localStorage.removeItem(key);
+        console.log(`Removido de localStorage: ${key}`);
+      });
+      
+      console.log("Datos limpiados correctamente");
+      
+      // Limpiar sessionStorage también
+      sessionStorage.clear();
+      
+      // Disparar evento personalizado para notificar que se hizo logout
+      window.dispatchEvent(new CustomEvent('userLoggedOut'));
+      
+      // Hacer la redirección
       window.location.href = "/api/auth/logout";
     } catch (error) {
       console.error("Error during logout:", error);

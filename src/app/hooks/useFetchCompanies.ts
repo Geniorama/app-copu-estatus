@@ -237,6 +237,18 @@ export const useFetchCompanies = (
       setLoading(true);
       setCurrentPage(page);
 
+      // Si no hay userData, intentar obtenerlo del localStorage
+      let companiesIds: string[] = [];
+      if (userData?.companiesId) {
+        companiesIds = userData.companiesId;
+      } else {
+        const localStorageData = localStorage.getItem("userData");
+        if (localStorageData) {
+          const parsedData = JSON.parse(localStorageData);
+          companiesIds = parsedData.companiesId || [];
+        }
+      }
+
       if (fetchAll) {
         const response = await fetch(`/api/companies?page=${page}&limit=${itemsPerPage}`);
         if (!response.ok) {
@@ -264,12 +276,12 @@ export const useFetchCompanies = (
 
           setTotalPages(data.totalPages);
         }
-      } else if (userData && userData.companiesId) {
-        const data = await getCompaniesByIds(userData.companiesId as string[], page, itemsPerPage);
+      } else if (companiesIds.length > 0) {
+        const data = await getCompaniesByIds(companiesIds, page, itemsPerPage);
         const companiesMap = data?.companies;
         
         // Debug: Verificar el campo superior en las compañías
-        console.log('Companies from API:', companiesMap?.map(c => ({
+        console.log('Companies from API:', companiesMap?.map((c: Entry) => ({
           id: c.sys.id,
           name: c.fields.name?.["en-US"],
           superior: c.fields.superior?.["en-US"]
@@ -288,7 +300,7 @@ export const useFetchCompanies = (
         }))
 
         // Debug: Verificar el campo superior después del mapeo
-        console.log('Companies after mapping:', companiesUpdated?.map(c => ({
+        console.log('Companies after mapping:', companiesUpdated?.map((c: Entry) => ({
           id: c.sys.id,
           name: c.fields.name?.["en-US"],
           superior: c.fields.superior,
