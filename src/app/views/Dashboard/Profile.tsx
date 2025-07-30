@@ -83,8 +83,10 @@ export default function Profile() {
         body: JSON.stringify({ email }),
       });
 
+      const responseData = await response.json();
+
       if (response.ok) {
-        const { url } = await response.json();
+        const { url } = responseData;
         console.log(`Enlace enviado correctamente: ${url}`);
         if (url) {
           sentEmailResetPassword(email, url);
@@ -97,13 +99,23 @@ export default function Profile() {
           text: "Error al crear el link de restablecimiento de contraseña",
         });
       } else {
-        const errorData = await response.json();
-        console.log(errorData.error || "Error al enviar el enlace.");
-        Swal.fire({
-          icon: "error",
-          title: "Error",
-          text: "Error al enviar el enlace",
-        });
+        console.error("Error en la respuesta:", responseData);
+        const errorMessage = responseData.error || "Error al enviar el enlace";
+        
+        // Mostrar mensaje específico si es un problema de configuración
+        if (errorMessage.includes("Configuración de Auth0 incompleta")) {
+          Swal.fire({
+            icon: "error",
+            title: "Error de Configuración",
+            text: "El sistema no está configurado correctamente para cambiar contraseñas. Contacte al administrador.",
+          });
+        } else {
+          Swal.fire({
+            icon: "error",
+            title: "Error",
+            text: errorMessage,
+          });
+        }
       }
 
       setLoadChangePassword(false);
@@ -112,7 +124,7 @@ export default function Profile() {
       Swal.fire({
         icon: "error",
         title: "Error",
-        text: "Error al procesar la solicitud",
+        text: "Error al procesar la solicitud. Verifique su conexión a internet.",
       });
 
       setLoadChangePassword(false);
