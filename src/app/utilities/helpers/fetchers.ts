@@ -434,3 +434,30 @@ export const getCompanyStats = async (companyIds: string[]) => {
     return null;
   }
 };
+
+export const getSubCompanies = async (superiorId: string) => {
+  if (!superiorId) {
+    console.error("superiorId es requerido");
+    return null;
+  }
+
+  console.log('getSubCompanies fetcher - superiorId:', superiorId);
+
+  try {
+    const res = await fetch(`/api/getSubCompanies?superiorId=${superiorId}`);
+    console.log('getSubCompanies fetcher - response status:', res.status);
+    
+    if (res.ok) {
+      const data = await res.json();
+      console.log('getSubCompanies fetcher - response data:', data);
+      return data.subCompanies || [];
+    } else {
+      const errorText = await res.text();
+      console.error("Error fetching sub companies:", res.statusText, errorText);
+      return null;
+    }
+  } catch (error) {
+    console.error("Error in fetch:", error);
+    return null;
+  }
+};

@@ -238,13 +238,6 @@ export default function HomeClient() {
             <h2>Contenidos</h2>
             <span className="text-3xl font-bold">{formatNumber(totalStats.contenidos)}</span>
             <span className="text-sm text-slate-400">Total de contenidos</span>
-            <span className="text-xs text-slate-500">
-              {companyStats.length > 0 && (
-                <>
-                  {companyStats.map(company => company.contenidos).join(' + ')} = {totalStats.contenidos}
-                </>
-              )}
-            </span>
           </div>
           <div className="w-full lg:w-1/4 bg-slate-700 rounded-lg p-4 flex flex-col items-center justify-center gap-2">
             <h2>Alcance</h2>

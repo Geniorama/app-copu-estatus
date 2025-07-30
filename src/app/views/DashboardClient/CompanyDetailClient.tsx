@@ -17,8 +17,9 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import Link from "next/link";
 import { formatNumber, formattedDate } from "@/app/utilities/helpers/formatters";
-import Spinner from "@/app/utilities/ui/Spinner";
 import BoxLogo from "@/app/utilities/ui/BoxLogo";
+import CompanyDetailSkeleton from "@/app/components/SkeletonLoader/CompanyDetailSkeleton";
+import { getCompanyById, getServicesByCompanyId, getContentsByServiceId, getSubCompanies } from "@/app/utilities/helpers/fetchers";
 
 interface CompanyDetailClientProps {
   companyId: string;
@@ -50,238 +51,183 @@ export default function CompanyDetailClient({
     totalInteractions: 0,
   });
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const loadCompanyData = async () => {
       setLoading(true);
+      setError(null);
 
-      // Datos simulados de la compañía
-      const mockCompany: Company = {
-        id: companyId,
-        name: "TechCorp Solutions",
-        businessName: "TechCorp Solutions S.A.",
-        address: "123 Tech Street, Silicon Valley, CA",
-        phone: "+1 (555) 123-4567",
-        linkWhatsApp: "+15551234567",
-        nit: "900.123.456-7",
-        driveLink: "https://drive.google.com/drive/folders/techcorp-stats",
-        status: true,
-        // logo: "/img/logo-techcorp.png",
-      };
+      try {
+        // Obtener información de la compañía
+        const companyData = await getCompanyById(companyId);
+        if (!companyData) {
+          throw new Error("Compañía no encontrada");
+        }
 
-      // Datos simulados de compañía superior
-      const mockSuperiorCompany: Company = {
-        id: "superior-1",
-        name: "Global Tech Holdings",
-        businessName: "Global Tech Holdings S.A.",
-        address: "456 Corporate Ave, Business District, CA",
-        phone: "+1 (555) 987-6543",
-        status: true,
-        // logo: "/img/logo-global-tech.png",
-      };
+        console.log('Raw Company Data:', companyData);
+        console.log('Company Fields:', companyData.fields);
+        console.log('Company Superior Field:', companyData.fields?.superior);
 
-      // Datos simulados de subcompañías
-      const mockSubCompanies: Company[] = [
-        {
-          id: "sub-1",
-          name: "TechCorp Mobile",
-          businessName: "TechCorp Mobile S.A.",
-          status: true,
-          // logo: "/img/logo-mobile.png",
-        },
-        {
-          id: "sub-2",
-          name: "TechCorp Cloud",
-          businessName: "TechCorp Cloud S.A.",
-          status: true,
-          // logo: "/img/logo-cloud.png",
-        },
-        {
-          id: "sub-3",
-          name: "TechCorp AI",
-          businessName: "TechCorp AI S.A.",
-          status: false,
-          // logo: "/img/logo-ai.png",
-        },
-      ];
-
-      // Datos simulados de servicios
-      const mockServices: Service[] = [
-        {
-          id: "service-1",
-          name: "COP-1001-2024",
-          description: "Servicio de desarrollo web completo",
-          startDate: "2024-01-01",
-          endDate: "2024-12-31",
-          plan: "anual",
-          status: true,
-          features: [
-            { title: "Desarrollo Frontend", quantity: 1 },
-            { title: "Desarrollo Backend", quantity: 1 },
-            { title: "Base de Datos", quantity: 1 },
-          ],
-          companyName: "TechCorp Solutions",
-          accionWebYRss: 5,
-          accionPostRss: 10,
-        },
-        {
-          id: "service-2",
-          name: "COP-1002-2024",
-          description: "Servicio de marketing digital",
-          startDate: "2024-02-01",
-          endDate: "2024-12-31",
-          plan: "anual",
-          status: true,
-          features: [
-            { title: "Gestión Redes Sociales", quantity: 1 },
-            { title: "Creación de Contenido", quantity: 1 },
-            { title: "Análisis de Métricas", quantity: 1 },
-          ],
-          companyName: "TechCorp Solutions",
-          accionWebYRss: 3,
-          accionPostRss: 8,
-        },
-        {
-          id: "service-3",
-          name: "COP-1003-2024",
-          description: "Servicio de consultoría IT",
-          startDate: "2024-03-01",
-          endDate: "2024-12-31",
-          plan: "anual",
-          status: false,
-          features: [
-            { title: "Auditoría de Sistemas", quantity: 1 },
-            { title: "Optimización de Procesos", quantity: 1 },
-          ],
-          companyName: "TechCorp Solutions",
-          accionWebYRss: 2,
-          accionPostRss: 5,
-        },
-      ];
-
-      // Datos simulados de contenidos
-      const mockContents: Content[] = [
-        {
-          id: "1",
-          companyName: "TechCorp Solutions",
-          companyId: companyId,
-          serviceId: "service-1",
-          serviceName: "COP-1001-2024",
-          type: "post",
-          headline: "Nuevas tendencias en desarrollo web para 2024",
-          publicationDate: "2024-01-15",
-          scope: 15000,
-          impressions: 25000,
-          interactions: 1200,
-          socialMediaInfo: [
-            {
-              id: "instagram",
-              title: "Instagram",
-              link: "https://instagram.com/techcorp/post1",
-              statistics: { scope: 8000, impressions: 12000, interactions: 600 }
-            },
-            {
-              id: "facebook",
-              title: "Facebook",
-              link: "https://facebook.com/techcorp/post1",
-              statistics: { scope: 4000, impressions: 8000, interactions: 300 }
-            },
-            {
-              id: "linkedin",
-              title: "LinkedIn",
-              link: "https://linkedin.com/company/techcorp/post1",
-              statistics: { scope: 3000, impressions: 5000, interactions: 300 }
+        // Obtener servicios de la compañía
+        const servicesData = await getServicesByCompanyId(companyId);
+        if (!servicesData) {
+          console.warn("No se pudieron obtener los servicios de la compañía");
+        }
+        console.log('Services Data:', servicesData);
+        
+        // Obtener contenidos de todos los servicios
+        const allContents: Content[] = [];
+        if (servicesData && Array.isArray(servicesData)) {
+          await Promise.all(servicesData.map(async (service: Service) => {
+            if (service.id) {
+              const serviceContents = await getContentsByServiceId(service.id);
+              if (serviceContents && Array.isArray(serviceContents)) {
+                console.log(`Contents for service ${service.id}:`, serviceContents);
+                allContents.push(...serviceContents);
+              } else {
+                console.log(`No contents found for service ${service.id}`);
+              }
             }
-          ]
-        },
-        {
-          id: "2",
-          companyName: "TechCorp Solutions",
-          companyId: companyId,
-          serviceId: "service-2",
-          serviceName: "COP-1002-2024",
-          type: "web",
-          headline: "Estrategias efectivas de marketing digital",
-          publicationDate: "2024-01-14",
-          scope: 22000,
-          impressions: 35000,
-          interactions: 1800,
-          socialMediaInfo: [
-            {
-              id: "webcopu",
-              title: "Web",
-              link: "https://techcorp.com/blog/marketing-digital",
-              statistics: { scope: 15000, impressions: 25000, interactions: 1200 }
-            },
-            {
-              id: "linkedin",
-              title: "LinkedIn",
-              link: "https://linkedin.com/company/techcorp/post2",
-              statistics: { scope: 7000, impressions: 10000, interactions: 600 }
-            }
-          ]
-        },
-        {
-          id: "3",
-          companyName: "TechCorp Solutions",
-          companyId: companyId,
-          serviceId: "service-1",
-          serviceName: "COP-1001-2024",
-          type: "post",
-          headline: "Inteligencia Artificial en el desarrollo de software",
-          publicationDate: "2024-01-13",
-          scope: 18000,
-          impressions: 28000,
-          interactions: 1500,
-          socialMediaInfo: [
-            {
-              id: "instagram",
-              title: "Instagram",
-              link: "https://instagram.com/techcorp/post3",
-              statistics: { scope: 10000, impressions: 15000, interactions: 800 }
-            },
-            {
-              id: "facebook",
-              title: "Facebook",
-              link: "https://facebook.com/techcorp/post3",
-              statistics: { scope: 5000, impressions: 8000, interactions: 400 }
-            },
-            {
-              id: "xtwitter",
-              title: "X (Twitter)",
-              link: "https://twitter.com/techcorp/post3",
-              statistics: { scope: 3000, impressions: 5000, interactions: 300 }
-            }
-          ]
-        },
-      ];
+          }));
+        }
 
-      // Calcular estadísticas
-      const totalServices = mockServices.length;
-      const activeServices = mockServices.filter(service => service.status).length;
-      const totalContents = mockContents.length;
-      const totalScope = mockContents.reduce((sum, content) => sum + (content.scope || 0), 0);
-      const totalImpressions = mockContents.reduce((sum, content) => sum + (content.impressions || 0), 0);
-      const totalInteractions = mockContents.reduce((sum, content) => sum + (content.interactions || 0), 0);
+        console.log('All Contents:', allContents);
 
-      setCompany(mockCompany);
-      setServices(mockServices);
-      setContents(mockContents);
-      setSubCompanies(mockSubCompanies);
-      setSuperiorCompany(mockSuperiorCompany);
-      setStats({
-        totalServices,
-        activeServices,
-        totalContents,
-        totalScope,
-        totalImpressions,
-        totalInteractions,
-      });
-      setLoading(false);
+        // Obtener compañía superior si existe
+        let superiorCompanyData: Company | null = null;
+        if (companyData.fields?.superior?.["en-US"]?.sys?.id) {
+          try {
+            const superiorId = companyData.fields.superior["en-US"].sys.id;
+            const superiorEntry = await getCompanyById(superiorId);
+            if (superiorEntry) {
+              superiorCompanyData = {
+                id: superiorEntry.sys?.id,
+                name: superiorEntry.fields?.name?.["en-US"] || "",
+                businessName: superiorEntry.fields?.businessName?.["en-US"] || "",
+                nit: superiorEntry.fields?.nit?.["en-US"] || "",
+                phone: superiorEntry.fields?.phone?.["en-US"] || "",
+                address: superiorEntry.fields?.address?.["en-US"] || "",
+                driveLink: superiorEntry.fields?.driveLink?.["en-US"] || "",
+                status: superiorEntry.fields?.status?.["en-US"] ?? true,
+                logo: superiorEntry.fields?.logo?.["en-US"] || "",
+                superior: superiorEntry.fields?.superior?.["en-US"] || null,
+              };
+            }
+            console.log('Superior Company Data:', superiorCompanyData);
+          } catch (superiorError) {
+            console.log("Error obteniendo compañía superior:", superiorError);
+          }
+        }
+
+        // Obtener subcompañías (compañías que tienen esta como superior)
+        let subCompaniesData: Company[] = [];
+        if (companyData.sys?.id) {
+          try {
+            console.log('Calling getSubCompanies with ID:', companyData.sys.id);
+            console.log('Company ID type:', typeof companyData.sys.id);
+            console.log('Company ID value:', companyData.sys.id);
+            
+            const subCompaniesResult = await getSubCompanies(companyData.sys.id);
+            console.log('getSubCompanies result:', subCompaniesResult);
+            console.log('getSubCompanies result type:', typeof subCompaniesResult);
+            console.log('getSubCompanies result is array:', Array.isArray(subCompaniesResult));
+            
+            if (subCompaniesResult && Array.isArray(subCompaniesResult)) {
+              subCompaniesData = subCompaniesResult;
+            }
+            console.log('Sub Companies Data:', subCompaniesData);
+          } catch (subCompaniesError) {
+            console.log("Error obteniendo subcompañías:", subCompaniesError);
+          }
+        } else {
+          console.log('No company ID found for subcompanies query');
+          console.log('companyData.sys:', companyData.sys);
+        }
+
+        // Calcular estadísticas
+        const totalServices = servicesData && Array.isArray(servicesData) ? servicesData.length : 0;
+        const activeServices = servicesData && Array.isArray(servicesData) ? servicesData.filter((service: Service) => service.status).length : 0;
+        const totalContents = allContents.length;
+        const totalScope = allContents.reduce((sum, content) => sum + (content.scope || 0), 0);
+        const totalImpressions = allContents.reduce((sum, content) => sum + (content.impressions || 0), 0);
+        const totalInteractions = allContents.reduce((sum, content) => sum + (content.interactions || 0), 0);
+
+        // Transformar datos de la compañía de forma segura
+        const transformCompanyData = {
+          id: companyData.sys?.id,
+          name: companyData.fields?.name?.["en-US"] || "",
+          businessName: companyData.fields?.businessName?.["en-US"] || "",
+          nit: companyData.fields?.nit?.["en-US"] || "",
+          phone: companyData.fields?.phone?.["en-US"] || "",
+          address: companyData.fields?.address?.["en-US"] || "",
+          driveLink: companyData.fields?.driveLink?.["en-US"] || "",
+          status: companyData.fields?.status?.["en-US"] ?? true,
+          logo: companyData.fields?.logo?.["en-US"] || "",
+          superior: companyData.fields?.superior?.["en-US"] || null,
+        }
+
+        console.log('Transformed Company Data:', transformCompanyData);
+
+        setCompany(transformCompanyData);
+        setServices(servicesData && Array.isArray(servicesData) ? servicesData : []);
+        setContents(allContents);
+        setSubCompanies(subCompaniesData);
+        setSuperiorCompany(superiorCompanyData);
+        setStats({
+          totalServices,
+          activeServices,
+          totalContents,
+          totalScope,
+          totalImpressions,
+          totalInteractions,
+        });
+
+        console.log('Company Detail Data:', {
+          company: companyData,
+          services: servicesData,
+          contents: allContents,
+          superior: superiorCompanyData,
+          stats: {
+            totalServices,
+            activeServices,
+            totalContents,
+            totalScope,
+            totalImpressions,
+            totalInteractions,
+          }
+        });
+
+      } catch (err) {
+        console.error("Error cargando datos de la compañía:", err);
+        setError(err instanceof Error ? err.message : "Error desconocido");
+      } finally {
+        setLoading(false);
+      }
     };
 
     loadCompanyData();
   }, [companyId]);
+
+  // Mostrar error si existe
+  if (error) {
+    return (
+      <div>
+        <div className="mb-5">
+          <TitleSection title="Detalle de Compañía" />
+        </div>
+        <div className="text-center p-8">
+          <p className="text-red-400 mb-4">{error}</p>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="bg-cp-primary text-white px-4 py-2 rounded hover:bg-cp-primary-dark"
+          >
+            Reintentar
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   const servicesData: TableDataProps = {
     heads: [
@@ -318,6 +264,9 @@ export default function CompanyDetailClient({
       service.accionPostRss,
     ]),
   };
+
+  console.log('Services for table:', services);
+  console.log('Services table data:', servicesData);
 
   const contentsData: TableDataProps = {
     heads: [
@@ -359,19 +308,11 @@ export default function CompanyDetailClient({
     ]),
   };
 
+  console.log('Contents for table:', contents);
+  console.log('Contents table data:', contentsData);
+
   if (loading) {
-    return (
-      <div>
-        <div className="mb-5">
-          <TitleSection title="Detalle de Compañía" />
-        </div>
-        <div className="w-full h-[70vh] flex justify-center items-center">
-          <span className="text-8xl">
-            <Spinner />
-          </span>
-        </div>
-      </div>
-    );
+    return <CompanyDetailSkeleton />;
   }
 
   if (!company) {
