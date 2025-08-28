@@ -24,53 +24,65 @@ const DashboardClientWrapper = ({ user, userRole }: DashboardClientWrapperProps)
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const initializeUser = async () => {
-      if (user && userRole) {
-        dispatch(setCurrentUser({ user }));
-        
-        // Cargar datos del usuario si no están disponibles
-        if (!userData && user.user.sub) {
-          try {
-            console.log('Loading user data for:', user.user.sub);
-            const response = await getUserByAuth0Id(user.user.sub);
-            if (response) {
-              const transformData: User = {
-                id: '',
-                fname: response.firstName['en-US'],
-                lname: response.lastName['en-US'],
-                position: response.position['en-US'],
-                email: response.email['en-US'],
-                phone: response.phone['en-US'],
-                role: response.role['en-US'],
-                imageProfile: response.imageProfile['en-US'],
-                companies: response.company['en-US'] || [],
-                companiesId: response.company['en-US']?.map((company: Entry) => (company.sys.id)) || [],
-              };
-              console.log('User data loaded:', transformData);
-              dispatch(setUserData(transformData));
-              localStorage.setItem("userData", JSON.stringify(transformData));
-              
-              // Disparar evento personalizado para notificar que los datos del usuario han cambiado
-              window.dispatchEvent(new CustomEvent('userDataLoaded', { 
-                detail: { userData: transformData } 
-              }));
-            }
-          } catch (error) {
-            console.error("Error loading user data:", error);
+    // Solo ejecutar una vez cuando el componente se monta
+    if (!user || !userRole || !user.sub) return;
+    
+    console.log('DashboardWrapper - user object:', user);
+    console.log('DashboardWrapper - userRole:', userRole);
+    
+    dispatch(setCurrentUser({ user }));
+    
+    // Solo cargar datos si no están disponibles
+    if (!userData) {
+      const loadUserData = async () => {
+        try {
+          console.log('Loading user data for:', user.sub);
+          const response = await getUserByAuth0Id(user.sub);
+          if (response) {
+            const transformData: User = {
+              id: '',
+              fname: response.firstName['en-US'],
+              lname: response.lastName['en-US'],
+              position: response.position['en-US'],
+              email: response.email['en-US'],
+              phone: response.phone['en-US'],
+              role: response.role['en-US'],
+              imageProfile: response.imageProfile['en-US'],
+              companies: response.company['en-US'] || [],
+              companiesId: response.company['en-US']?.map((company: Entry) => (company.sys.id)) || [],
+            };
+            console.log('User data loaded:', transformData);
+            dispatch(setUserData(transformData));
+            localStorage.setItem("userData", JSON.stringify(transformData));
+            
+            // Disparar evento personalizado para notificar que los datos del usuario han cambiado
+            window.dispatchEvent(new CustomEvent('userDataLoaded', { 
+              detail: { userData: transformData } 
+            }));
           }
-        } else if (userData) {
-          console.log('User data already available:', userData);
+        } catch (error) {
+          console.error("Error loading user data:", error);
+        } finally {
+          setIsLoading(false);
         }
-        
-        setIsLoading(false);
-      }
-    };
+      };
+      
+      loadUserData();
+    } else {
+      console.log('User data already available:', userData);
+      setIsLoading(false);
+    }
+  }, []); // Solo se ejecuta una vez al montar el componente
 
-    initializeUser();
-  }, [dispatch, user, userRole, userData]);
+  // Efecto separado para manejar cambios en userData
+  useEffect(() => {
+    if (userData) {
+      setIsLoading(false);
+    }
+  }, [userData]);
 
-  // Mostrar skeleton mientras se cargan los datos
-  if (isLoading) {
+  // Mostrar skeleton solo si estamos cargando Y no tenemos datos del usuario
+  if (isLoading && !userData) {
     return (
       <div className="w-full h-screen flex justify-center items-center">
         <SkeletonLoader type="table" rows={5} className="w-full max-w-4xl" />

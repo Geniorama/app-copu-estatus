@@ -22,10 +22,15 @@ export async function GET(request: NextRequest) {
 
     const items = entries.items;
     
+    console.log('Services API - Total entries:', entries.total);
+    console.log('Services API - Items count:', items?.length || 0);
+    
     if (!items || items.length === 0) {
-      return NextResponse.json({ message: 'No entries found' }, { status: 404 });
+      console.log('Services API - No items found, returning empty array');
+      return NextResponse.json({ items: [], totalPages: 1 }, { status: 200 });
     }
     
+    console.log('Services API - Returning items and totalPages');
     return NextResponse.json({items, totalPages: Math.ceil(entries.total / limit)}, { status: 200 });
   } catch (error) {
     console.error('Error fetching data from Contentful:', error);

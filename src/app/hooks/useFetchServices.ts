@@ -33,27 +33,38 @@ export function useFetchServices({hasUpdate, itemsPerPage = 6}: FetchServicesPro
   useEffect(() => {
     const fetchServices = async () => {
         setLoading(true)
-        const res = await getAllServices(itemsPerPage, currentPage);
-        const services = res.items;
-
-        const transformData = services.map((service: Entry) => ({
-          id: service.sys.id,
-          name: service.fields.name["en-US"],
-          description: service.fields.description["en-US"],
-          plan: service.fields.plan["en-US"],
-          startDate: service.fields.startDate["en-US"],
-          endDate: service.fields.endDate["en-US"],
-          status: service.fields.status["en-US"],
-          company: service.fields.company["en-US"],
-          companyName: getCompanyName(service.fields.company["en-US"].sys.id, options),
-          companyId: service.fields.company["en-US"].sys.id,
-          features: service.fields.features?.["en-US"] || [],
-          accionWebYRss: service.fields.accionWebYRss?.["en-US"],
-          accionPostRss: service.fields.accionPostRss?.["en-US"]
-        }));
-        setDataServices(transformData)
-        setLoading(false)
-        setTotalPages(res.totalPages)
+        try {
+          const res = await getAllServices(itemsPerPage, currentPage);
+          
+          if (res && res.items && Array.isArray(res.items)) {
+            const transformData = res.items.map((service: Entry) => ({
+              id: service.sys.id,
+              name: service.fields.name["en-US"],
+              description: service.fields.description["en-US"],
+              plan: service.fields.plan["en-US"],
+              startDate: service.fields.startDate["en-US"],
+              endDate: service.fields.endDate["en-US"],
+              status: service.fields.status["en-US"],
+              company: service.fields.company["en-US"],
+              companyName: getCompanyName(service.fields.company["en-US"].sys.id, options),
+              companyId: service.fields.company["en-US"].sys.id,
+              features: service.fields.features?.["en-US"] || [],
+              accionWebYRss: service.fields.accionWebYRss?.["en-US"],
+              accionPostRss: service.fields.accionPostRss?.["en-US"]
+            }));
+            setDataServices(transformData)
+            setTotalPages(res.totalPages || 1)
+          } else {
+            setDataServices([])
+            setTotalPages(1)
+          }
+        } catch (error) {
+          console.error("Error fetching services:", error)
+          setDataServices([])
+          setTotalPages(1)
+        } finally {
+          setLoading(false)
+        }
       };
 
     fetchServices()

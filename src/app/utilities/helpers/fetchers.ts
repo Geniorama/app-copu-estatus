@@ -205,9 +205,11 @@ export const getAllServices = async (limit:number = 6, page:number = 1) => {
       return data;
     } else {
       console.log("Error fetch all services");
+      return { items: [], totalPages: 1 };
     }
   } catch (error) {
     console.log(error);
+    return { items: [], totalPages: 1 };
   }
 };
 

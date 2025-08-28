@@ -23,6 +23,7 @@ import { formattedDate } from "@/app/utilities/helpers/formatters";
 import { useSearchParams } from "next/navigation";
 import Pagination from "@/app/components/Pagination/Pagination";
 import SkeletonLoader from "@/app/utilities/ui/SkeletonLoader";
+import EmptyState from "@/app/utilities/ui/EmptyState";
 
 const headsTable = [
   "Nombre servicio",
@@ -238,12 +239,10 @@ export default function Services() {
           )}
         </>
       ) : (
-        <div className="text-center p-5 mt-10 flex justify-center items-center">
-          <p className="text-slate-400">
-            No hay empresas asignadas <br /> o no hay coincidencias con la
-            búsqueda.
-          </p>
-        </div>
+        <EmptyState 
+          type="services" 
+          message={searchValue ? "No hay servicios que coincidan con la búsqueda. Intenta con otros términos." : undefined}
+        />
       )}
     </div>
   );

@@ -9,6 +9,7 @@ import { useCallback } from "react";
 import type { CompanyWithUser } from "@/app/types";
 import { useCompanyWithAdmins } from "@/app/hooks/useCompanyWithAdmins";
 import CompaniesSkeleton from "@/app/components/SkeletonLoader/CompaniesSkeleton";
+import EmptyState from "@/app/utilities/ui/EmptyState";
 
 
 export default function CompaniesClient() {
@@ -110,7 +111,7 @@ export default function CompaniesClient() {
         <TitleSection title="Mis Compañías" />
       </div>
 
-      {updatedCompanies && (
+      {updatedCompanies && updatedCompanies.length > 0 ? (
         <div className="flex flex-wrap flex-col lg:flex-row gap-4">
           {updatedCompanies.map((company: CompanyWithUser) => {
             const adminUser = company.usersAdmin && company.usersAdmin.length > 0 ? company.usersAdmin[0] : null;
@@ -134,6 +135,8 @@ export default function CompaniesClient() {
             )
           })}
         </div>
+      ) : (
+        <EmptyState type="companies" />
       )}
 
       {subUpdatedData && subUpdatedData.length > 0 && (

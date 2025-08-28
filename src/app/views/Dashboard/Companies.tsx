@@ -34,6 +34,7 @@ import { addCompanyOption, removeCompanyOption, fetchCompaniesOptions } from "@/
 import { useDispatch } from "react-redux";
 import type { ThunkDispatch, AnyAction } from "@reduxjs/toolkit";
 import SkeletonLoader from "@/app/utilities/ui/SkeletonLoader";
+import EmptyState from "@/app/utilities/ui/EmptyState";
 
 interface FiltersProps {
   users?: { id: string; name: string }[];
@@ -534,11 +535,10 @@ export default function Companies() {
           </div>
         </>
       ) : (
-        <div className="text-center p-5 mt-10 flex justify-center items-center">
-          <p className="text-slate-400">
-            No hay datos disponibles o no hay coincidencias con la búsqueda.
-          </p>
-        </div>
+        <EmptyState 
+          type="companies" 
+          message={searchValue ? "No hay compañías que coincidan con la búsqueda. Intenta con otros términos." : undefined}
+        />
       )}
     </div>
   );

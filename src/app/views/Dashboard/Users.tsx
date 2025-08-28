@@ -24,6 +24,7 @@ import Swal from "sweetalert2";
 import useFetchUsers from "@/app/hooks/useFetchUsers";
 import Pagination from "@/app/components/Pagination/Pagination";
 import SkeletonLoader from "@/app/utilities/ui/SkeletonLoader";
+import EmptyState from "@/app/utilities/ui/EmptyState";
 
 export default function Users() {
   const [searchValue, setSearchValue] = useState("");
@@ -413,11 +414,10 @@ export default function Users() {
           )}
         </>
       ) : (
-        <div className="text-center p-5 mt-10 flex justify-center items-center">
-          <p className="text-slate-400">
-            No hay datos disponibles o no hay coincidencias con la búsqueda.
-          </p>
-        </div>
+        <EmptyState 
+          type="users" 
+          message={searchValue ? "No hay usuarios que coincidan con la búsqueda. Intenta con otros términos." : undefined}
+        />
       )}
     </div>
   );

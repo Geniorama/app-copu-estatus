@@ -34,6 +34,7 @@ import { useSelector } from "react-redux";
 import { faCaretDown, faCaretUp } from "@fortawesome/free-solid-svg-icons";
 import Label from "@/app/utilities/ui/Label";
 import SkeletonLoader from "@/app/utilities/ui/SkeletonLoader";
+import EmptyState from "@/app/utilities/ui/EmptyState";
 import HierarchicalCompanyFilter from "@/app/components/Filter/HierarchicalCompanyFilter";
 import { useFetchCompanies } from "@/app/hooks/useFetchCompanies";
 import { useFetchServicesByCompany } from "@/app/hooks/useFetchServicesByCompany";
@@ -808,11 +809,10 @@ export default function Contents() {
           
         </>
       ) : (
-        <div className="text-center p-5 mt-10 flex justify-center items-center">
-          <p className="text-slate-400">
-            No hay datos disponibles o no hay coincidencias con la búsqueda.
-          </p>
-        </div>
+        <EmptyState 
+          type="contents" 
+          message={searchValue ? "No hay contenidos que coincidan con la búsqueda. Intenta con otros términos." : undefined}
+        />
       )}
     </div>
   );
