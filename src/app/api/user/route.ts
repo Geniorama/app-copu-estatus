@@ -1,40 +1,40 @@
-import { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { getContentfulEnvironment } from "@/app/lib/contentfulManagement";
 import type { User } from "@/app/types";
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const auth0Id = searchParams.get("auth0Id");
-  const environment = getContentfulEnvironment();
 
   if (!auth0Id) {
-    return new Response(JSON.stringify({ error: "auth0Id es requerido" }), {
-      status: 400,
-    });
+    return NextResponse.json(
+      { error: "auth0Id es requerido" },
+      { status: 400 }
+    );
   }
 
   try {
-
-    const response = (await environment).getEntries({
+    const environment = await getContentfulEnvironment();
+    
+    const response = await environment.getEntries({
       content_type: "user",
       "fields.auth0Id": auth0Id,
       include: 3,
     });
 
-    if ((await response).items.length === 0) {
-      return new Response(JSON.stringify({ error: "Usuario no encontrado" }), {
-        status: 404,
-      });
+    if (response.items.length === 0) {
+      return NextResponse.json(
+        { error: "Usuario no encontrado" },
+        { status: 404 }
+      );
     }
 
-    const user = (await response).items[0].fields;
-    return new Response(JSON.stringify(user), {
-      status: 200,
-    });
+    const user = response.items[0].fields;
+    return NextResponse.json(user, { status: 200 });
   } catch (error) {
     console.error("Error al obtener el usuario de Contentful", error);
-    return new Response(
-      JSON.stringify({ error: "Error interno del servidor" }),
+    return NextResponse.json(
+      { error: "Error interno del servidor" },
       { status: 500 }
     );
   }
@@ -44,9 +44,10 @@ export async function PATCH(request: NextRequest) {
   const { auth0Id, ...updatedUserData }: Partial<User> = await request.json();
 
   if (!auth0Id) {
-    return new Response(JSON.stringify({ error: "auth0Id es requerido" }), {
-      status: 400,
-    });
+    return NextResponse.json(
+      { error: "auth0Id es requerido" },
+      { status: 400 }
+    );
   }
 
   try {
@@ -60,9 +61,10 @@ export async function PATCH(request: NextRequest) {
     });
 
     if (response.items.length === 0) {
-      return new Response(JSON.stringify({ error: "Usuario no encontrado" }), {
-        status: 404,
-      });
+      return NextResponse.json(
+        { error: "Usuario no encontrado" },
+        { status: 404 }
+      );
     }
 
     const entry = response.items[0];
@@ -126,16 +128,14 @@ export async function PATCH(request: NextRequest) {
     const updatedEntry = await entry.update();
     await updatedEntry.publish();
 
-    return new Response(
-      JSON.stringify({ message: "Usuario actualizado exitosamente" }),
-      {
-        status: 200,
-      }
+    return NextResponse.json(
+      { message: "Usuario actualizado exitosamente" },
+      { status: 200 }
     );
   } catch (error) {
     console.error("Error al actualizar el usuario en Contentful", error);
-    return new Response(
-      JSON.stringify({ error: "Error interno del servidor" }),
+    return NextResponse.json(
+      { error: "Error interno del servidor" },
       { status: 500 }
     );
   }

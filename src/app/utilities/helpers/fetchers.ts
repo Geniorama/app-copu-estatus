@@ -104,17 +104,22 @@ export const getAllCompanies = async (limit: number = 100, page: number = 1, act
 export const getUserByAuth0Id = async (auth0Id: string) => {
   if (!auth0Id) {
     console.error("auth0id is required");
-    return;
+    return null;
   }
 
-  const result = await fetch(`/api/user?auth0Id=${auth0Id}`);
+  try {
+    const result = await fetch(`/api/user?auth0Id=${auth0Id}`);
 
-  if (result.ok) {
-    const data = await result.json();
-
-    return data;
-  } else {
-    ("Error fetch user data");
+    if (result.ok) {
+      const data = await result.json();
+      return data;
+    } else {
+      console.error("Error fetch user data:", result.status, result.statusText);
+      return null;
+    }
+  } catch (error) {
+    console.error("Error in getUserByAuth0Id:", error);
+    return null;
   }
 };
 

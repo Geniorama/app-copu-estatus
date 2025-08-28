@@ -25,10 +25,14 @@ const DashboardClientWrapper = ({ user, userRole }: DashboardClientWrapperProps)
 
   useEffect(() => {
     // Solo ejecutar una vez cuando el componente se monta
-    if (!user || !userRole || !user.sub) return;
+    if (!user || !userRole || !user.sub) {
+      console.log('DashboardWrapper - Missing required data:', { user: !!user, userRole, hasSub: !!user?.sub });
+      return;
+    }
     
     console.log('DashboardWrapper - user object:', user);
     console.log('DashboardWrapper - userRole:', userRole);
+    console.log('DashboardWrapper - user.sub:', user.sub);
     
     dispatch(setCurrentUser({ user }));
     
@@ -37,19 +41,22 @@ const DashboardClientWrapper = ({ user, userRole }: DashboardClientWrapperProps)
       const loadUserData = async () => {
         try {
           console.log('Loading user data for:', user.sub);
+          console.log('Calling getUserByAuth0Id...');
           const response = await getUserByAuth0Id(user.sub);
-          if (response) {
+          console.log('getUserByAuth0Id response:', response);
+          
+          if (response && response.firstName && response.lastName) {
             const transformData: User = {
               id: '',
-              fname: response.firstName['en-US'],
-              lname: response.lastName['en-US'],
-              position: response.position['en-US'],
-              email: response.email['en-US'],
-              phone: response.phone['en-US'],
-              role: response.role['en-US'],
-              imageProfile: response.imageProfile['en-US'],
-              companies: response.company['en-US'] || [],
-              companiesId: response.company['en-US']?.map((company: Entry) => (company.sys.id)) || [],
+              fname: response.firstName['en-US'] || '',
+              lname: response.lastName['en-US'] || '',
+              position: response.position?.['en-US'] || '',
+              email: response.email?.['en-US'] || '',
+              phone: response.phone?.['en-US'] || '',
+              role: response.role?.['en-US'] || '',
+              imageProfile: response.imageProfile?.['en-US'] || '',
+              companies: response.company?.['en-US'] || [],
+              companiesId: response.company?.['en-US']?.map((company: Entry) => (company.sys.id)) || [],
             };
             console.log('User data loaded:', transformData);
             dispatch(setUserData(transformData));
@@ -59,9 +66,43 @@ const DashboardClientWrapper = ({ user, userRole }: DashboardClientWrapperProps)
             window.dispatchEvent(new CustomEvent('userDataLoaded', { 
               detail: { userData: transformData } 
             }));
+          } else {
+            console.warn('No user data found or incomplete data:', response);
+            // Si no hay datos del usuario, usar datos básicos del Auth0
+            const basicUserData: User = {
+              id: '',
+              fname: user.name || user.given_name || '',
+              lname: user.family_name || '',
+              position: '',
+              email: user.email || '',
+              phone: '',
+              role: userRole,
+              imageProfile: user.picture || '',
+              companies: [],
+              companiesId: [],
+            };
+            console.log('Using basic Auth0 user data:', basicUserData);
+            dispatch(setUserData(basicUserData));
+            localStorage.setItem("userData", JSON.stringify(basicUserData));
           }
         } catch (error) {
           console.error("Error loading user data:", error);
+          // En caso de error, usar datos básicos del Auth0
+          const fallbackUserData: User = {
+            id: '',
+            fname: user.name || user.given_name || '',
+            lname: user.family_name || '',
+            position: '',
+            email: user.email || '',
+            phone: '',
+            role: userRole,
+            imageProfile: user.picture || '',
+            companies: [],
+            companiesId: [],
+          };
+          console.log('Using fallback user data due to error:', fallbackUserData);
+          dispatch(setUserData(fallbackUserData));
+          localStorage.setItem("userData", JSON.stringify(fallbackUserData));
         } finally {
           setIsLoading(false);
         }
