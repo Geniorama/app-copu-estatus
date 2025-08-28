@@ -1,5 +1,5 @@
 import LogoPrimaryDark from '@/app/img/logo-primary-dark.svg'
-import LogoPrimaryLight from '@/app/img/logo-primary-light.svg'
+import LogoPrimaryLight from '@/app/img/logo dashboardRecurso 1.png'
 import LogoLight from '@/app/img/logo-light.svg'
 
 interface LogoProps {
