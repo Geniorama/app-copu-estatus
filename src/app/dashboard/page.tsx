@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 };
 
 async function HomeDashboard() {
-  const userRoleUri = `${process.env.NEXT_PUBLIC_ROLE_URL}`;
+  const userRoleUri = process.env.NEXT_PUBLIC_ROLE_URL || 'https://estatus.copu.media/roles';
   const session = await getSession();
 
   if (!session) {
@@ -19,11 +19,23 @@ async function HomeDashboard() {
 
   const { user } = session;
   
-  if (!userRoleUri) {
-    throw new Error('NEXT_PUBLIC_ROLE_URL is not defined');
+  // Intentar obtener el rol del usuario de diferentes fuentes
+  let userRole = user[userRoleUri];
+  
+  // Si no se encuentra el rol, intentar con campos alternativos
+  if (!userRole) {
+    userRole = user['https://estatus.copu.media/roles'] || 
+               user['https://estatus.copu.media/role'] ||
+               user['http://estatus.copu.media/roles'] ||
+               user['role'] ||
+               user['roles'] ||
+               'cliente'; // Valor por defecto
   }
 
-  const userRole = user[userRoleUri];
+  // Log para debugging
+  console.log('User object:', user);
+  console.log('UserRoleUri:', userRoleUri);
+  console.log('UserRole found:', userRole);
 
   return (
     <DashboardClientWrapper user={user} userRole={userRole} />
