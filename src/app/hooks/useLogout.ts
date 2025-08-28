@@ -4,6 +4,7 @@
 import { useDispatch } from "react-redux";
 import { resetCurrentUser, resetUserData } from "@/app/store/features/userSlice";
 import { resetCompaniesOptions } from "../store/features/companiesSlice";
+import { setSidebarShow } from "../store/features/settingsSlice";
 
 export default function useLogout() {
   const dispatch = useDispatch();
@@ -16,15 +17,17 @@ export default function useLogout() {
       dispatch(resetCurrentUser());
       dispatch(resetUserData());
       dispatch(resetCompaniesOptions());
+      dispatch(setSidebarShow(true)); // Resetear sidebar a estado inicial
       
       // Limpiar localStorage completamente
       localStorage.removeItem("userData");
+      localStorage.removeItem("companiesOptions");
       
       // Limpiar cualquier otro dato que pueda estar en localStorage
       const keysToRemove = [];
       for (let i = 0; i < localStorage.length; i++) {
         const key = localStorage.key(i);
-        if (key && (key.includes('user') || key.includes('company') || key.includes('auth'))) {
+        if (key && (key.includes('user') || key.includes('company') || key.includes('auth') || key.includes('persist'))) {
           keysToRemove.push(key);
         }
       }
@@ -34,13 +37,22 @@ export default function useLogout() {
         console.log(`Removido de localStorage: ${key}`);
       });
       
-      console.log("Datos limpiados correctamente");
+      // Limpiar específicamente las claves de Redux Persist
+      localStorage.removeItem('persist:root');
+      localStorage.removeItem('persist:user');
       
       // Limpiar sessionStorage también
       sessionStorage.clear();
       
+      // Purgar el store de Redux completamente
+      if (typeof window !== 'undefined' && window.purgeReduxStore) {
+        window.purgeReduxStore();
+      }
+      
       // Disparar evento personalizado para notificar que se hizo logout
       window.dispatchEvent(new CustomEvent('userLoggedOut'));
+      
+      console.log("Datos limpiados correctamente");
       
       // Hacer la redirección
       window.location.href = "/api/auth/logout";

@@ -8,10 +8,11 @@ import DashboardHomeClient from "../views/DashboardClient/HomeClient";
 import { Claims } from "@auth0/nextjs-auth0";
 import { RootState } from "../store";
 import { getUserByAuth0Id } from "../utilities/helpers/fetchers";
-import { setUserData } from "../store/features/userSlice";
+import { setUserData, resetUserData } from "../store/features/userSlice";
 import type { User } from "../types";
 import { Entry } from "contentful-management";
 import SkeletonLoader from "../utilities/ui/SkeletonLoader";
+import useAuthGuard from "../hooks/useAuthGuard";
 
 interface DashboardClientWrapperProps {
     user: Claims,
@@ -22,6 +23,9 @@ const DashboardClientWrapper = ({ user, userRole }: DashboardClientWrapperProps)
   const dispatch = useDispatch();
   const { userData } = useSelector((state: RootState) => state.user);
   const [isLoading, setIsLoading] = useState(true);
+  
+  // Hook para proteger la autenticación y limpiar datos
+  useAuthGuard();
 
   useEffect(() => {
     // Solo ejecutar una vez cuando el componente se monta
@@ -68,41 +72,34 @@ const DashboardClientWrapper = ({ user, userRole }: DashboardClientWrapperProps)
             }));
           } else {
             console.warn('No user data found or incomplete data:', response);
-            // Si no hay datos del usuario, usar datos básicos del Auth0
-            const basicUserData: User = {
-              id: '',
-              fname: user.name || user.given_name || '',
-              lname: user.family_name || '',
-              position: '',
-              email: user.email || '',
-              phone: '',
-              role: userRole,
-              imageProfile: user.picture || '',
-              companies: [],
-              companiesId: [],
-            };
-            console.log('Using basic Auth0 user data:', basicUserData);
-            dispatch(setUserData(basicUserData));
-            localStorage.setItem("userData", JSON.stringify(basicUserData));
+            // Solo usar datos básicos del Auth0 si realmente tenemos información válida
+            if (user.name || user.given_name || user.email) {
+              const basicUserData: User = {
+                id: '',
+                fname: user.name || user.given_name || '',
+                lname: user.family_name || '',
+                position: '',
+                email: user.email || '',
+                phone: '',
+                role: userRole,
+                imageProfile: user.picture || '',
+                companies: [],
+                companiesId: [],
+              };
+              console.log('Using basic Auth0 user data:', basicUserData);
+              dispatch(setUserData(basicUserData));
+              localStorage.setItem("userData", JSON.stringify(basicUserData));
+            } else {
+              // Si no hay datos válidos, limpiar el estado
+              dispatch(resetUserData());
+              localStorage.removeItem("userData");
+            }
           }
         } catch (error) {
           console.error("Error loading user data:", error);
-          // En caso de error, usar datos básicos del Auth0
-          const fallbackUserData: User = {
-            id: '',
-            fname: user.name || user.given_name || '',
-            lname: user.family_name || '',
-            position: '',
-            email: user.email || '',
-            phone: '',
-            role: userRole,
-            imageProfile: user.picture || '',
-            companies: [],
-            companiesId: [],
-          };
-          console.log('Using fallback user data due to error:', fallbackUserData);
-          dispatch(setUserData(fallbackUserData));
-          localStorage.setItem("userData", JSON.stringify(fallbackUserData));
+          // En caso de error, no usar datos de fallback, solo limpiar el estado
+          dispatch(resetUserData());
+          localStorage.removeItem("userData");
         } finally {
           setIsLoading(false);
         }
@@ -127,6 +124,18 @@ const DashboardClientWrapper = ({ user, userRole }: DashboardClientWrapperProps)
     return (
       <div className="w-full h-screen flex justify-center items-center">
         <SkeletonLoader type="table" rows={5} className="w-full max-w-4xl" />
+      </div>
+    );
+  }
+
+  // Verificar que tenemos datos válidos del usuario antes de renderizar
+  if (!userData || !userData.fname || !userData.email) {
+    return (
+      <div className="w-full h-screen flex justify-center items-center">
+        <div className="text-center">
+          <h2 className="text-xl font-semibold mb-2">No hay datos de usuario disponibles</h2>
+          <p className="text-gray-600">Por favor, inicia sesión nuevamente.</p>
+        </div>
       </div>
     );
   }

@@ -1,10 +1,17 @@
 'use client'
-import { useRef } from 'react'
+import { useRef, useEffect } from 'react'
 import { Provider } from 'react-redux'
 import { PersistGate } from 'redux-persist/integration/react'
 import { makeStore, AppStore, persistor } from '.'
 import type { Persistor } from 'redux-persist'
 import IconLoad from '@/app/img/copu-load.gif'
+
+// Función global para purgar el store
+declare global {
+  interface Window {
+    purgeReduxStore: () => void;
+  }
+}
 
 export default function StoreProvider({
   children
@@ -20,6 +27,20 @@ export default function StoreProvider({
     // Crear la instancia de persistor
     persistorRef.current = persistor(storeRef.current)
   }
+
+  useEffect(() => {
+    // Exponer la función de purga globalmente
+    window.purgeReduxStore = () => {
+      if (persistorRef.current) {
+        persistorRef.current.purge();
+        console.log('Redux store purgado completamente');
+      }
+    };
+
+    return () => {
+      delete window.purgeReduxStore;
+    };
+  }, []);
 
   const loadBox = () => {
     return(

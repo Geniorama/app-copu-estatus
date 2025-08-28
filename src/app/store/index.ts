@@ -1,5 +1,5 @@
 import { configureStore } from '@reduxjs/toolkit';
-import { persistStore, persistReducer } from 'redux-persist';
+import { persistStore, persistReducer, FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER } from 'redux-persist';
 import storage from 'redux-persist/lib/storage';
 import rootReducer from './rootReducer';
 
@@ -7,7 +7,8 @@ import rootReducer from './rootReducer';
 const persistConfig = {
   key: 'root',
   storage,
-  whitelist: ['user']  // Solo la parte 'user' del estado será persistida
+  whitelist: ['user'],  // Solo la parte 'user' del estado será persistida
+  blacklist: ['user.currentUser'], // No persistir currentUser
 }
 
 // Crear el persistedReducer usando persistReducer y rootReducer
@@ -21,7 +22,7 @@ export const makeStore = () => {
       getDefaultMiddleware({
         serializableCheck: {
           // Ignorar acciones específicas que contienen valores no serializables
-          ignoredActions: ['persist/PERSIST', 'persist/REHYDRATE'],
+          ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
           // Ignorar rutas específicas del estado
           ignoredPaths: ['user.currentUser'],
         },
@@ -36,3 +37,10 @@ export type AppDispatch = AppStore['dispatch']
 
 // Crear el persistor
 export const persistor = (store: AppStore) => persistStore(store);
+
+// Función para purgar la persistencia
+export const purgeStore = (store: AppStore) => {
+  const persistorInstance = persistor(store);
+  persistorInstance.purge();
+  return persistorInstance;
+};
